@@ -68,3 +68,50 @@ class PitchCreatorRow(BaseModel):
     cost_with_deliverables_usage: Any = None
     final_cost: Any = None
     brand_cost: Any = None
+
+class CampaignCreatorRow(BaseModel):
+    campaign_code: str
+    name: str
+    profile_link: str
+    followers: int = 0
+    expected_views: int = 0
+    tier: str  = ""
+    poc_name: str = ""
+    email: str = ""
+    phone: str = ""
+    is_dropped: bool
+    deliverables_raw: str = ""
+    payment_terms: str = ""
+    initial_cost: int = 0
+    final_cost: int = 0
+    brand_cost: int = 0
+    agency_fee: int = 0
+    product_cost: int = 0
+    shipping_cost: int = 0
+    promotion_cost: int = 0
+    reimbursement_cost: int = 0
+    additional_cost: int = 0
+    product_status: str = ""
+    product_ordered_by: str = ""
+    script_links: str = ""
+    shoot_date: str = ""
+    content_status: str = ""
+    live_date: str = ""
+    live_links: str = ""
+    ig_reel_views: str = ""
+    ig_reel_likes: str = ""
+    ig_reel_comments: str = ""
+    ig_reel_shares: str = ""
+    ig_reel_saves: str = ""
+    ig_story_views: str = ""
+    ig_reel_reach: str = ""
+    ig_story_reach: str = ""
+    ig_reels_ir_perc: str = ""
+    ig_reels_er_perc: str = ""
+    cpv: str = ""
+    yt_views: str = ""
+    yt_likes: str = ""
+    yt_comments: str = ""
+    yt_er_perc: str = ""
+    yt_total_impressions: str = ""
+    yt_total_watch_time: str = ""

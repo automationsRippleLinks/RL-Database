@@ -11,7 +11,7 @@ import re
 
 from pydantic import ValidationError
 
-from app.schemas.apps_script_response import PitchMasterRow, CampaignMasterRow, PitchCreatorRow
+from app.schemas.apps_script_response import PitchMasterRow, CampaignMasterRow, PitchCreatorRow, CampaignCreatorRow
 from app.schemas.ingest import Pitch, Campaign, IngestRowError, CreatorLinkRecord
 from app.models.enums import (
     OrgTypeChoices,
@@ -368,3 +368,6 @@ class Parser:
 
         rows = list(best.values())
         return ParseOutcome(rows, errors)
+
+    async def parse_campaign_creator(self, raw_data: list[dict]) -> ParseOutcome:
+        pass

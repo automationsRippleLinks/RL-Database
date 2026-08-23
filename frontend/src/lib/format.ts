@@ -15,7 +15,7 @@ function trimZero(n: number): string {
   return s.endsWith('.0') ? s.slice(0, -2) : s;
 }
 
-export function formatNumber(value: number | null | undefined): string {
+export function formatNumber(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return '—';
   return value.toLocaleString('en-IN');
 }
@@ -26,9 +26,10 @@ export function formatCurrency(value: number | null | undefined): string {
   return `₹${value.toLocaleString('en-IN')}`;
 }
 
-export function formatPercent(value: number | null | undefined, digits = 1): string {
-  if (value === null || value === undefined) return '—';
-  return `${value.toFixed(digits)}%`;
+export function formatPercent(value: string | number | null | undefined, dp = 1): string {
+  const n = typeof value === "string" ? parseFloat(value) : value;
+  if (n == null || !Number.isFinite(n)) return "—";
+  return `${n.toFixed(dp)}%`;
 }
 
 /** ISO date (or datetime) → "12 Aug 2026". Dates here are plain `date` columns. */

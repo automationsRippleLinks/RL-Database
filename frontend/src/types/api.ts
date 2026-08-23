@@ -376,15 +376,15 @@ export interface CampaignCreatorRow {
   /** timedelta columns; serialise as ISO-8601 durations or total seconds. */
   ig_avg_watch_time: string | number | null;
   ig_total_watch_time: string | number | null;
-  ig_reels_er_perc: number | null;
-  ig_reels_ir_perc: number | null;
-  ig_male_perc: number | null;
-  ig_female_perc: number | null;
+  ig_reels_er_perc: string | number | null;
+  ig_reels_ir_perc: string | number | null;
+  ig_male_perc: string | number | null;
+  ig_female_perc: string | number | null;
   /** YouTube tracker block. */
   yt_views: number | null;
   yt_likes: number | null;
   yt_comments: number | null;
-  yt_er_perc: number | null;
+  yt_er_perc: string | number | null;
   yt_total_impressions: number | null;
   yt_total_watch_time: string | number | null;
   cpv: string | null;
