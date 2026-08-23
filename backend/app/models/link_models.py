@@ -106,8 +106,8 @@ class CampaignCreatorLink(SQLModel, table=True):
     brand_cost: int = Field(default=0, nullable=False)
     agency_fee: int = Field(default=0, nullable=False)
 
-    product_status: str
-    product_ordered_by: str
+    product_status: str = Field(default="", nullable=False)
+    product_ordered_by: str = Field(default="", nullable=False)
 
     product_cost: int = Field(default=0, nullable=False)
     shipping_cost: int = Field(default=0, nullable=False)
@@ -115,11 +115,11 @@ class CampaignCreatorLink(SQLModel, table=True):
     reimbursement_cost: int = Field(default=0, nullable=False)
     additional_cost: int = Field(default=0, nullable=False)
 
-    script_links: str
-    shoot_date: date
-    content_status: str
-    live_date: date
-    live_links: str
+    script_links: str = Field(default="", nullable=True)
+    shoot_date: date = Field(nullable=True)
+    content_status: str = Field(default="", nullable=True)
+    live_date: date = Field(nullable=True)
+    live_links: str = Field(default="", nullable=True)
 
     # tracker data
 
@@ -134,27 +134,27 @@ class CampaignCreatorLink(SQLModel, table=True):
     ig_story_reach: int = Field(default=0, nullable=False)
     ig_avg_watch_time: timedelta = Field(default=timedelta())
     ig_total_watch_time: timedelta = Field(default=timedelta())
-    ig_skip_rate_content: int = Field(default=0, nullable=False)
-    ig_followers_view_perc: int = Field(default=0, nullable=False)
-    ig_non_followers_view_perc: int = Field(default=0, nullable=False)
-    ig_male_perc: int = Field(default=0, nullable=False)
-    ig_female_perc: int = Field(default=0, nullable=False)
-    ig_age_13_17_perc: int = Field(default=0, nullable=False)
-    ig_age_18_24_perc: int = Field(default=0, nullable=False)
-    ig_age_25_34_perc: int = Field(default=0, nullable=False)
-    ig_age_35_44_perc: int = Field(default=0, nullable=False)
-    ig_age_45_54_perc: int = Field(default=0, nullable=False)
-    ig_age_55_64_perc: int = Field(default=0, nullable=False)
-    ig_age_over_65_perc: int = Field(default=0, nullable=False)
-    ig_reels_ir_perc: int = Field(default=0, nullable=False)
-    ig_reels_er_perc: int = Field(default=0, nullable=False)
+    ig_skip_rate_content: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_followers_view_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_non_followers_view_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_male_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_female_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_age_13_17_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_age_18_24_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_age_25_34_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_age_35_44_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_age_45_54_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_age_55_64_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_age_over_65_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_reels_ir_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
+    ig_reels_er_perc: Decimal = Field(default="0.00", nullable=False)
     cpv: Decimal = Field(default=Decimal("0.00"), decimal_places=2)
 
     # YT
     yt_views: int = Field(default=0, nullable=False)
     yt_likes: int = Field(default=0, nullable=False)
     yt_comments: int = Field(default=0, nullable=False)
-    yt_er_perc: int = Field(default=0, nullable=False)
+    yt_er_perc: Decimal = Field(default=Decimal("0.00"), nullable=False)
     yt_total_impressions: int = Field(default=0, nullable=False)
     yt_total_watch_time: timedelta = Field(default=timedelta())
 
