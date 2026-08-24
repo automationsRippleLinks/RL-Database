@@ -7,7 +7,14 @@ from sqlmodel import select, col, func
 
 from app.core.cache import invalidate, FACETS_PREFIX, SEARCH_PREFIX, SUGGEST_PREFIX
 from app.api.deps import SessionDep, IngestUser, CSRFProtected, RedisDep
-from app.models import IngestJob as IngestJobSQL, Pitch, Campaign, Brand, Creator
+from app.models import (
+    IngestJob as IngestJobSQL,
+    Pitch,
+    Campaign,
+    Brand,
+    Creator,
+    CampaignCreatorLink,
+)
 from app.services.ingest import Ingest
 from app.services.ingest_job import record_job, job_to_schema, IngestResult
 from app.schemas.ingest import (
@@ -28,7 +35,8 @@ _ROW_COUNT_MODELS = {
     IngestSource.pitch_master: Pitch,
     IngestSource.campaign_master: Campaign,
     IngestSource.brands: Brand,
-    IngestSource.pitch_creator: Creator
+    IngestSource.pitch_creator: Creator,
+    IngestSource.campaign_creator: CampaignCreatorLink,
 }
 
 _LABELS = {
@@ -165,7 +173,7 @@ async def upload(
             message="Ingest failed; no rows were written.",
         )
     else:
-        if not dry_run: # redis should not report successful ingest as a failure
+        if not dry_run:  # redis should not report successful ingest as a failure
             await invalidate(redis, FACETS_PREFIX, SEARCH_PREFIX, SUGGEST_PREFIX)
 
     row = await record_job(
@@ -179,9 +187,12 @@ async def upload(
     )
     return job_to_schema(row)
 
-@router.post("/apps-script/{source}", response_model=IngestJob, dependencies=[CSRFProtected])
+
+@router.post(
+    "/apps-script/{source}", response_model=IngestJob, dependencies=[CSRFProtected]
+)
 async def run_apps_script(source: IngestSource, user: IngestUser):
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Apps Script ingest is not implemented yet - upload a JSON file instead."
+        detail="Apps Script ingest is not implemented yet - upload a JSON file instead.",
     )

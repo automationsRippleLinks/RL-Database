@@ -158,6 +158,7 @@ export const INGEST_SOURCE_LABELS: Record<IngestSource, string> = {
   campaign_master: 'Campaign master',
   pitch_creator: 'Pitch — creator rows',
   campaign_creator: 'Campaign — creator rows',
+  brands: 'Brand Data'
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
