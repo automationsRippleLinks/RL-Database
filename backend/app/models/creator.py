@@ -1,13 +1,13 @@
 from uuid import uuid4, UUID
-from typing import Optional, TYPE_CHECKING, Annotated
+from typing import Optional, TYPE_CHECKING
 
 from sqlmodel import SQLModel, Field, Relationship, String, Index, UniqueConstraint
 from sqlalchemy import Enum as SaEnum, Column
 from sqlalchemy.dialects.postgresql import ARRAY
 from pydantic import ConfigDict
-from pydantic_extra_types.phone_numbers import PhoneNumberValidator
 
-from .link_models import CategoryCreatorLink, LanguageCreatorLink
+
+from .link_models import CategoryCreatorLink, LanguageCreatorLink, TagCreatorLink
 from .enums import PlatformChoices, TierChoices
 
 if TYPE_CHECKING:
@@ -15,15 +15,8 @@ if TYPE_CHECKING:
     # Python completely ignores this block at runtime, breaking the circular import.
     from .category import Category
     from .language import Language
+    from .tag import Tag
     from .link_models import PitchCreatorLink, CampaignCreatorLink
-
-
-IndianPhoneNumber = Annotated[
-    str,
-    PhoneNumberValidator(
-        default_region="IN", number_format="E164", supported_regions=["IN"]
-    ),
-]
 
 
 class Creator(SQLModel, table=True):
@@ -50,6 +43,11 @@ class Creator(SQLModel, table=True):
         back_populates="creators", link_model=LanguageCreatorLink
     )
     languages_raw: str
+
+    # TAGS
+    tags: list["Tag"] = Relationship(
+        back_populates="creators", link_model=TagCreatorLink
+    )
 
     gender: str
     city: str

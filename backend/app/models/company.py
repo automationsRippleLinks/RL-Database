@@ -5,11 +5,11 @@ from sqlmodel import SQLModel, Field, text, Relationship
 from sqlalchemy import CheckConstraint
 from pydantic import field_validator
 
+from app.core.config import GSTIN_REGEX
+
 if TYPE_CHECKING:
     from .brand import Brand
 
-
-GSTIN_REGEX = r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
 
 
 class Company(SQLModel, table=True):

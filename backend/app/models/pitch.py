@@ -10,8 +10,6 @@ from pydantic import ConfigDict, HttpUrl, field_validator
 from .enums import PlatformChoices, OrgTypeChoices, PitchRequirementChoices
 
 if TYPE_CHECKING:
-    # This runs ONLY during static analysis/IDE linting.
-    # Python completely ignores this block at runtime, breaking the circular import.
     from .link_models import PitchCreatorLink
     from .brand import Brand
     from .campaign import Campaign

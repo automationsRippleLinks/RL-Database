@@ -1,5 +1,5 @@
 from typing import Optional, TYPE_CHECKING
-from uuid import UUID, uuid4
+from uuid import UUID
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -28,6 +28,13 @@ class LanguageCreatorLink(SQLModel, table=True):
     language_id: Optional[int] = Field(
         default=None, foreign_key="language.id", primary_key=True
     )
+
+
+class TagCreatorLink(SQLModel, table=True):
+    creator_id: Optional[UUID] = Field(
+        default=None, foreign_key="creator.id", primary_key=True
+    )
+    tag_id: Optional[int] = Field(default=None, foreign_key="tag.id", primary_key=True)
 
 
 class PitchCreatorLink(SQLModel, table=True):
