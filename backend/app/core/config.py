@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     # Redis specific settings
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
-    REDIS_PATH: int = 0
+    REDIS_PATH: str = "0"
 
     @computed_field
     @property
