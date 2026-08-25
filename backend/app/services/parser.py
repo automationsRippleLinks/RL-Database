@@ -419,17 +419,6 @@ class Parser:
         return ParseOutcome(rows, errors)
 
     async def parse_pitch_creator(self, raw_data: list[dict]) -> ParseOutcome:
-        """April is entirely v2, which has no per-deliverable cost split -- only
-        `Cost with Deliverables` and `+ Usage`, collapsed here into package_cost
-        and rights_cost.
-
-        v3/v3.5 DO split them (Cost of Reel(s), Cost of Video Story, YT Shorts
-        Cost, Package Cost...) and v3.5 adds rights/boosting to YouTube. Those
-        columns reach the JSON but are read nowhere below, so a v3 sheet would
-        ingest with every per-deliverable cost silently 0. Handle before the
-        first v3 month.
-        """
-
         rows, errors = [], []
         best: dict[tuple, CreatorLinkRecord] = {}
 
@@ -536,17 +525,6 @@ class Parser:
         return ParseOutcome(rows, errors)
 
     async def parse_campaign_creator(self, raw_data: list[dict]) -> ParseOutcome:
-        """Campaign Status + Tracker rows -> CampaignCreatorLinkRecord.
-
-        Rows are keyed to their campaign by `campaign_code`, uppercased to match
-        what parse_campaign_master wrote, NOT by spreadsheet file id: the
-        campaign-creator export carries the code on every row and a campaign's
-        Status tab lives in the same file as its Tracker tab.
-
-        The audience / watch-time columns are optional. When the sheet omits
-        them the record keeps its model default (0.00 / zero duration), so a v1
-        Tracker ingests cleanly instead of failing every row.
-        """
         rows, errors = [], []
         best: dict[tuple, CampaignCreatorLinkRecord] = {}
 

@@ -72,20 +72,6 @@ class PitchCreatorRow(BaseModel):
 
 
 class CampaignCreatorRow(BaseModel):
-    """One Campaign Status / Tracker row, exactly as the sheet exports it.
-
-    EVERY cell is `Any`. Google Sheets hands the same column back as an int, a
-    float, a string or "" depending on what the user typed, so declaring these
-    as `str` made pydantic reject the whole row -- e.g. ig_reel_views=198112
-    (an int) against `str` is a hard ValidationError in pydantic v2, which
-    doesn't coerce int -> str. Coercion belongs in the parser, where a bad cell
-    becomes a row warning instead of a lost row.
-
-    The audience / watch-time block is optional: the v1 Tracker tab has none of
-    those columns, so absent means "sheet didn't ship it" and the parser fills
-    the model default (0.00 / zero duration) rather than failing the row.
-    """
-
     campaign_code: str
     name: Any = ""
     profile_link: Any = ""

@@ -5,7 +5,8 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status, Query, UploadFile, File, Form
 from sqlmodel import select, col, func
 
-from app.core.cache import invalidate, FACETS_PREFIX, SEARCH_PREFIX, SUGGEST_PREFIX
+from app.core.config import MAX_UPLOAD_BYTES, FACETS_PREFIX, SEARCH_PREFIX, SUGGEST_PREFIX
+from app.core.cache import invalidate
 from app.api.deps import SessionDep, IngestUser, CSRFProtected, RedisDep
 from app.models import (
     IngestJob as IngestJobSQL,
@@ -29,7 +30,6 @@ from app.schemas.ingest import (
 router = APIRouter()
 ingest_service = Ingest()
 
-MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
 
 _ROW_COUNT_MODELS = {
     IngestSource.pitch_master: Pitch,

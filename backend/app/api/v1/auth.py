@@ -7,7 +7,7 @@ from sqlmodel import select
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
-from app.core.config import settings
+from app.core.config import settings, OAUTH_STATE_PREFIX
 from app.core.security import (
     hash_password,
     new_token,
@@ -45,7 +45,6 @@ router = APIRouter()
 
 _DUMMY_HASH = hash_password(new_csrf_token())
 IS_PROD = settings.ENVIRONMENT == "production"
-OAUTH_STATE_PREFIX = "oauth_state:"
 
 
 def _set_session_cookies(response: Response, sid: str, csrf_token: str) -> None:

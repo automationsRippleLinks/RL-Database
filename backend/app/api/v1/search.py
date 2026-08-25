@@ -7,9 +7,7 @@ from pydantic import BaseModel
 from sqlmodel import select, col, or_, func, exists, union, Column
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.cache import (
-    cached,
-    cache_key,
+from app.core.config import (
     FACETS_PREFIX,
     SUGGEST_PREFIX,
     SEARCH_PREFIX,
@@ -17,6 +15,7 @@ from app.core.cache import (
     FACETS_TTL,
     SEARCH_TTL,
 )
+from app.core.cache import cached, cache_key
 from app.core.db import Session_Factory
 from app.api.deps import SessionDep, CurrentUser, RedisDep
 from app.schemas.search import (
@@ -649,9 +648,7 @@ async def global_search(
 ):
     async def produce():
         async def run(
-            handler: Callable[
-                [BaseModel, AsyncSession, User], Awaitable[Any]
-            ],
+            handler: Callable[[BaseModel, AsyncSession, User], Awaitable[Any]],
             req: BaseModel,
         ):
             async with Session_Factory() as session:

@@ -5,7 +5,14 @@ from decimal import Decimal
 
 from pydantic import BaseModel, field_serializer
 
-from app.schemas.search import CompanyRef, BrandRef, CreatorRow, CampaignRow, PitchRow, BrandRow
+from app.schemas.search import (
+    CompanyRef,
+    BrandRef,
+    CreatorRow,
+    CampaignRow,
+    PitchRow,
+    BrandRow,
+)
 from app.models.enums import (
     PlatformChoices,
     MonthChoices,
@@ -115,10 +122,12 @@ class PitchRef(BaseModel):
     pitch_code: str
     brand: Optional[BrandRef] = None
 
+
 class CampaignDetail(CampaignRow):
     pitch: Optional[PitchRef] = None
     creators: list[CampaignCreatorRow] = []
     totals: CampaignTotals = CampaignTotals()
+
 
 class PitchCreatorRow(BaseModel):
     creator_id: UUID
@@ -154,21 +163,25 @@ class PitchCreatorRow(BaseModel):
     final_cost: int = 0
     brand_cost: int = 0
 
+
 class CampaignRefLite(BaseModel):
     id: UUID
     campaign_code: str
     campaign_name: str
+
 
 class PitchTotals(BaseModel):
     creator_count: int = 0
     total_final_cost: Optional[int] = None
     total_brand_cost: Optional[int] = None
 
+
 class PitchDetail(PitchRow):
     campaign: Optional[CampaignRefLite] = None
     company: Optional[CompanyRef] = None
     creators: list[PitchCreatorRow] = []
     totals: PitchTotals = PitchTotals()
+
 
 class BrandDetail(BrandRow):
     total_brand_cost: Optional[int] = None

@@ -1,11 +1,19 @@
-from typing import Literal, Optional
+from typing import Literal, Optional, Annotated
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, HttpUrl, field_serializer
+from pydantic_extra_types.phone_numbers import PhoneNumberValidator
 
 from app.models.enums import *
+
+IndianPhoneNumber = Annotated[
+    str,
+    PhoneNumberValidator(
+        default_region="IN", number_format="E164", supported_regions=["IN"]
+    ),
+]
 
 
 class IngestSource(str, Enum):
@@ -143,7 +151,7 @@ class CreatorLinkRecord(BaseModel):
     categories_raw: str = ""
     languages_raw: str = ""
     email: str = ""
-    phone: str = ""
+    phone: IndianPhoneNumber = ""
     reel_count: int = 0
     reel_story_count: int = 0
     video_story_count: int = 0
@@ -180,16 +188,6 @@ class CreatorLinkRecord(BaseModel):
 
 
 class CampaignCreatorLinkRecord(BaseModel):
-    """One sheet row: a Creator plus its CampaignCreatorLink.
-
-    Field names below the `--- link columns ---` marker mirror
-    CampaignCreatorLink one-for-one. The service builds its insert with
-    `model_dump(exclude=CREATOR_ONLY_FIELDS)`, so adding a column to the model
-    and forgetting it here yields a silent default instead of the sheet value.
-    `Ingest._link_field_drift()` compares the two sets at ingest time and
-    reports any mismatch as a job warning.
-    """
-
     # --- routing ---
     campaign_code: str
     sheet_row: Optional[int] = None
@@ -206,7 +204,7 @@ class CampaignCreatorLinkRecord(BaseModel):
     categories_raw: str = ""
     languages_raw: str = ""
     email: str = ""
-    phone: str = ""
+    phone: IndianPhoneNumber = ""
 
     # --- link columns ---
     is_dropped: bool = False

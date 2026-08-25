@@ -3,14 +3,15 @@ import secrets
 from pwdlib import PasswordHash
 from redis.asyncio import Redis as RedisClient
 
-from app.core.config import settings
+from app.core.config import (
+    settings,
+    USER_SESSIONS_PREFIX,
+    SESSION_PREFIX,
+    EMAIL_VERIFY_PREFIX,
+    PASSWORD_RESET_PREFIX,
+)
 
 password_hasher = PasswordHash.recommended()
-
-SESSION_PREFIX = "auth_session:"
-USER_SESSIONS_PREFIX = "user_sessions:"
-EMAIL_VERIFY_PREFIX = "email_verify:"
-PASSWORD_RESET_PREFIX = "password_reset:"
 
 
 # --- Password Hashing ---

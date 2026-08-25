@@ -62,6 +62,7 @@ class Settings(BaseSettings):
     DB_USERNAME: str = ""
     DB_PASSWORD: str = ""
     DB_NAME: str = ""
+    DB_ECHO: bool = False
 
     @computed_field
     @property
@@ -90,13 +91,40 @@ class Settings(BaseSettings):
     # Redis specific settings
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+    REDIS_PATH: int = 0
 
     @computed_field
     @property
     def REDIS_URL(self) -> RedisDsn:
         return RedisDsn.build(
-            scheme="redis", host=self.REDIS_HOST, port=self.REDIS_PORT, path="0"
+            scheme="redis", host=self.REDIS_HOST, port=self.REDIS_PORT, path=self.REDIS_PATH
         )
 
 
 settings = Settings()
+
+# CACHE PREFIXES
+CACHE_VERSION = "v1"
+FACETS_PREFIX = "facets:"
+SEARCH_PREFIX = "search:"
+SUGGEST_PREFIX = "suggest:"
+RATE_LIMIT_PREFIX = "ratelimit:"
+SESSION_PREFIX = "auth_session:"
+OAUTH_STATE_PREFIX = "oauth_state:"
+USER_SESSIONS_PREFIX = "user_sessions:"
+EMAIL_VERIFY_PREFIX = "email_verify:"
+PASSWORD_RESET_PREFIX = "password_reset:"
+
+# CACHE TTLS
+FACETS_TTL = 24 * 60 * 60
+SUGGEST_TTL = 5 * 60
+SEARCH_TTL = 60
+
+# Miscellaneous
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
+MAX_PAGE_SIZE = 100
+MAX_STORED_ERRORS = 500
+PG_MAX_PARAMS = 32767
+BRAND_DETAIL_LIMIT = 100
+TOP_CREATORS_LIMIT = 10
+GSTIN_REGEX = r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"

@@ -5,15 +5,7 @@ import hashlib
 from pydantic import BaseModel
 from redis.asyncio import Redis as RedisClient
 
-CACHE_VERSION = "v1"
-FACETS_PREFIX = "facets:"
-SEARCH_PREFIX = "search:"
-SUGGEST_PREFIX = "suggest:"
-
-FACETS_TTL = 24 * 60 * 60
-SUGGEST_TTL = 5 * 60
-SEARCH_TTL = 60
-
+from app.core.config import CACHE_VERSION
 
 def _canonical(payload: Any) -> str:
     if isinstance(payload, BaseModel):

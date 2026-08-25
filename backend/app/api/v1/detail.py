@@ -5,6 +5,7 @@ from decimal import Decimal
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select, col, func
 
+from app.core.config import BRAND_DETAIL_LIMIT, TOP_CREATORS_LIMIT
 from app.api.deps import SessionDep, CurrentUser
 from app.api.v1.search import search_campaigns, search_pitches
 from app.models import *
@@ -34,9 +35,6 @@ from app.schemas.detail import (
 )
 
 router = APIRouter()
-
-BRAND_DETAIL_LIMIT = 100
-TOP_CREATORS_LIMIT = 10
 
 
 def _views_for(platform: PlatformChoices, link: CampaignCreatorLink) -> Optional[int]:

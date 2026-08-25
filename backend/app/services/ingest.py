@@ -30,9 +30,7 @@ from app.schemas.ingest import (
     CAMPAIGN_CREATOR_ONLY_FIELDS,
 )
 from app.services.ingest_job import IngestResult
-
-MAX_STORED_ERRORS = 500
-PG_MAX_PARAMS = 32767
+from app.core.config import PG_MAX_PARAMS, MAX_STORED_ERRORS
 
 
 class Ingest:

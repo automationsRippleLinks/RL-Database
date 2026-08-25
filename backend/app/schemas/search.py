@@ -12,10 +12,9 @@ from app.models.enums import (
     MonthChoices,
     PitchRequirementChoices,
 )
+from app.core.config import MAX_PAGE_SIZE
 
 RowT = TypeVar("RowT")
-
-MAX_PAGE_SIZE = 100
 
 
 class Paging(BaseModel):
