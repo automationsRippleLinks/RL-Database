@@ -1,6 +1,8 @@
 from datetime import datetime, time as dtime
 import asyncio
-from typing import Awaitable, Callable, Any
+from collections import defaultdict
+from typing import Awaitable, Callable, Any, Iterable, Sequence
+from uuid import UUID
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
@@ -43,6 +45,8 @@ from app.models import (
     User,
     Category,
     Language,
+    CategoryCreatorLink,
+    LanguageCreatorLink,
 )
 
 router = APIRouter()
@@ -53,6 +57,92 @@ async def _distinct(session: AsyncSession, column: Column, *, where=None) -> lis
     if where is not None:
         stmnt = stmnt.where(where)
     return [v for v in (await session.exec(stmnt)).all() if v is not None]
+
+
+def _tag_exists(link_model, tag_model, fk, predicate):
+    return exists(
+        select(link_model.creator_id)
+        .join(tag_model, col(tag_model.id) == col(fk))
+        .where(col(link_model.creator_id) == Creator.id)
+        .where(predicate)
+        .correlate(Creator)
+    )
+
+
+def _has_any_category(names: Sequence[str]):
+    wanted = [n.strip().lower() for n in names if n and n.strip()]
+    if not wanted:
+        return None
+    return _tag_exists(
+        CategoryCreatorLink,
+        Category,
+        CategoryCreatorLink.category_id,
+        func.lower(col(Category.name)).in_(wanted),
+    )
+
+
+def _has_any_language(names: Sequence[str]):
+    wanted = [n.strip().lower() for n in names if n and n.strip()]
+    if not wanted:
+        return None
+    return _tag_exists(
+        LanguageCreatorLink,
+        Language,
+        LanguageCreatorLink.language_id,
+        func.lower(col(Language.name)).in_(wanted),
+    )
+
+
+def _category_token(token: str):
+    return _tag_exists(
+        CategoryCreatorLink,
+        Category,
+        CategoryCreatorLink.category_id,
+        col(Category.name).ilike(f"%{token}%"),
+    )
+
+
+def _language_token(token: str):
+    return _tag_exists(
+        LanguageCreatorLink,
+        Language,
+        LanguageCreatorLink.language_id,
+        col(Language.name).ilike(f"%{token}%"),
+    )
+
+
+async def _tags_for_creators(
+    session: AsyncSession, creator_ids: Iterable[UUID]
+) -> tuple[dict[UUID, list[str]], dict[UUID, list[str]]]:
+    """Batch-load tags for one page of results -- two queries, not two per row."""
+    ids = list(creator_ids)
+    if not ids:
+        return {}, {}
+
+    cats: dict[UUID, list[str]] = defaultdict(list)
+    langs: dict[UUID, list[str]] = defaultdict(list)
+
+    for creator_id, name in (
+        await session.exec(
+            select(CategoryCreatorLink.creator_id, Category.name)
+            .join(Category, col(Category.id) == col(CategoryCreatorLink.category_id))
+            .where(col(CategoryCreatorLink.creator_id).in_(ids))
+            .order_by(Category.name)
+        )
+    ).all():
+        cats[creator_id].append(name)
+
+    for creator_id, name in (
+        await session.exec(
+            select(LanguageCreatorLink.creator_id, Language.name)
+            .join(Language, col(Language.id) == col(LanguageCreatorLink.language_id))
+            .where(col(LanguageCreatorLink.creator_id).in_(ids))
+            .order_by(Language.name)
+        )
+    ).all():
+        langs[creator_id].append(name)
+
+    return cats, langs
 
 
 # --- full search ---
@@ -70,10 +160,9 @@ async def search_creators(
             [
                 col(Creator.name),
                 col(Creator.username),
-                col(Creator.categories_raw),
-                col(Creator.languages_raw),
                 col(Creator.city),
             ],
+            extra=[_category_token, _language_token],
         )
         if tc is not None:
             stmnt = stmnt.where(tc)
@@ -88,21 +177,12 @@ async def search_creators(
             stmnt = stmnt.where(
                 or_(*[col(Creator.city).ilike(f"%{c}%") for c in req.cities])
             )
-        if req.categories:
-            stmnt = stmnt.where(
-                or_(
-                    *[
-                        col(Creator.categories_raw).ilike(f"%{c}%")
-                        for c in req.categories
-                    ]
-                )
-            )
-        if req.languages:
-            stmnt = stmnt.where(
-                or_(
-                    *[col(Creator.languages_raw).ilike(f"%{l}%") for l in req.languages]
-                )
-            )
+        cat_clause = _has_any_category(req.categories)
+        if cat_clause is not None:
+            stmnt = stmnt.where(cat_clause)
+        lang_clause = _has_any_language(req.languages)
+        if lang_clause is not None:
+            stmnt = stmnt.where(lang_clause)
         if req.has_email:
             stmnt = stmnt.where(
                 col(Creator.email).is_not(None), col(Creator.email) != ""
@@ -151,13 +231,21 @@ async def search_creators(
         stmnt = stmnt.order_by(col(Creator.id))
         stmnt = stmnt.offset((page - 1) * req.page_size).limit(req.page_size)
         rows = (await session.exec(stmnt)).all()
+        cats, langs = await _tags_for_creators(session, (r.id for r in rows))
+
+        out = [
+            CreatorRow.from_creator(
+                r, categories=cats.get(r.id, []), languages=langs.get(r.id, [])
+            )
+            for r in rows
+        ]
 
     return SearchResponse[CreatorRow](
         total=total,
         pages=pages,
         page=page,
         page_size=req.page_size,
-        rows=[CreatorRow.model_validate(r, from_attributes=True) for r in rows],
+        rows=out,
         took_ms=t.ms,
     )
 
@@ -361,7 +449,7 @@ async def search_campaigns(
 
         sort = req.sort
         if sort == "relevance" and not tokens(req.text):
-            sort = "start_date_desc"
+            sort = "code_desc"
         order = {
             "start_date_desc": col(Campaign.start_date).desc().nullslast(),
             "start_date_asc": col(Campaign.start_date).asc().nullsfirst(),
@@ -478,7 +566,7 @@ async def search_pitches(
 
         sort = req.sort
         if sort == "relevance" and not tokens(req.text):
-            sort = "created_desc"
+            sort = "code_desc"
         order = {
             "created_desc": col(Pitch.created_at).desc(),
             "created_asc": col(Pitch.created_at).asc(),
@@ -529,18 +617,29 @@ async def search_pitches(
 @router.get("/facets/creators")
 async def facets_creators(session: SessionDep, redis: RedisDep, user: CurrentUser):
     async def produce():
-        cats, langs = set(), set()
-        for cat, lang in (
-            await session.exec(select(Category.name, Language.name))
-        ).all():
-            cats.update(p.strip() for p in (cat or "").split(",") if p.strip())
-            langs.update(p.strip() for p in (lang or "").split(",") if p.strip())
+        async def _tag_facet(tag_model, link_model, fk) -> list[str]:
+            usage = func.count(col(link_model.creator_id))
+            return [
+                name
+                for name, _ in (
+                    await session.exec(
+                        select(tag_model.name, usage.label("usage"))
+                        .join(link_model, col(fk) == col(tag_model.id), isouter=True)
+                        .group_by(col(tag_model.id), col(tag_model.name))
+                        .order_by(usage.desc(), col(tag_model.name))
+                    )
+                ).all()
+            ]
 
         return {
             "platforms": await _distinct(session, Creator.platform),
             "tiers": await _distinct(session, Creator.tier),
-            "categories": sorted(cats),
-            "languages": sorted(langs),
+            "categories": await _tag_facet(
+                Category, CategoryCreatorLink, CategoryCreatorLink.category_id
+            ),
+            "languages": await _tag_facet(
+                Language, LanguageCreatorLink, LanguageCreatorLink.language_id
+            ),
             "cities": await _distinct(session, Creator.city),
             "genders": await _distinct(session, Creator.gender),
             "total_creators": (

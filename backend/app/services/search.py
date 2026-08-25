@@ -1,12 +1,4 @@
-"""Query building for the search endpoints.
-
-Two rules apply to every scope:
-  * `text` is tokenised on whitespace and EVERY token must match somewhere
-    (AND across tokens, OR across fields) -- that's what makes "fitness mumbai" work.
-  * every sort ends with a unique tiebreaker, or rows repeat or vanish between pages.
-"""
-
-from typing import Optional, Sequence
+from typing import Callable, Optional, Sequence
 import time
 
 from sqlalchemy import ColumnElement
@@ -20,12 +12,22 @@ def tokens(text: Optional[str]) -> list[str]:
 
 
 def text_clause(
-    text: Optional[str], fields: Sequence[ColumnElement]
+    text: Optional[str],
+    fields: Sequence[ColumnElement],
+    extra: Sequence[Callable[[str], ColumnElement]] = (),
 ) -> Optional[ColumnElement]:
     toks = tokens(text)
-    if not toks or not fields:
+    if not toks or (not fields and not extra):
         return None
-    return and_(*[or_(*[f.ilike(f"%{t}%") for f in fields]) for t in toks])
+    return and_(
+        *[
+            or_(
+                *[f.ilike(f"%{t}%") for f in fields],
+                *[factory(t) for factory in extra],
+            )
+            for t in toks
+        ]
+    )
 
 
 def clamp_page(total: int, page: int, page_size: int) -> tuple[int, int]:

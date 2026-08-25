@@ -57,8 +57,6 @@ class CreatorCampaignSummary(BaseModel):
 class CreatorDetail(CreatorRow):
     additional_emails: list[str] = []
     additional_phones: list[str] = []
-    categories: list[str] = []
-    languages: list[str] = []
     pitches: list[CreatorPitchSummary] = []
     campaigns: list[CreatorCampaignSummary] = []
 

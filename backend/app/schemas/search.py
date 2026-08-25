@@ -42,6 +42,10 @@ class CompanyRef(BaseModel):
     gstin: Optional[str] = None
 
 
+#: Fields on CreatorRow that shadow a lazy relationship on the ORM Creator.
+_TAG_FIELDS = frozenset({"categories", "languages"})
+
+
 # --- Creators ---
 
 
@@ -80,6 +84,8 @@ class CreatorRow(BaseModel):
     avg_views: Optional[int] = None
     city: Optional[str] = None
     gender: Optional[str] = None
+    categories: list[str] = []
+    languages: list[str] = []
     categories_raw: Optional[str] = None
     languages_raw: Optional[str] = None
     email: Optional[str] = None
@@ -91,6 +97,21 @@ class CreatorRow(BaseModel):
         handle = (self.username or "").lstrip("@")
         tmpl = _PROFILE_URL.get(self.platform)
         return tmpl.format(h=handle) if (handle and tmpl) else None
+
+    @classmethod
+    def from_creator(
+        cls,
+        creator,
+        *,
+        categories: list[str] = [],
+        languages: list[str] = [],
+    ) -> "CreatorRow":
+        data = {
+            name: getattr(creator, name)
+            for name in cls.model_fields
+            if name not in _TAG_FIELDS
+        }
+        return cls(**data, categories=list(categories), languages=list(languages))
 
 
 # --- Brands ---

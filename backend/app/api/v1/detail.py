@@ -113,11 +113,11 @@ async def creator_detail(creator_id: UUID, session: SessionDep, user: CurrentUse
     ).all()
 
     return CreatorDetail(
-        **CreatorRow.model_validate(creator, from_attributes=True).model_dump(),
+        **CreatorRow.from_creator(
+            creator, categories=list(categories), languages=list(languages)
+        ).model_dump(),
         additional_emails=creator.additional_emails or [],
         additional_phones=[str(p) for p in (creator.additional_phones or [])],
-        categories=list(categories),
-        languages=list(languages),
         pitches=[
             CreatorPitchSummary(
                 pitch_id=p.id,
@@ -355,26 +355,34 @@ async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
     )
 
     pitches = await search_pitches(
-            PitchSearchRequest(
-                brand_ids=[brand_id],
-                page=1,
-                page_size=BRAND_DETAIL_LIMIT,
-                sort="created_desc",
-            ),
-            session,
-            user,
-        )
+        PitchSearchRequest(
+            brand_ids=[brand_id],
+            page=1,
+            page_size=BRAND_DETAIL_LIMIT,
+            sort="created_desc",
+        ),
+        session,
+        user,
+    )
 
     org_types, platforms = set(), set()
-    for org_type, plats in (await session.exec(
-        select(Pitch.org_type, Pitch.platform).where(col(Pitch.brand_id) == brand_id)
-    )).all():
+    for org_type, plats in (
+        await session.exec(
+            select(Pitch.org_type, Pitch.platform).where(
+                col(Pitch.brand_id) == brand_id
+            )
+        )
+    ).all():
         org_types.add(org_type)
         platforms.update(plats or [])
 
-    latest_campaign = (await session.exec(
-        select(func.max(Campaign.start_date)).where(col(Campaign.brand_id) == brand_id)
-    )).one()
+    latest_campaign = (
+        await session.exec(
+            select(func.max(Campaign.start_date)).where(
+                col(Campaign.brand_id) == brand_id
+            )
+        )
+    ).one()
     latest_pitch = (
         await session.exec(
             select(func.max(func.date(Pitch.created_at))).where(
@@ -382,37 +390,56 @@ async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
             )
         )
     ).one()
-    latest_activity = max([d for d in (latest_campaign, latest_pitch) if d is not None], default=None)
+    latest_activity = max(
+        [d for d in (latest_campaign, latest_pitch) if d is not None], default=None
+    )
 
-    campaign_links = (await session.exec(
-        select(CampaignCreatorLink, Creator)
-        .join(Creator, col(Creator.id) == col(CampaignCreatorLink.creator_id))
-        .join(Campaign, col(Campaign.id) == col(CampaignCreatorLink.campaign_id))
-        .where(col(Campaign.brand_id) == brand_id, col(CampaignCreatorLink.is_dropped) == False)
-    )).all()
+    campaign_links = (
+        await session.exec(
+            select(CampaignCreatorLink, Creator)
+            .join(Creator, col(Creator.id) == col(CampaignCreatorLink.creator_id))
+            .join(Campaign, col(Campaign.id) == col(CampaignCreatorLink.campaign_id))
+            .where(
+                col(Campaign.brand_id) == brand_id,
+                col(CampaignCreatorLink.is_dropped) == False,
+            )
+        )
+    ).all()
 
-    pitch_link_creators = (await session.exec(
-        select(PitchCreatorLink.creator_id)
-        .join(Pitch, col(Pitch.id) == col(PitchCreatorLink.pitch_id))
-        .where(col(Pitch.brand_id) == brand_id)
-    )).all()
+    pitch_link_creators = (
+        await session.exec(
+            select(PitchCreatorLink.creator_id)
+            .join(Pitch, col(Pitch.id) == col(PitchCreatorLink.pitch_id))
+            .where(col(Pitch.brand_id) == brand_id)
+        )
+    ).all()
 
     spend = dict()
     creators_by_id = dict()
     for lnk, cr in campaign_links:
         creators_by_id[cr.id] = cr
-        spend[cr.id] = spend.get(cr.id, 0) + (lnk.final_cost or 0) # highest spend. ALT: spend[cr.id] = spend.get(cr.id, 0) + 1
+        spend[cr.id] = spend.get(cr.id, 0) + (
+            lnk.final_cost or 0
+        )  # highest spend. ALT: spend[cr.id] = spend.get(cr.id, 0) + 1
 
-    top_ids = sorted(spend, key=lambda cid: spend[cid], reverse=True)[:TOP_CREATORS_LIMIT]
+    top_ids = sorted(spend, key=lambda cid: spend[cid], reverse=True)[
+        :TOP_CREATORS_LIMIT
+    ]
 
     return BrandDetail(
         id=brand.id,
         name=brand.display_name,
         gstin=brand.gstin,
-        company=CompanyRef(id=company.id, name=company.name, gstin=company.gstin) if company else None,
+        company=(
+            CompanyRef(id=company.id, name=company.name, gstin=company.gstin)
+            if company
+            else None
+        ),
         pitch_count=pitches.total,
         campaign_count=campaigns.total,
-        creator_count=len({cr.id for _, cr in campaign_links} | set(pitch_link_creators)),
+        creator_count=len(
+            {cr.id for _, cr in campaign_links} | set(pitch_link_creators)
+        ),
         org_types=sorted(org_types),
         platforms=sorted(platforms),
         latest_activity=latest_activity,
@@ -420,6 +447,7 @@ async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
         campaigns=campaigns.rows,
         pitches=pitches.rows,
         top_creators=[
-            CreatorRow.model_validate(creators_by_id[cid], from_attributes=True) for cid in top_ids
-        ]
+            CreatorRow.model_validate(creators_by_id[cid], from_attributes=True)
+            for cid in top_ids
+        ],
     )
