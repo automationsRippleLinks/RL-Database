@@ -19,6 +19,7 @@ dependencies = [
     "google-auth>=2.56.0",
     "httpx>=0.28.0",
     "aiosmtplib>=5.1.0",
+    "requests>=2.34.0",
 ]
 
 [tool.fastapi]
