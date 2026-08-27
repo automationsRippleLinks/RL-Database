@@ -50,7 +50,6 @@ class CreatorCampaignSummary(BaseModel):
     live_date: Optional[date] = None
     final_cost: Optional[int] = None
     views: Optional[int] = None
-    views: Optional[int] = None
     cpv: Optional[Decimal] = None
 
 

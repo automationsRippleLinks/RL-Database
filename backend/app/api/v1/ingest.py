@@ -16,7 +16,7 @@ from app.models import (
     Creator,
     CampaignCreatorLink,
 )
-from app.services.ingest import Ingest
+from app.services.ingest import Ingest, IngestRejected
 from app.services.ingest_job import record_job, job_to_schema, IngestResult
 from app.schemas.ingest import (
     IngestSourceInfo,
@@ -163,6 +163,12 @@ async def upload(
             await session.rollback()
         else:
             await session.commit()
+    except IngestRejected as e:
+        # A blocking data problem the service already described row by row.
+        # Nothing was written, so this rolls back an empty transaction; the
+        # point is to keep e.result intact instead of flattening it to str(e).
+        await session.rollback()
+        result = e.result
     except Exception as e:
         await session.rollback()
         result = IngestResult(

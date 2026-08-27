@@ -9,9 +9,8 @@ from typing import NamedTuple, Any, Optional
 from datetime import date, datetime, timezone, timedelta
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import re
-import unicodedata
 
-from pydantic import ValidationError
+from pydantic import ValidationError, TypeAdapter, EmailStr
 
 from app.schemas.apps_script_response import (
     PitchMasterRow,
@@ -33,6 +32,11 @@ from app.models.enums import (
     CampaignStatusChoices,
     MonthChoices,
     TierChoices,
+)
+from app.services.profile_link import (
+    clean as _clean,
+    handle_of as _handle_of,
+    platform_of as _platform_of,
 )
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -77,35 +81,18 @@ _PLATFORM = {
 
 _DATE_FORMATS = ("%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d", "%d.%m.%Y")
 
-_PLATFORM_DOMAINS = [
-    ("instagram.", PlatformChoices.INSTAGRAM),
-    ("youtube.", PlatformChoices.YOUTUBE),
-    ("youtu.be", PlatformChoices.YOUTUBE),
-    ("linkedin.", PlatformChoices.LINKEDIN),
-    ("facebook.", PlatformChoices.FACEBOOK),
-    ("fb.com", PlatformChoices.FACEBOOK),
-]
+#: The one thing the sheet's tier cell is still consulted for. "Celebrity" is
+#: an editorial call that no follower count encodes; every other band is derived.
+_CELEB_RE = re.compile(r"celeb", re.I)
 
-_HANDLE_RE = re.compile(
-    r"(?:instagram|youtube|linkedin|facebook)\.[a-z.]+/"
-    r"(?:in/|@|channel/|c/|user/)?([^/?#\s\\]+)",
-    re.I,
+#: (exclusive upper bound, tier) -- the first band the count falls under wins.
+#: Bounds are lower-inclusive: 20,000 followers is MICRO, not NANO.
+_TIER_BANDS = (
+    (20_000, TierChoices.NANO),
+    (100_000, TierChoices.MICRO),
+    (250_000, TierChoices.MID_TIER),
+    (1_000_000, TierChoices.MACRO),
 )
-
-_TIER = {
-    "nano": TierChoices.NANO,
-    "micro": TierChoices.MICRO,
-    "micro 1": TierChoices.MICRO,
-    "micro 2": TierChoices.MICRO,
-    "micfro": TierChoices.MICRO,
-    "mid": TierChoices.MID_TIER,
-    "mid tier": TierChoices.MID_TIER,
-    "mid-tier": TierChoices.MID_TIER,
-    "mid-tier 1": TierChoices.MID_TIER,
-    "macro": TierChoices.MACRO,
-    "mega": TierChoices.MEGA,
-    "celeb": TierChoices.CELEB,
-}
 
 _GENDER = {
     "female": "Female",
@@ -125,6 +112,10 @@ class ParseOutcome(NamedTuple):
         | list[CampaignCreatorLinkRecord]
     )
     errors: list[IngestRowError]
+    #: Rows folded into an earlier row for the same creator. Reported so the
+    #: caller's counts add up: without it `received` exceeds inserted + skipped
+    #: by an unexplained amount, which reads as rows having gone missing.
+    deduped: int = 0
 
 
 #: Values that mean "the user typed a placeholder", not real data.
@@ -140,21 +131,6 @@ _NON_PHONE = re.compile(r"[^\d+]")
 _HMS_RE = re.compile(r"^(?:(\d+):)?(\d{1,2}):(\d{1,2}(?:\.\d+)?)$")
 
 _TWO_DP = Decimal("0.01")
-
-
-def _strip_cf(text: str) -> str:
-    """Drop Unicode format characters (category Cf).
-
-    Sheets cells pasted from WhatsApp or a browser carry invisible bidi marks
-    (U+200E/200F), zero-width joiners and soft hyphens. They survive .split(),
-    so "\u200e9876543210" is not equal to "9876543210" and the same creator
-    lands twice.
-    """
-    return "".join(ch for ch in text if unicodedata.category(ch) != "Cf")
-
-
-def _clean(value: Any) -> str:
-    return " ".join(_strip_cf(str(value or "")).split())
 
 
 def _is_nullish(value: Any) -> bool:
@@ -201,6 +177,110 @@ def _phone(value: Any) -> tuple[str, Optional[str]]:
     if not digits:
         return "", f"phone: {text!r} has no digits -> dropped"
     return digits, None
+
+
+#: Validates a single address. Reused per call rather than rebuilt -- pydantic
+#: adapters are not free to construct.
+_EMAIL_ADAPTER = TypeAdapter(EmailStr)
+
+
+def _is_email(text: str) -> bool:
+    try:
+        _EMAIL_ADAPTER.validate_python(text)
+    except ValidationError:
+        return False
+    return True
+
+
+def _email(value: Any) -> tuple[str, Optional[str], Optional[str]]:
+    """Return (email, blocking_error, warning).
+
+    The contract is deliberately binary: a real address, or nothing. A cell that
+    is neither yields a blocking error, because a half-typed address in a
+    contact database is worse than an empty one -- it looks reachable and isn't.
+
+    Multi-value cells are the one accommodation. Sheets routinely carry
+    "a@b.com, c@d.com", and refusing a whole upload over two perfectly good
+    addresses would be indefensible, so the first is kept and the rest reported
+    as a warning. (Creator.additional_emails exists but no ingest path fills it.)
+    """
+    text = _clean(value)
+    if not text or _is_nullish(text):
+        return "", None, None
+
+    parts = [p for p in (_clean(p) for p in _SPLIT_RE.split(text)) if p]
+    if not parts:
+        return "", None, None
+
+    bad = [p for p in parts if not _is_email(p)]
+    if bad:
+        return "", f"email: {text!r} is not a valid address", None
+    if len(parts) > 1:
+        return parts[0], None, (
+            f"email: kept {parts[0]!r}, dropped {len(parts) - 1} more from the "
+            f"same cell"
+        )
+    return parts[0], None, None
+
+
+#: The costs a v3.5 pitch sheet sends, already split. Read straight through --
+#: the parser used to derive package_cost and rights_cost from a pair of totals,
+#: which is why eight of these columns were empty on every row in the database.
+_SPLIT_COST_FIELDS = (
+    "reel_cost",
+    "reel_story_cost",
+    "video_story_cost",
+    "static_carousel_cost",
+    "short_form_videos_cost",
+    "reshare_short_form_videos_cost",
+    "dedicated_video_cost",
+    "integrated_video_cost",
+    "rights_cost",
+    "boosting_cost",
+    "package_cost",
+    "final_cost",
+    "brand_cost",
+)
+
+#: The two totals a v2 sheet sent instead.
+_LEGACY_COST_FIELDS = ("cost_with_deliverables", "cost_with_deliverables_usage")
+
+
+def _is_blank(value: Any) -> bool:
+    """No value at all -- absent, empty, or a placeholder. Zero is a value."""
+    text = _clean(value)
+    return not text or _is_nullish(text)
+
+
+def _uses_legacy_costs(row: Any) -> bool:
+    """True when the row carries v2 cost totals and none of the v3.5 split costs.
+
+    Presence, never amount: a v3.5 row whose costs are genuinely all zero must
+    not be mistaken for an old export. A v2 row with both totals blank is
+    indistinguishable from a v3.5 row with nothing filled in, and harmless --
+    every cost is zero either way -- so it is left alone.
+    """
+    has_legacy = any(not _is_blank(getattr(row, f, None)) for f in _LEGACY_COST_FIELDS)
+    has_split = any(not _is_blank(getattr(row, f, None)) for f in _SPLIT_COST_FIELDS)
+    return has_legacy and not has_split
+
+
+def tier_for(followers: Optional[int], raw_tier: Any = None) -> TierChoices:
+    """Tier follows the follower count, not the sheet.
+
+    The sheet's tier cell is consulted for exactly one thing -- the word
+    "celeb" -- because celebrity is an editorial judgement no follower count
+    encodes. Everything else was drifting: the same creator could be MICRO on
+    one sheet and MID_TIER on another with identical followers.
+    """
+    if _CELEB_RE.search(_clean(raw_tier)):
+        return TierChoices.CELEB
+    if not followers:  # missing, or an explicit 0
+        return TierChoices.NA
+    for ceiling, tier in _TIER_BANDS:
+        if followers < ceiling:
+            return tier
+    return TierChoices.MEGA
 
 
 def _dec(
@@ -303,22 +383,6 @@ def _parse_date(value: Any, field: str) -> Optional[date]:
     return dt.date()
 
 
-def _platform_of(link: str, sheet_fallback: str) -> Optional[PlatformChoices]:
-    low = _clean(link).lower()
-    for needle, platform in _PLATFORM_DOMAINS:
-        if needle in low:
-            return platform
-    return {
-        "instagram": PlatformChoices.INSTAGRAM,
-        "youtube": PlatformChoices.YOUTUBE,
-    }.get(sheet_fallback.lower())
-
-
-def _handle_of(link: str) -> Optional[str]:
-    m = _HANDLE_RE.search(_clean(link))
-    return m.group(1).lstrip("@").rstrip("\\").lower() if m else None
-
-
 def _num(value: Any) -> tuple[int, Optional[str]]:
     if isinstance(value, bool):
         return 0, None
@@ -419,8 +483,13 @@ class Parser:
         return ParseOutcome(rows, errors)
 
     async def parse_pitch_creator(self, raw_data: list[dict]) -> ParseOutcome:
-        rows, errors = [], []
+        errors: list[IngestRowError] = []
+        # Deduped as we go: a creator listed twice in one pitch keeps the row
+        # with the higher final_cost.
         best: dict[tuple, CreatorLinkRecord] = {}
+        deduped = 0
+        #: (sheet_row, template_version) for rows still using the v2 cost shape.
+        legacy_rows: list[tuple[int, str]] = []
 
         for i, raw in enumerate(raw_data):
             try:
@@ -437,24 +506,57 @@ class Parser:
                         )
                     )
                     continue
-                tier_key = _key(r.tier)
-                tier = _TIER.get(tier_key, TierChoices.NA)
+                sheet_row = _num(r.sheet_row)[0] or (i + 1)
 
-                followers, w1 = _num(r.followers)
-                avg_views, w2 = _num(r.avg_views)
-                with_deliv, w3 = _num(r.cost_with_deliverables)
-                usage, w4 = _num(r.cost_with_deliverables_usage)
-                final_cost, w5 = _num(r.final_cost)
-                brand_cost, w6 = _num(r.brand_cost)
+                if _uses_legacy_costs(r):
+                    version = _clean(r.template_version) or "v2"
+                    legacy_rows.append((sheet_row, version))
 
-                for w in (w1, w2, w3, w4, w5, w6):
+                warnings: list[str] = []
+
+                def num(value: Any, field: str) -> int:
+                    """Coerce, and say which column failed.
+
+                    The bare _num warning is just "unparseable number 'Need' ->
+                    0" with no field, which is unactionable when a row has
+                    thirteen numeric columns.
+                    """
+                    n, w = _num(value)
                     if w:
-                        errors.append(
-                            IngestRowError(row=i, message=w, severity="warning")
-                        )
+                        warnings.append(f"{field}: {w}")
+                    return n
 
-                package_cost = max(with_deliv, usage)
-                rights_cost = max(0, usage - with_deliv)
+                followers = num(r.followers, "followers")
+                avg_views = num(r.avg_views, "avg_views")
+
+                # Costs arrive already split, so they are stored exactly as the
+                # sheet gives them. Deliberately not cross-checked against each
+                # other: package_cost and final_cost are negotiated figures and
+                # legitimately differ from the sum of the deliverables.
+                costs = {
+                    field: num(getattr(r, field), field)
+                    for field in _SPLIT_COST_FIELDS
+                }
+
+                email, email_error, email_warning = _email(r.email)
+                if email_error:
+                    errors.append(
+                        IngestRowError(
+                            row=sheet_row,
+                            field="email",
+                            code="invalid_email",
+                            message=email_error,
+                        )
+                    )
+                if email_warning:
+                    errors.append(
+                        IngestRowError(
+                            row=sheet_row,
+                            field="email",
+                            severity="warning",
+                            message=email_warning,
+                        )
+                    )
 
                 rec = CreatorLinkRecord(
                     source_file_id=r.source_file_id,
@@ -464,69 +566,97 @@ class Parser:
                     name=_clean(r.name),
                     followers=followers or None,
                     avg_views=avg_views or None,
-                    tier=tier,
+                    tier=tier_for(followers, r.tier),
                     gender=_GENDER.get(_key(r.gender), ""),
                     city=_clean(r.city),
                     categories_raw=_clean(r.category),
                     languages_raw=_clean(r.language),
-                    email=_clean(r.email),
+                    email=email,
                     phone=_clean(r.phone),
-                    reel_count=_num(r.reel_count)[0],
-                    reel_story_count=_num(r.reel_story_count)[0],
-                    video_story_count=_num(r.video_story_count)[0],
-                    static_carousel_count=_num(r.static_carousel_count)[0],
+                    reel_count=num(r.reel_count, "reel_count"),
+                    reel_story_count=num(r.reel_story_count, "reel_story_count"),
+                    video_story_count=num(r.video_story_count, "video_story_count"),
+                    static_carousel_count=num(
+                        r.static_carousel_count, "static_carousel_count"
+                    ),
                     event_store_visit=_bool_cell(r.event_store_visit),
-                    short_form_videos_count=_num(r.short_form_videos_count)[0],
-                    reshare_short_form_videos_count=_num(
-                        r.reshare_short_form_videos_count
-                    )[0],
-                    dedicated_video_count=_num(r.dedicated_video_count)[0],
-                    integrated_video_count=_num(r.integrated_video_count)[0],
+                    short_form_videos_count=num(
+                        r.short_form_videos_count, "short_form_videos_count"
+                    ),
+                    reshare_short_form_videos_count=num(
+                        r.reshare_short_form_videos_count,
+                        "reshare_short_form_videos_count",
+                    ),
+                    dedicated_video_count=num(
+                        r.dedicated_video_count, "dedicated_video_count"
+                    ),
+                    integrated_video_count=num(
+                        r.integrated_video_count, "integrated_video_count"
+                    ),
                     usage_rights=_clean(r.usage_rights),
                     ad_promo_rights=_clean(r.ad_promo_rights),
                     boosting=_clean(r.boosting),
                     payment_terms=_clean(r.payment_terms),
-                    package_cost=package_cost,
-                    rights_cost=rights_cost,
-                    final_cost=final_cost,
-                    brand_cost=brand_cost,
+                    **costs,
                 )
+
+                # Emitted here rather than where they are collected: the
+                # deliverable counts are coerced inside the constructor above.
+                for w in warnings:
+                    errors.append(
+                        IngestRowError(row=sheet_row, message=w, severity="warning")
+                    )
 
                 dedupe_key = (r.source_file_id, platform, handle)
                 prior = best.get(dedupe_key)
                 if prior is None:
                     best[dedupe_key] = rec
-                elif rec.final_cost > prior.final_cost:
+                    continue
+
+                deduped += 1
+                if rec.final_cost > prior.final_cost:
                     best[dedupe_key] = rec
-                    errors.append(
-                        IngestRowError(
-                            row=i,
-                            field="profile_link",
-                            severity="warning",
-                            message=f"duplicate {handle!r} in this pitch; kept "
-                            f"{rec.final_cost} over {prior.final_cost}",
-                        )
-                    )
+                    kept, dropped = rec.final_cost, prior.final_cost
                 else:
-                    errors.append(
-                        IngestRowError(
-                            row=i,
-                            field="profile_link",
-                            severity="warning",
-                            message=f"duplicate {handle!r} in this pitch; discarded "
-                            f"{rec.final_cost}, kept {prior.final_cost}",
-                        )
+                    kept, dropped = prior.final_cost, rec.final_cost
+                errors.append(
+                    IngestRowError(
+                        row=sheet_row,
+                        field="profile_link",
+                        severity="warning",
+                        message=(
+                            f"duplicate {handle!r} in this pitch; kept {kept}, "
+                            f"discarded {dropped}"
+                        ),
                     )
+                )
 
             except Exception as e:
                 errors.append(IngestRowError(row=i, message=str(e)))
 
-        rows = list(best.values())
-        return ParseOutcome(rows, errors)
+        if legacy_rows:
+            versions = sorted({v for _, v in legacy_rows})
+            errors.append(
+                IngestRowError(
+                    row=legacy_rows[0][0],
+                    field="cost_with_deliverables",
+                    code="legacy_v2_format",
+                    message=(
+                        f"{len(legacy_rows)} row(s) use the old cost format "
+                        f"(template_version {', '.join(versions)}). Re-export from "
+                        "the current sheet -- cost_with_deliverables and "
+                        "cost_with_deliverables_usage are no longer read, so this "
+                        "file would store zero for every cost."
+                    ),
+                )
+            )
+
+        return ParseOutcome(list(best.values()), errors, deduped)
 
     async def parse_campaign_creator(self, raw_data: list[dict]) -> ParseOutcome:
-        rows, errors = [], []
+        errors: list[IngestRowError] = []
         best: dict[tuple, CampaignCreatorLinkRecord] = {}
+        deduped = 0
 
         for i, raw in enumerate(raw_data):
             try:
@@ -582,6 +712,20 @@ class Parser:
                 if w_phone:
                     warnings.append(w_phone)
 
+                followers = num(r.followers, "followers")
+                email, email_error, email_warning = _email(r.email)
+                if email_warning:
+                    warnings.append(email_warning)
+                if email_error:
+                    errors.append(
+                        IngestRowError(
+                            row=sheet_row,
+                            field="email",
+                            code="invalid_email",
+                            message=email_error,
+                        )
+                    )
+
                 shoot_date = _parse_date(r.shoot_date, "shoot_date")
                 live_date = _parse_date(r.live_date, "live_date")
 
@@ -592,14 +736,20 @@ class Parser:
                     platform=platform,
                     username=handle,
                     name=_clean(r.name),
-                    followers=num(r.followers, "followers") or None,
+                    followers=followers or None,
                     avg_views=None,  # campaign sheets carry no creator average
-                    tier=_TIER.get(_key(r.tier), TierChoices.NA),
+                    tier=tier_for(followers, r.tier),
                     gender=_GENDER.get(_key(r.gender), ""),
                     city="" if _is_nullish(r.city) else _clean(r.city),
-                    categories_raw=", ".join(_split_multi(r.category)),
-                    languages_raw=", ".join(_split_multi(r.language)),
-                    email="" if _is_nullish(r.email) else _clean(r.email),
+                    # Verbatim, not pre-split. Splitting here on "&" turned
+                    # "Beauty & Makeup" into "Beauty, Makeup" before anything
+                    # could recognise it as one real category -- 30 of the
+                    # category names and 11 language names contain a delimiter.
+                    # The taxonomy-aware resolver in services/ingest.py does the
+                    # splitting, against the actual vocabulary.
+                    categories_raw=_clean(r.category),
+                    languages_raw=_clean(r.language),
+                    email=email,
                     phone=phone,
                     # link
                     is_dropped=(
@@ -718,6 +868,7 @@ class Parser:
 
                 # A creator listed twice in one campaign: keep the costlier row,
                 # which is the one Accounts paid against.
+                deduped += 1
                 keep, drop = (
                     (rec, prior) if rec.final_cost > prior.final_cost else (prior, rec)
                 )
@@ -737,4 +888,4 @@ class Parser:
             except (ValidationError, ValueError) as e:
                 errors.append(IngestRowError(row=i, message=str(e)))
 
-        return ParseOutcome(list(best.values()), errors)
+        return ParseOutcome(list(best.values()), errors, deduped)

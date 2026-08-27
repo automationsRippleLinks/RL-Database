@@ -7,7 +7,7 @@ from sqlmodel import select, col, func
 
 from app.core.config import BRAND_DETAIL_LIMIT, TOP_CREATORS_LIMIT
 from app.api.deps import SessionDep, CurrentUser
-from app.api.v1.search import search_campaigns, search_pitches
+from app.api.v1.search import search_campaigns, search_pitches, _tags_for_creators
 from app.models import *
 from app.models.enums import PlatformChoices
 from app.schemas.search import (
@@ -425,6 +425,7 @@ async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
     top_ids = sorted(spend, key=lambda cid: spend[cid], reverse=True)[
         :TOP_CREATORS_LIMIT
     ]
+    top_cats, top_langs = await _tags_for_creators(session, top_ids)
 
     return BrandDetail(
         id=brand.id,
@@ -446,8 +447,15 @@ async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
         total_brand_cost=_sum(lnk.brand_cost for lnk, _ in campaign_links),
         campaigns=campaigns.rows,
         pitches=pitches.rows,
+        # from_creator, not model_validate: the latter walks every field on the
+        # model, and touching the lazy `categories` relationship inside an async
+        # session raises MissingGreenlet for any brand with campaign creators.
         top_creators=[
-            CreatorRow.model_validate(creators_by_id[cid], from_attributes=True)
+            CreatorRow.from_creator(
+                creators_by_id[cid],
+                categories=top_cats.get(cid, []),
+                languages=top_langs.get(cid, []),
+            )
             for cid in top_ids
         ],
     )

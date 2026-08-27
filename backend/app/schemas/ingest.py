@@ -1,9 +1,9 @@
-from typing import Literal, Optional, Annotated
+from typing import Literal, Optional, Annotated, Union
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel, HttpUrl, field_serializer
+from pydantic import BaseModel, EmailStr, HttpUrl, field_serializer
 from pydantic_extra_types.phone_numbers import PhoneNumberValidator
 
 from app.models.enums import *
@@ -14,6 +14,22 @@ IndianPhoneNumber = Annotated[
         default_region="IN", number_format="E164", supported_regions=["IN"]
     ),
 ]
+
+#: A real number, or "" when the sheet has none.
+#:
+#: The union matters. `IndianPhoneNumber` alone rejects "", and the parser passes
+#: the field explicitly, so pydantic validated it rather than falling back to the
+#: default -- meaning every creator row with an empty phone cell failed
+#: validation and was silently dropped from the batch.
+BlankOrPhone = Union[Literal[""], IndianPhoneNumber]
+
+#: A real address, or "" when the sheet has none -- nothing in between.
+#:
+#: `str` accepted anything, so "rahul@" and "call me" landed in Creator.email and
+#: looked reachable. The parser blanks-and-reports bad cells before a record is
+#: built (services/parser.py::_email); this type is the backstop for any path
+#: that doesn't go through it.
+BlankOrEmail = Union[Literal[""], EmailStr]
 
 
 class IngestSource(str, Enum):
@@ -150,8 +166,8 @@ class CreatorLinkRecord(BaseModel):
     city: str = ""
     categories_raw: str = ""
     languages_raw: str = ""
-    email: str = ""
-    phone: IndianPhoneNumber = ""
+    email: BlankOrEmail = ""
+    phone: BlankOrPhone = ""
     reel_count: int = 0
     reel_story_count: int = 0
     video_story_count: int = 0
@@ -203,8 +219,8 @@ class CampaignCreatorLinkRecord(BaseModel):
     city: str = ""
     categories_raw: str = ""
     languages_raw: str = ""
-    email: str = ""
-    phone: IndianPhoneNumber = ""
+    email: BlankOrEmail = ""
+    phone: BlankOrPhone = ""
 
     # --- link columns ---
     is_dropped: bool = False
@@ -267,6 +283,26 @@ class CampaignCreatorLinkRecord(BaseModel):
     yt_er_perc: Decimal = Decimal("0.00")
     yt_total_impressions: int = 0
     yt_total_watch_time: timedelta = timedelta()
+
+
+#: Fields on CreatorLinkRecord that belong to Creator (or to routing) and must
+#: NOT be forwarded into the PitchCreatorLink insert.
+PITCH_CREATOR_ONLY_FIELDS: set[str] = {
+    "source_file_id",
+    "sheet_row",
+    "platform",
+    "username",
+    "name",
+    "followers",
+    "avg_views",
+    "tier",
+    "gender",
+    "city",
+    "categories_raw",
+    "languages_raw",
+    "email",
+    "phone",
+}
 
 
 #: Fields on CampaignCreatorLinkRecord that belong to Creator (or to routing)

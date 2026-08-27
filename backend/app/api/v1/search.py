@@ -1,12 +1,12 @@
 from datetime import datetime, time as dtime
 import asyncio
 from collections import defaultdict
-from typing import Awaitable, Callable, Any, Iterable, Sequence
+from typing import Awaitable, Callable, Any, Iterable, Optional, Sequence
 from uuid import UUID
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
-from sqlmodel import select, col, or_, func, exists, union, Column
+from sqlmodel import select, col, and_, or_, func, exists, union, Column
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import (
@@ -20,6 +20,7 @@ from app.core.config import (
 from app.core.cache import cached, cache_key
 from app.core.db import Session_Factory
 from app.api.deps import SessionDep, CurrentUser, RedisDep
+from app.models.enums import PlatformChoices
 from app.schemas.search import (
     SearchResponse,
     CreatorRow,
@@ -34,6 +35,7 @@ from app.schemas.search import (
     PitchSearchRequest,
 )
 from app.services.search import Timer, text_clause, count_of, clamp_page, tokens
+from app.services.profile_link import ProfileLink, looks_like_link, parse_profile_link
 from app.models import (
     Creator,
     Pitch,
@@ -93,6 +95,28 @@ def _has_any_language(names: Sequence[str]):
     )
 
 
+def _on_campaign(live_only: bool):
+    """EXISTS a CampaignCreatorLink for this creator.
+
+    `live_only` narrows it to campaigns that actually ran. A dropped link means
+    the creator was listed and then pulled, which is not the same as having
+    worked -- detail.py treats it that way everywhere else too.
+
+    The composite PK (creator_id, campaign_id) leads with creator_id, so this
+    subquery is index-covered.
+    """
+    clause = select(CampaignCreatorLink.creator_id).where(
+        col(CampaignCreatorLink.creator_id) == Creator.id
+    )
+    if live_only:
+        clause = clause.where(col(CampaignCreatorLink.is_dropped).is_(False))
+    return exists(clause.correlate(Creator))
+
+
+def _has_value(column) -> Any:
+    return and_(col(column).is_not(None), col(column) != "")
+
+
 def _category_token(token: str):
     return _tag_exists(
         CategoryCreatorLink,
@@ -145,6 +169,47 @@ async def _tags_for_creators(
     return cats, langs
 
 
+async def _creators_by_username(
+    session: AsyncSession,
+    username: str,
+    platform: Optional[PlatformChoices],
+    limit: int,
+) -> tuple[int, list[CreatorRow]]:
+    """Creators whose handle is exactly `username`.
+
+    Exact, not ILIKE: the ingest parser lowercases every handle before writing
+    it, so an extracted handle either matches or the creator is not in the
+    database. That also makes this a unique-index hit rather than a trigram
+    scan. The same handle can legitimately exist on two platforms, so the
+    platform narrows rather than being required.
+    """
+    stmnt = select(Creator).where(col(Creator.username) == username)
+    if platform is not None:
+        stmnt = stmnt.where(col(Creator.platform) == platform)
+
+    total = await count_of(session, stmnt)
+    rows = (
+        await session.exec(
+            stmnt.order_by(col(Creator.followers).desc().nullslast()).limit(limit)
+        )
+    ).all()
+    cats, langs = await _tags_for_creators(session, (r.id for r in rows))
+    return total, [
+        CreatorRow.from_creator(
+            r, categories=cats.get(r.id, []), languages=langs.get(r.id, [])
+        )
+        for r in rows
+    ]
+
+
+def _link_payload(link: ProfileLink) -> dict:
+    return {
+        "detected": True,
+        "platform": link.platform.value if link.platform else None,
+        "username": link.username,
+    }
+
+
 # --- full search ---
 
 
@@ -184,12 +249,21 @@ async def search_creators(
         if lang_clause is not None:
             stmnt = stmnt.where(lang_clause)
         if req.has_email:
-            stmnt = stmnt.where(
-                col(Creator.email).is_not(None), col(Creator.email) != ""
-            )
+            stmnt = stmnt.where(_has_value(Creator.email))
         if req.has_phone:
+            stmnt = stmnt.where(_has_value(Creator.phone))
+        if req.has_contact:
             stmnt = stmnt.where(
-                col(Creator.phone).is_not(None), col(Creator.phone) != ""
+                or_(_has_value(Creator.email), _has_value(Creator.phone))
+            )
+
+        if req.campaign_involvement == "worked":
+            stmnt = stmnt.where(_on_campaign(live_only=True))
+        elif req.campaign_involvement == "never":
+            stmnt = stmnt.where(~_on_campaign(live_only=False))
+        elif req.campaign_involvement == "dropped_only":
+            stmnt = stmnt.where(
+                _on_campaign(live_only=False), ~_on_campaign(live_only=True)
             )
 
         if req.min_followers is not None:
@@ -753,6 +827,43 @@ async def global_search(
             async with Session_Factory() as session:
                 return await handler(req, session, user)
 
+        def envelope(took_ms, groups, profile_link=None):
+            return {
+                "query": q,
+                "took_ms": took_ms,
+                "profile_link": profile_link,
+                "groups": {
+                    name: {"total": total, "items": items}
+                    for name, (total, items) in groups.items()
+                },
+            }
+
+        # Someone pasted a profile URL. Fanning that out to brands and campaigns
+        # would ILIKE a whole URL against display names -- pure noise -- so this
+        # answers the question actually being asked: who is this handle?
+        if looks_like_link(q):
+            link = parse_profile_link(q)
+            with Timer() as t:
+                if link.username:
+                    async with Session_Factory() as session:
+                        total, items = await _creators_by_username(
+                            session, link.username, link.platform, limit
+                        )
+                else:
+                    # A link we cannot read is not a search term either. No
+                    # fuzzy fallback: "no results" is the honest answer.
+                    total, items = 0, []
+            return envelope(
+                t.ms,
+                {
+                    "creators": (total, [r.model_dump(mode="json") for r in items]),
+                    "brands": (0, []),
+                    "campaigns": (0, []),
+                    "pitches": (0, []),
+                },
+                profile_link=_link_payload(link),
+            )
+
         with Timer() as t:
             creators, brands, campaigns, pitches = await asyncio.gather(
                 run(
@@ -781,14 +892,10 @@ async def global_search(
                 ),
             )
 
-        return {
-            "query": q,
-            "took_ms": t.ms,
-            "groups": {
-                name: {
-                    "total": res.total,
-                    "items": [r.model_dump(mode="json") for r in res.rows],
-                }
+        return envelope(
+            t.ms,
+            {
+                name: (res.total, [r.model_dump(mode="json") for r in res.rows])
                 for name, res in (
                     ("creators", creators),
                     ("brands", brands),
@@ -796,7 +903,7 @@ async def global_search(
                     ("pitches", pitches),
                 )
             },
-        }
+        )
 
     return await cached(
         redis,
@@ -818,6 +925,29 @@ async def suggest(
     limit: int = Query(default=8, ge=1, le=20),
 ):
     async def produce():
+        # A pasted link has to work here too. Without this the grouped results
+        # find the creator while the dropdown above them stays empty, which
+        # reads as the box being broken.
+        if looks_like_link(q):
+            link = parse_profile_link(q)
+            if not link.username:
+                return {"query": q, "suggestions": []}
+            _, rows = await _creators_by_username(
+                session, link.username, link.platform, limit
+            )
+            return {
+                "query": q,
+                "suggestions": [
+                    {
+                        "type": "creators",
+                        "id": str(c.id),
+                        "label": c.name,
+                        "sublabel": f"@{c.username} · {c.platform.value}",
+                    }
+                    for c in rows
+                ],
+            }
+
         prefix = f"{q.strip()}%"
         per = max(1, limit // 4)
         out = []
@@ -840,7 +970,7 @@ async def suggest(
                     "type": "creators",
                     "id": str(c.id),
                     "label": c.name,
-                    "sublabel": f"@{c.username} · {c.platform}",
+                    "sublabel": f"@{c.username} · {c.platform.value}",
                 }
             )
 

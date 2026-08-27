@@ -11,8 +11,6 @@ from .link_models import CategoryCreatorLink, LanguageCreatorLink, TagCreatorLin
 from .enums import PlatformChoices, TierChoices
 
 if TYPE_CHECKING:
-    # This runs ONLY during static analysis/IDE linting.
-    # Python completely ignores this block at runtime, breaking the circular import.
     from .category import Category
     from .language import Language
     from .tag import Tag
@@ -32,13 +30,21 @@ class Creator(SQLModel, table=True):
     tier: TierChoices = Field(sa_type=SaEnum(TierChoices))
     avg_views: Optional[int] = Field(nullable=True)
 
-    # CATEGORIES
+    # CATEGORIES / LANGUAGES
+    #
+    # The relationships are the truth: they are what search filters on, what the
+    # facets are built from, and what both the list and detail views render.
+    #
+    # The `*_raw` columns keep the sheet's original text as an audit trail and
+    # nothing reads them. They are written once when the creator is inserted and
+    # never revised, so the moment a creator appears on a second sheet they
+    # disagree with the links -- which is exactly how they came to be showing
+    # wrong values in the search table.
     categories: list["Category"] = Relationship(
         back_populates="creators", link_model=CategoryCreatorLink
     )
     categories_raw: str
 
-    # LANGUAGES
     languages: list["Language"] = Relationship(
         back_populates="creators", link_model=LanguageCreatorLink
     )
@@ -77,18 +83,6 @@ class Creator(SQLModel, table=True):
             "username",
             postgresql_using="gin",
             postgresql_ops={"username": "gin_trgm_ops"},
-        ),
-        Index(
-            "ix_creator_cats_trgm",
-            "categories_raw",
-            postgresql_using="gin",
-            postgresql_ops={"categories_raw": "gin_trgm_ops"},
-        ),
-        Index(
-            "ix_creator_langs_trgm",
-            "languages_raw",
-            postgresql_using="gin",
-            postgresql_ops={"languages_raw": "gin_trgm_ops"},
         ),
         Index(
             "ix_creator_city_trgm",

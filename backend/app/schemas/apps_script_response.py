@@ -41,6 +41,10 @@ class PitchCreatorRow(BaseModel):
     sheet: str
     platform: str
     sheet_row: Any = None
+    #: Declared only so a rejection can name the version of the file that was
+    #: uploaded. Nothing branches on it -- the v2/v3.5 decision is made on which
+    #: cost fields carry values, which is true even when this is absent.
+    template_version: Any = None
     name: str
     profile_link: str = ""
     followers: Any = None
@@ -65,10 +69,31 @@ class PitchCreatorRow(BaseModel):
     ad_promo_rights: Any = ""
     boosting: Any = ""
     payment_terms: Any = ""
-    cost_with_deliverables: Any = None
-    cost_with_deliverables_usage: Any = None
+
+    # --- costs, as the v3.5 sheet splits them ---------------------------------
+    # Instagram
+    reel_cost: Any = None
+    reel_story_cost: Any = None
+    video_story_cost: Any = None
+    static_carousel_cost: Any = None
+    # YouTube
+    short_form_videos_cost: Any = None
+    reshare_short_form_videos_cost: Any = None
+    dedicated_video_cost: Any = None
+    integrated_video_cost: Any = None
+    # common
+    rights_cost: Any = None
+    boosting_cost: Any = None
+    package_cost: Any = None
     final_cost: Any = None
     brand_cost: Any = None
+
+    # --- v2 columns, kept only to recognise and refuse an old export ----------
+    # The parser used to derive package_cost and rights_cost from these two. It
+    # no longer does, so a v2 file would otherwise write zero into every cost
+    # column without a word about it.
+    cost_with_deliverables: Any = None
+    cost_with_deliverables_usage: Any = None
 
 
 class CampaignCreatorRow(BaseModel):

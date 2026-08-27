@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Optional
+from typing import Generic, Literal, TypeVar, Optional
 from uuid import UUID
 from datetime import date, datetime
 
@@ -49,6 +49,13 @@ _TAG_FIELDS = frozenset({"categories", "languages"})
 # --- Creators ---
 
 
+#: How a creator relates to the campaigns they appear on.
+#:   worked       -- on at least one campaign that actually ran
+#:   never        -- on no campaign at all
+#:   dropped_only -- only ever on campaigns they were dropped from
+CampaignInvolvement = Literal["worked", "never", "dropped_only"]
+
+
 class CreatorSearchRequest(Paging):
     text: Optional[str] = None
     platforms: list[PlatformChoices] = []
@@ -59,6 +66,10 @@ class CreatorSearchRequest(Paging):
     cities: list[str] = []
     has_email: bool = False
     has_phone: bool = False
+    #: "at least one of the two". has_email and has_phone each add their own
+    #: clause, so ticking both means email AND phone -- this is the OR.
+    has_contact: bool = False
+    campaign_involvement: Optional[CampaignInvolvement] = None
     min_followers: Optional[int] = None
     max_followers: Optional[int] = None
     min_avg_views: Optional[int] = None
@@ -84,10 +95,12 @@ class CreatorRow(BaseModel):
     avg_views: Optional[int] = None
     city: Optional[str] = None
     gender: Optional[str] = None
+    #: Resolved through the category / language tables. The creator row still
+    #: carries the sheet's raw text, but it is an audit trail, not a display
+    #: value: it is written once at insert and never revised, so it drifts from
+    #: the links as soon as a creator turns up on a second sheet.
     categories: list[str] = []
     languages: list[str] = []
-    categories_raw: Optional[str] = None
-    languages_raw: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
 
