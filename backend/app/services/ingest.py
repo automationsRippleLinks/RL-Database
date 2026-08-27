@@ -1091,7 +1091,7 @@ class Ingest:
             for i in range(0, len(rows), chunk):
                 batch = rows[i : i + chunk]
                 stmt = pg_insert(CampaignCreatorLink).values(batch)
-                await session.execute(
+                await session.exec(
                     stmt.on_conflict_do_update(
                         index_elements=["creator_id", "campaign_id"],
                         set_={c: getattr(stmt.excluded, c) for c in mutable},
