@@ -12,6 +12,7 @@ import { toWireTier } from '@/lib/enums';
 import type {
   BrandSearchRequest,
   BrandSort,
+  CampaignInvolvement,
   CampaignSearchRequest,
   CampaignSort,
   CampaignStatus,
@@ -96,6 +97,12 @@ export function useCreatorRequest(): CreatorSearchRequest {
       cities: url.getList('city'),
       has_email: url.getBool('has_email'),
       has_phone: url.getBool('has_phone'),
+      // Inverted on purpose. This filter defaults to ON, and setParams drops
+      // `false` from the URL, so the only encodable state is the non-default
+      // one: `no_contact=1` means the box was unticked.
+      has_contact: !url.getBool('no_contact'),
+      campaign_involvement:
+        (url.getString('in_campaign') as CampaignInvolvement) || null,
       min_followers: url.getNumber('min_followers'),
       max_followers: url.getNumber('max_followers'),
       min_avg_views: url.getNumber('min_views'),
@@ -181,7 +188,8 @@ export function usePitchRequest(): PitchSearchRequest {
 export const SCOPE_FILTER_KEYS: Record<string, string[]> = {
   creators: [
     'platform', 'tier', 'gender', 'category', 'language', 'city',
-    'has_email', 'has_phone', 'min_followers', 'max_followers', 'min_views', 'max_views',
+    'has_email', 'has_phone', 'no_contact', 'in_campaign',
+    'min_followers', 'max_followers', 'min_views', 'max_views',
   ],
   brands: ['b_org', 'b_platform', 'has_company', 'has_gstin', 'min_campaigns', 'min_pitches'],
   campaigns: ['status', 'report_status', 'month', 'year', 'manager', 'brand_id', 'start_from', 'start_to'],
@@ -191,12 +199,22 @@ export const SCOPE_FILTER_KEYS: Record<string, string[]> = {
   ],
 };
 
+/**
+ * Filters whose resting state isn't "off". Without this a default-on filter
+ * would pin the "N active" badge at 1 forever and make "reset" look broken.
+ */
+const FILTER_DEFAULTS: Record<string, Record<string, unknown>> = {
+  creators: { has_contact: true },
+};
+
 /** How many filters are active, for the "N active" badge on the filter panel. */
-export function countActiveFilters(request: object): number {
+export function countActiveFilters(request: object, scope?: string): number {
+  const defaults: Record<string, unknown> = scope ? (FILTER_DEFAULTS[scope] ?? {}) : {};
   let count = 0;
   for (const [key, value] of Object.entries(request)) {
     if (['text', 'sort', 'page', 'page_size'].includes(key)) continue;
-    if (Array.isArray(value)) count += value.length ? 1 : 0;
+    if (key in defaults) count += value === defaults[key] ? 0 : 1;
+    else if (Array.isArray(value)) count += value.length ? 1 : 0;
     else if (typeof value === 'boolean') count += value ? 1 : 0;
     else if (value !== null && value !== undefined && value !== '') count += 1;
   }

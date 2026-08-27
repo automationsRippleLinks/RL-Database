@@ -124,7 +124,7 @@ export function RequirementBadge({ requirement }: { requirement: PitchRequiremen
   return <Badge variant="outline">{PITCH_REQUIREMENT_LABELS[requirement] ?? requirement}</Badge>;
 }
 
-/** Comma-separated raw strings (categories_raw, languages_raw) as chips. */
+/** A list of short labels as chips, overflowing into a “+N” counter. */
 export function ChipList({ items, max = 3 }: { items: string[]; max?: number }) {
   if (!items.length) return <span className="text-muted-foreground">—</span>;
   const shown = items.slice(0, max);

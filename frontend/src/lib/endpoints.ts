@@ -12,6 +12,7 @@ import {
   mockFacets,
   mockIngest,
   mockSearch,
+  mockTaxonomy,
 } from "./mocks/handlers";
 import type {
   BrandDetail,
@@ -38,6 +39,9 @@ import type {
   SessionUser,
   SignUpRequest,
   SuggestResponse,
+  TaxonomyKind,
+  TaxonomyList,
+  TaxonomyTerm,
 } from "@/types/api";
 
 interface Ctx {
@@ -191,6 +195,34 @@ export const facetsApi = {
     USE_MOCKS
       ? mockFacets.pitches(signal)
       : api.get<PitchFacets>("/search/facets/pitches", { signal }),
+};
+
+// ─── taxonomy ────────────────────────────────────────────────────────────────
+//
+// Ingest rejects any category or language it doesn't already know, so these are
+// how the vocabularies get maintained. Writes need the ingest permission.
+
+export const taxonomyApi = {
+  list: (kind: TaxonomyKind, { signal }: Ctx = {}): Promise<TaxonomyList> =>
+    USE_MOCKS
+      ? mockTaxonomy.list(kind, signal)
+      : api.get<TaxonomyList>(`/taxonomy/${kind}`, { signal }),
+
+  create: (kind: TaxonomyKind, name: string): Promise<TaxonomyTerm> =>
+    USE_MOCKS
+      ? mockTaxonomy.create(kind, name)
+      : api.post<TaxonomyTerm>(`/taxonomy/${kind}`, { name }),
+
+  rename: (kind: TaxonomyKind, id: number, name: string): Promise<TaxonomyTerm> =>
+    USE_MOCKS
+      ? mockTaxonomy.rename(kind, id, name)
+      : api.patch<TaxonomyTerm>(`/taxonomy/${kind}/${id}`, { name }),
+
+  /** 409 when creators still reference the term — the detail names the count. */
+  remove: (kind: TaxonomyKind, id: number): Promise<void> =>
+    USE_MOCKS
+      ? mockTaxonomy.remove(kind, id)
+      : api.del(`/taxonomy/${kind}/${id}`),
 };
 
 // ─── detail ──────────────────────────────────────────────────────────────────

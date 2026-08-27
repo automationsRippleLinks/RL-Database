@@ -24,8 +24,9 @@ const CSV_COLUMNS = [
   { key: 'avg_views' as const, header: 'Avg views' },
   { key: 'city' as const, header: 'City' },
   { key: 'gender' as const, header: 'Gender' },
-  { key: 'categories_raw' as const, header: 'Categories' },
-  { key: 'languages_raw' as const, header: 'Languages' },
+  // toCsv joins array cells with "; " (lib/csv.ts).
+  { key: 'categories' as const, header: 'Categories' },
+  { key: 'languages' as const, header: 'Languages' },
   { key: 'email' as const, header: 'Email' },
   { key: 'phone' as const, header: 'Phone' },
 ];
@@ -42,7 +43,7 @@ export function CreatorSearchPage() {
   const searchQuery = useCreatorSearch(request);
 
   const result = searchQuery.data;
-  const activeFilterCount = countActiveFilters(request);
+  const activeFilterCount = countActiveFilters(request, 'creators');
 
   const resetFilters = () => {
     url.setParams(
@@ -122,11 +123,9 @@ export function CreatorSearchPage() {
 }
 
 /**
- * When creator search comes back empty with no filters applied, the likely cause
- * isn't the query — it's that nothing has ever populated the table. The
- * pitch_creator / campaign_creator ingest types are declared in the backend's
- * IngestType enum but have no client, parser or ingest method, so `creator` has no
- * data source at all. Saying so beats a bare "no results" that reads as a bug.
+ * An empty table with no filters applied usually isn't a bad query — it's that
+ * nothing has been ingested yet. Saying which upload fills this table beats a
+ * bare "no results" that reads as a bug.
  */
 function CreatorEmptyState({ hasQuery }: { hasQuery: boolean }) {
   if (hasQuery) {
@@ -149,9 +148,8 @@ function CreatorEmptyState({ hasQuery }: { hasQuery: boolean }) {
         ) : (
           <>
             Creator rows arrive from the <code className="font-mono">pitch_creator</code> and{' '}
-            <code className="font-mono">campaign_creator</code> ingest sources, which the backend
-            declares but has not implemented yet. Until one of those runs, this table stays empty —
-            see <code className="font-mono">PROPOSED_BACKEND_CHANGES.md</code>.
+            <code className="font-mono">campaign_creator</code> uploads on the Ingest page. Until
+            one of those runs, this table stays empty.
           </>
         )
       }

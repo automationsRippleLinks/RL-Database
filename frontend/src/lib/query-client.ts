@@ -35,6 +35,7 @@ export const queryKeys = {
   brandDetail: (name: string) => ['brand', name] as const,
   campaignDetail: (id: string) => ['campaign', id] as const,
   pitchDetail: (id: string) => ['pitch', id] as const,
+  taxonomy: (kind: string) => ['taxonomy', kind] as const,
   ingestSources: ['ingest', 'sources'] as const,
   ingestJobs: ['ingest', 'jobs'] as const,
   ingestJob: (jobId: string) => ['ingest', 'job', jobId] as const,

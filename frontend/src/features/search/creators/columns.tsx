@@ -1,7 +1,7 @@
 import type { Column } from '@/components/DataTable';
 import { ChipList, ExternalLink, PlatformBadge, TierBadge } from '@/components/bits';
 import { MaskedContact } from '@/components/MaskedContact';
-import { formatNumber, profileUrlFor, splitRawList } from '@/lib/format';
+import { formatNumber, profileUrlFor } from '@/lib/format';
 import type { CreatorRow } from '@/types/api';
 
 /** The 13 columns the Streamlit table established, plus masked contact handling. */
@@ -34,15 +34,19 @@ export const creatorColumns: Column<CreatorRow>[] = [
   },
   { id: 'city', header: 'City', cell: (row) => row.city ?? '—' },
   { id: 'gender', header: 'Gender', cell: (row) => row.gender ?? '—' },
+  // The normalized arrays, same as the detail page. These used to render the
+  // `*_raw` strings, which is why the table and the detail view disagreed: raw
+  // is written once when the creator is inserted and never updated, while the
+  // links accumulate across every sheet the creator appears on.
   {
     id: 'categories',
     header: 'Categories',
-    cell: (row) => <ChipList items={splitRawList(row.categories_raw)} max={2} />,
+    cell: (row) => <ChipList items={row.categories} max={2} />,
   },
   {
     id: 'languages',
     header: 'Languages',
-    cell: (row) => <ChipList items={splitRawList(row.languages_raw)} max={2} />,
+    cell: (row) => <ChipList items={row.languages} max={2} />,
   },
   {
     id: 'email',

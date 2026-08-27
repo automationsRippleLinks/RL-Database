@@ -37,6 +37,9 @@ const PitchDetailPage = lazy(() =>
 const IngestPage = lazy(() =>
   import('./features/ingest/IngestPage').then((m) => ({ default: m.IngestPage })),
 );
+const TaxonomyPage = lazy(() =>
+  import('./features/taxonomy/TaxonomyPage').then((m) => ({ default: m.TaxonomyPage })),
+);
 
 export function AppRoutes() {
   return (
@@ -76,8 +79,11 @@ export function AppRoutes() {
           <Route path="campaigns/:campaignId" element={<CampaignDetailPage />} />
           <Route path="pitches/:pitchId" element={<PitchDetailPage />} />
 
+          {/* Editing the taxonomy decides which uploads are accepted at all, so
+              it sits behind the same permission as ingest itself. */}
           <Route element={<RequireIngestPermission />}>
             <Route path="ingest" element={<IngestPage />} />
+            <Route path="taxonomy" element={<TaxonomyPage />} />
           </Route>
 
           <Route

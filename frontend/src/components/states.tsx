@@ -28,9 +28,8 @@ export function EmptyState({
 }
 
 /**
- * Distinguishes "this endpoint isn't built yet" from a real failure. Almost the
- * whole API surface this app needs is unimplemented today, so a bare "something
- * went wrong" would be actively misleading during the backend build-out.
+ * Distinguishes "this endpoint isn't built yet" from a real failure, so a
+ * missing route doesn't read as a bug in the screen showing it.
  */
 export function ErrorState({
   error,
@@ -71,10 +70,9 @@ export function ErrorState({
     title = 'Endpoint not implemented yet';
     description = (
       <>
-        The backend has no <code className="font-mono">{apiError?.path}</code> route. See{' '}
-        <code className="font-mono">PROPOSED_BACKEND_CHANGES.md</code> for the contract this screen
-        expects, or set <code className="font-mono">VITE_USE_MOCKS=true</code> to preview it with
-        fixtures.
+        The backend has no <code className="font-mono">{apiError?.path}</code> route. Check that it
+        is running the same version as this frontend, or set{' '}
+        <code className="font-mono">VITE_USE_MOCKS=true</code> to preview this screen with fixtures.
       </>
     );
   }

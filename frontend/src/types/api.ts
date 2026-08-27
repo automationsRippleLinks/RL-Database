@@ -1,10 +1,9 @@
 /**
  * The API contract this frontend codes against.
  *
- * IMPORTANT: almost none of these endpoints exist in the backend yet. This file
- * is the authoritative statement of what the frontend needs; PROPOSED_BACKEND_CHANGES.md
- * at the repo root is its prose companion. Field names mirror the SQLModel columns in
- * backend/app/models/ so the backend work stays mechanical.
+ * Field names mirror the SQLModel columns in backend/app/models/, so a change on
+ * either side is mechanical to mirror on the other. The upload JSON shapes are
+ * documented separately in docs/ingest-json-formats.md.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -129,8 +128,6 @@ export interface SearchResponse<Row> extends Paging {
   took_ms?: number;
 }
 
-export type SortDir = 'asc' | 'desc';
-
 // ── Creators ────────────────────────────────────────────────────────────────
 
 export type CreatorSort =
@@ -142,6 +139,13 @@ export type CreatorSort =
   | 'name_asc'
   | 'name_desc';
 
+/**
+ * How a creator relates to the campaigns they appear on. `worked` excludes
+ * campaigns they were dropped from, which is how the rest of the app reads
+ * `is_dropped` too.
+ */
+export type CampaignInvolvement = 'worked' | 'never' | 'dropped_only';
+
 export interface CreatorFilters {
   platforms: Platform[];
   tiers: Tier[];
@@ -151,6 +155,13 @@ export interface CreatorFilters {
   cities: string[];
   has_email: boolean;
   has_phone: boolean;
+  /**
+   * Email OR phone. `has_email` and `has_phone` each add their own clause, so
+   * ticking both means email AND phone -- this is the "at least one" case, and
+   * it is the only creator filter that defaults to on.
+   */
+  has_contact: boolean;
+  campaign_involvement: CampaignInvolvement | null;
   min_followers: number | null;
   max_followers: number | null;
   min_avg_views: number | null;
@@ -172,8 +183,15 @@ export interface CreatorRow {
   avg_views: number | null;
   city: string | null;
   gender: string | null;
-  categories_raw: string | null;
-  languages_raw: string | null;
+  /**
+   * Resolved through the category / language tables, and identical on the list
+   * and detail endpoints. The creator row still has the sheet's raw text in the
+   * database, but it is an audit trail: written once at insert and never
+   * revised, so it drifts the moment a creator turns up on a second sheet. It
+   * is deliberately not on the wire, so nothing can render it by accident.
+   */
+  categories: string[];
+  languages: string[];
   email: string | null;
   phone: string | null;
   /**
@@ -214,8 +232,6 @@ export interface CreatorCampaignSummary {
 export interface CreatorDetail extends CreatorRow {
   additional_emails: string[];
   additional_phones: string[];
-  categories: string[];
-  languages: string[];
   pitches: CreatorPitchSummary[];
   campaigns: CreatorCampaignSummary[];
 }
@@ -520,9 +536,24 @@ export interface SearchGroup<Row> {
   items: Row[];
 }
 
+/**
+ * Set when the query was a pasted profile URL rather than a search term.
+ *
+ * `username` is null when the link couldn't be read at all, which is a
+ * different failure from "read fine, nobody has that handle" -- the UI says so,
+ * because the fix differs.
+ */
+export interface ProfileLinkMatch {
+  detected: true;
+  platform: Platform | null;
+  username: string | null;
+}
+
 export interface GlobalSearchResponse {
   query: string;
   took_ms: number;
+  /** null for an ordinary text query. */
+  profile_link: ProfileLinkMatch | null;
   groups: {
     creators: SearchGroup<CreatorRow>;
     brands: SearchGroup<BrandRow>;
@@ -597,6 +628,28 @@ export interface FacetsByScope {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Taxonomy
+//
+// Ingest no longer invents categories or languages -- a name that isn't in the
+// table rejects the whole upload -- so these vocabularies have to be
+// maintainable from the app.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type TaxonomyKind = 'categories' | 'languages';
+
+export interface TaxonomyTerm {
+  id: number;
+  name: string;
+  /** Creators linked to this term. A term in use cannot be deleted. */
+  creator_count: number;
+}
+
+export interface TaxonomyList {
+  kind: TaxonomyKind;
+  terms: TaxonomyTerm[];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Ingestion
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -627,12 +680,22 @@ export type IngestJobStatus =
   | 'failed';
 
 export interface IngestRowError {
-  /** 0-based index into the submitted array. */
+  /** Sheet row where the backend can work it out, else the index in the array. */
   row: number;
   field?: string | null;
   message: string;
-  /** Business key when resolvable, so an error is traceable back to the sheet. */
+  /**
+   * Machine-readable reason. `invalid_email`, `unknown_category`,
+   * `unknown_language` and `batch_rejected` are the blocking ones -- they mean
+   * nothing was written and the file has to be fixed.
+   */
   code?: string | null;
+  /**
+   * Warnings are advisory: the row still went in, with something coerced. They
+   * outnumber real errors on a typical export, so they must not be rendered the
+   * same way.
+   */
+  severity?: 'error' | 'warning';
 }
 
 export interface IngestJob {
@@ -650,6 +713,8 @@ export interface IngestJob {
     updated: number;
     skipped: number;
     failed: number;
+    /** Errors beyond the 500 the backend stores per job. */
+    errors_truncated?: number;
   };
   errors: IngestRowError[];
   message: string | null;

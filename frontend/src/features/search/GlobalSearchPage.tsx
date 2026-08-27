@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Building2, FileText, Megaphone, Search, Users } from 'lucide-react';
+import { ArrowRight, Building2, FileText, Link2, Link2Off, Megaphone, Search, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTable, type Column } from '@/components/DataTable';
@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SectionTitle } from '@/components/bits';
 import { formatNumber, pluralise } from '@/lib/format';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
-import type { SearchGroup, SearchScope } from '@/types/api';
+import type { ProfileLinkMatch, SearchGroup, SearchScope } from '@/types/api';
 import { MIN_GLOBAL_QUERY_LENGTH, useGlobalSearch } from './queries';
 import { creatorColumns } from './creators/columns';
 import { brandColumns } from './brands/columns';
@@ -72,11 +72,15 @@ export function GlobalSearchPage() {
 
   if (!data) return null;
 
-  const { groups } = data;
+  const { groups, profile_link: link } = data;
   const totalHits =
     groups.creators.total + groups.brands.total + groups.campaigns.total + groups.pitches.total;
 
   if (totalHits === 0) {
+    // Three different failures, three different fixes. Collapsing them into one
+    // "nothing matches" would leave someone re-pasting a link that was never
+    // readable in the first place.
+    if (link) return <NoLinkMatch link={link} />;
     return (
       <EmptyState
         title={`Nothing matches “${trimmed}”`}
@@ -87,10 +91,21 @@ export function GlobalSearchPage() {
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-muted-foreground tnum">
-        {formatNumber(totalHits)} {pluralise(totalHits, 'match', 'matches')} across four entities in{' '}
-        {data.took_ms} ms
-      </p>
+      {link?.username ? (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Link2 className="size-3.5 shrink-0" />
+          <span>
+            Read that link as the handle{' '}
+            <span className="font-medium text-foreground">@{link.username}</span>
+            {link.platform ? ` on ${link.platform}` : ''}, and searched creators for it.
+          </span>
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground tnum">
+          {formatNumber(totalHits)} {pluralise(totalHits, 'match', 'matches')} across four entities in{' '}
+          {data.took_ms} ms
+        </p>
+      )}
 
       <ResultGroup
         scope="creators"
@@ -140,6 +155,42 @@ export function GlobalSearchPage() {
         isFetching={isFetching}
       />
     </div>
+  );
+}
+
+/**
+ * A pasted link that produced nothing. `username === null` means the URL itself
+ * couldn't be read, which is a different problem from a handle nobody has.
+ */
+function NoLinkMatch({ link }: { link: ProfileLinkMatch }) {
+  if (!link.username) {
+    return (
+      <EmptyState
+        icon={<Link2Off className="size-7" />}
+        title="That link can't be read"
+        description={
+          <>
+            Profile URLs from Instagram, YouTube, LinkedIn and Facebook work — something like{' '}
+            <code className="font-mono">instagram.com/their_handle</code>. A post or video link
+            has no handle in it, so there's nothing to look up.
+          </>
+        }
+      />
+    );
+  }
+
+  return (
+    <EmptyState
+      icon={<Link2Off className="size-7" />}
+      title={`No creator with the handle “@${link.username}”`}
+      description={
+        <>
+          The link read fine{link.platform ? ` as a ${link.platform} profile` : ''}, but nobody in
+          the database has that handle. They arrive with the pitch and campaign uploads — if this
+          creator should be here, that sheet hasn't been ingested yet.
+        </>
+      }
+    />
   );
 }
 

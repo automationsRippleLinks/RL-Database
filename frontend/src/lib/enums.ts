@@ -54,15 +54,19 @@ export const TIER_LABELS: Record<Tier, string> = {
   '': 'Unspecified',
 };
 
-/** Rough follower bands, shown as a hint next to the tier filter. */
+/**
+ * The follower bands tier is computed from — see `tier_for` in
+ * backend/app/services/parser.py. These are the real thresholds, not a rough
+ * guide: tier is derived from `followers` at ingest, never read off the sheet.
+ */
 export const TIER_HINTS: Record<Tier, string> = {
-  nano: '< 10K',
-  micro: '10K – 100K',
-  'mid-tier': '100K – 500K',
-  macro: '500K – 1M',
+  nano: '< 20K',
+  micro: '20K – 100K',
+  'mid-tier': '100K – 250K',
+  macro: '250K – 1M',
   mega: '1M +',
   celeb: 'Public figure',
-  '': '—',
+  '': 'No follower count',
 };
 
 export const CAMPAIGN_STATUSES: CampaignStatus[] = ['wip', 'completed', 'on hold', 'scrapped'];

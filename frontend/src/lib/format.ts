@@ -142,15 +142,6 @@ export function maskPhone(phone: string): string {
   return `${'•'.repeat(Math.max(digits.length - 4, 3))}${digits.slice(-4)}`;
 }
 
-/** "fitness, lifestyle , travel" → ["fitness", "lifestyle", "travel"] */
-export function splitRawList(raw: string | null | undefined): string[] {
-  if (!raw) return [];
-  return raw
-    .split(/[,/|]/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-}
-
 export function pluralise(count: number, singular: string, plural = `${singular}s`): string {
   return count === 1 ? singular : plural;
 }

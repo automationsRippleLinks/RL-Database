@@ -30,11 +30,15 @@ import type {
   PitchRow,
   PitchSearchRequest,
   Platform,
+  ProfileLinkMatch,
   SearchResponse,
   SessionUser,
   SignUpRequest,
   SuggestResponse,
   Suggestion,
+  TaxonomyKind,
+  TaxonomyList,
+  TaxonomyTerm,
   Tier,
 } from '@/types/api';
 import {
@@ -45,7 +49,6 @@ import {
   MOCK_BRANDS,
   MOCK_CAMPAIGNS,
   MOCK_CREATORS,
-  MOCK_CREATOR_EXTRAS,
   MOCK_PITCHES,
   PEOPLE,
   mockCampaignCreators,
@@ -53,7 +56,7 @@ import {
 } from './data';
 import { MONTHS } from '@/lib/enums';
 import { ApiError } from '@/lib/api-client';
-import { deriveProfileUrl, splitRawList } from '@/lib/format';
+import { deriveProfileUrl } from '@/lib/format';
 // The mock stands in for a server-side rule the real backend doesn't have yet, so it
 // reuses the client's threshold rather than declaring a second source of truth.
 import { MIN_PASSWORD_LENGTH } from '@/features/auth/PasswordFields';
@@ -348,9 +351,49 @@ function brandRefFacet(): BrandRef[] {
 // ─── creators ────────────────────────────────────────────────────────────────
 
 function creatorHaystack(c: CreatorRow): string {
-  return [c.name, c.username, c.city, c.gender, c.categories_raw, c.languages_raw]
+  return [c.name, c.username, c.city, c.gender, ...c.categories, ...c.languages]
     .filter(Boolean)
     .join(' ');
+}
+
+const MOCK_LINK_PLATFORMS: [string, Platform][] = [
+  ['instagram.', 'instagram'],
+  ['youtube.', 'youtube'],
+  ['youtu.be', 'youtube'],
+  ['linkedin.', 'linkedin'],
+  ['facebook.', 'facebook'],
+  ['fb.com', 'facebook'],
+];
+
+const MOCK_HANDLE_RE =
+  /(?:instagram|youtube|linkedin|facebook)\.[a-z.]+\/(?:in\/|@|channel\/|c\/|user\/)?([^/?#\s\\]+)/i;
+
+/** Mirrors backend/app/services/profile_link.py. Null for ordinary queries. */
+function parseMockProfileLink(query: string): ProfileLinkMatch | null {
+  const text = query.trim();
+  if (!text || /\s/.test(text)) return null;
+  if (!/^(?:https?:\/\/|www\.)|\.(?:com|net|org|be|in|co)(?:\/|$)/i.test(text)) return null;
+
+  const low = text.toLowerCase();
+  const platform = MOCK_LINK_PLATFORMS.find(([needle]) => low.includes(needle))?.[1] ?? null;
+  const match = MOCK_HANDLE_RE.exec(text);
+  return {
+    detected: true,
+    platform,
+    username: match ? match[1].replace(/^@/, '').toLowerCase() : null,
+  };
+}
+
+/**
+ * Which mock campaigns a creator "appears on". The fixtures have no campaign
+ * link table, so this stands in for one deterministically: about half of
+ * creators worked, a slice were only ever dropped, the rest never appeared.
+ */
+function mockInvolvement(c: CreatorRow): 'worked' | 'never' | 'dropped_only' {
+  const n = Number.parseInt(c.id.slice(-4), 16) % 10;
+  if (n < 5) return 'worked';
+  if (n < 7) return 'dropped_only';
+  return 'never';
 }
 
 function withProfileUrl(c: CreatorRow): CreatorRow {
@@ -364,16 +407,18 @@ function filterCreators(req: CreatorSearchRequest): CreatorRow[] {
     if (!anyOf(req.tiers, c.tier)) return false;
     if (req.genders.length && !req.genders.includes(c.gender ?? '')) return false;
     if (req.cities.length && !req.cities.includes(c.city ?? '')) return false;
-    if (req.categories.length) {
-      const own = splitRawList(c.categories_raw);
-      if (!req.categories.some((wanted) => own.includes(wanted))) return false;
+    if (req.categories.length && !req.categories.some((w) => c.categories.includes(w))) {
+      return false;
     }
-    if (req.languages.length) {
-      const own = splitRawList(c.languages_raw);
-      if (!req.languages.some((wanted) => own.includes(wanted))) return false;
+    if (req.languages.length && !req.languages.some((w) => c.languages.includes(w))) {
+      return false;
     }
     if (req.has_email && !c.email) return false;
     if (req.has_phone && !c.phone) return false;
+    if (req.has_contact && !c.email && !c.phone) return false;
+    if (req.campaign_involvement && mockInvolvement(c) !== req.campaign_involvement) {
+      return false;
+    }
     if (!inRange(c.followers, req.min_followers, req.max_followers)) return false;
     if (!inRange(c.avg_views, req.min_avg_views, req.max_avg_views)) return false;
     return true;
@@ -410,7 +455,7 @@ function relevance(c: CreatorRow, text: string): number {
   if (norm(c.username).startsWith(q)) score += 100;
   if (norm(c.name).startsWith(q)) score += 80;
   if (norm(c.name).includes(q)) score += 30;
-  if (norm(c.categories_raw).includes(q)) score += 15;
+  if (c.categories.some((cat) => norm(cat).includes(q))) score += 15;
   if (norm(c.city).includes(q)) score += 10;
   return score;
 }
@@ -534,6 +579,35 @@ export const mockSearch = {
   },
 
   global(query: string, limit: number, signal?: AbortSignal): Promise<GlobalSearchResponse> {
+    const took_ms = Math.round(8 + Math.random() * 40);
+
+    // Mirrors the backend: a pasted profile URL searches creators by handle
+    // only, and an unreadable link returns nothing rather than fuzzy matches.
+    const link = parseMockProfileLink(query);
+    if (link) {
+      const hits = link.username
+        ? MOCK_CREATORS.filter(
+            (c) =>
+              c.username === link.username &&
+              (link.platform === null || c.platform === link.platform),
+          ).map(withProfileUrl)
+        : [];
+      return delay(
+        {
+          query,
+          took_ms,
+          profile_link: link,
+          groups: {
+            creators: { total: hits.length, items: hits.slice(0, limit) },
+            brands: { total: 0, items: [] },
+            campaigns: { total: 0, items: [] },
+            pitches: { total: 0, items: [] },
+          },
+        },
+        signal,
+      );
+    }
+
     const creators = filterCreators({ ...emptyCreatorRequest(), text: query }).map(withProfileUrl);
     const brands = filterBrands({ ...emptyBrandRequest(), text: query });
     const campaigns = filterCampaigns({ ...emptyCampaignRequest(), text: query });
@@ -542,7 +616,8 @@ export const mockSearch = {
     return delay(
       {
         query,
-        took_ms: Math.round(8 + Math.random() * 40),
+        took_ms,
+        profile_link: null,
         groups: {
           creators: { total: creators.length, items: creators.slice(0, limit) },
           brands: { total: brands.length, items: brands.slice(0, limit) },
@@ -556,6 +631,32 @@ export const mockSearch = {
 
   suggest(query: string, limit: number, signal?: AbortSignal): Promise<SuggestResponse> {
     const suggestions: Suggestion[] = [];
+
+    // Without this the grouped results find the creator while the dropdown
+    // above them stays empty, which reads as the box being broken.
+    const link = parseMockProfileLink(query);
+    if (link) {
+      const hits = link.username
+        ? MOCK_CREATORS.filter(
+            (c) =>
+              c.username === link.username &&
+              (link.platform === null || c.platform === link.platform),
+          )
+        : [];
+      return delay(
+        {
+          query,
+          suggestions: hits.slice(0, limit).map((c) => ({
+            type: 'creators' as const,
+            id: c.id,
+            label: c.name,
+            sublabel: `@${c.username} · ${c.platform}`,
+          })),
+        },
+        signal,
+      );
+    }
+
     const q = query.toLowerCase();
 
     for (const c of MOCK_CREATORS) {
@@ -673,7 +774,6 @@ export const mockDetail = {
   creator(id: string, signal?: AbortSignal): Promise<CreatorDetail> {
     const base = MOCK_CREATORS.find((c) => c.id === id);
     if (!base) throw new ApiError({ status: 404, detail: 'Creator not found', path: `/creators/${id}` });
-    const extras = MOCK_CREATOR_EXTRAS.get(id)!;
 
     const pitches = MOCK_PITCHES.slice(0, 3).map((p) => ({
       pitch_id: p.id,
@@ -705,8 +805,6 @@ export const mockDetail = {
         ...withProfileUrl(base),
         additional_emails: base.email ? [`work.${base.email}`] : [],
         additional_phones: base.phone ? [base.phone.replace(/\d{2}$/, '11')] : [],
-        categories: extras.categories,
-        languages: extras.languages,
         pitches,
         campaigns,
       },
@@ -904,6 +1002,84 @@ export const mockIngest = {
   },
 };
 
+// ─── taxonomy ────────────────────────────────────────────────────────────────
+//
+// Backed by a module-level array so adds, renames and deletes persist for the
+// session -- a fixture that resets on every read would make the page look
+// broken rather than mocked.
+
+let nextTermId = 1000;
+
+const TAXONOMY_STORE: Record<TaxonomyKind, TaxonomyTerm[]> = {
+  categories: [...CATEGORIES].sort().map((name, i) => ({
+    id: 100 + i,
+    name,
+    creator_count: MOCK_CREATORS.filter((c) => c.categories.includes(name)).length,
+  })),
+  languages: [...LANGUAGES].sort().map((name, i) => ({
+    id: 200 + i,
+    name,
+    creator_count: MOCK_CREATORS.filter((c) => c.languages.includes(name)).length,
+  })),
+};
+
+function taxonomyConflict(kind: TaxonomyKind, name: string, excludeId?: number): void {
+  const clash = TAXONOMY_STORE[kind].some(
+    (t) => t.id !== excludeId && t.name.toLowerCase() === name.toLowerCase(),
+  );
+  if (clash) {
+    throw new ApiError({
+      status: 409,
+      detail: `A ${kind === 'categories' ? 'category' : 'language'} named "${name}" already exists`,
+      path: `/taxonomy/${kind}`,
+    });
+  }
+}
+
+function taxonomyTerm(kind: TaxonomyKind, id: number): TaxonomyTerm {
+  const term = TAXONOMY_STORE[kind].find((t) => t.id === id);
+  if (!term) {
+    throw new ApiError({ status: 404, detail: 'No such term', path: `/taxonomy/${kind}/${id}` });
+  }
+  return term;
+}
+
+export const mockTaxonomy = {
+  list(kind: TaxonomyKind, signal?: AbortSignal): Promise<TaxonomyList> {
+    const terms = [...TAXONOMY_STORE[kind]].sort(
+      (a, b) => b.creator_count - a.creator_count || a.name.localeCompare(b.name),
+    );
+    return delay({ kind, terms }, signal);
+  },
+
+  create(kind: TaxonomyKind, name: string): Promise<TaxonomyTerm> {
+    taxonomyConflict(kind, name);
+    const term: TaxonomyTerm = { id: nextTermId++, name, creator_count: 0 };
+    TAXONOMY_STORE[kind].push(term);
+    return delay(term);
+  },
+
+  rename(kind: TaxonomyKind, id: number, name: string): Promise<TaxonomyTerm> {
+    taxonomyConflict(kind, name, id);
+    const term = taxonomyTerm(kind, id);
+    term.name = name;
+    return delay(term);
+  },
+
+  remove(kind: TaxonomyKind, id: number): Promise<void> {
+    const term = taxonomyTerm(kind, id);
+    if (term.creator_count) {
+      throw new ApiError({
+        status: 409,
+        detail: `${term.creator_count} creators still use this term. Rename it instead.`,
+        path: `/taxonomy/${kind}/${id}`,
+      });
+    }
+    TAXONOMY_STORE[kind] = TAXONOMY_STORE[kind].filter((t) => t.id !== id);
+    return delay(undefined as void);
+  },
+};
+
 // ─── neutral request builders (also used by the real endpoints layer) ────────
 
 export function emptyCreatorRequest(): CreatorSearchRequest {
@@ -917,6 +1093,10 @@ export function emptyCreatorRequest(): CreatorSearchRequest {
     cities: [],
     has_email: false,
     has_phone: false,
+    // Neutral means "no filtering". The UI defaults this to true; a
+    // global-search fan-out must not silently hide contactless creators.
+    has_contact: false,
+    campaign_involvement: null,
     min_followers: null,
     max_followers: null,
     min_avg_views: null,

@@ -1,5 +1,6 @@
 import { FacetMultiSelect } from '@/components/FacetMultiSelect';
 import { RangeFilter } from '@/components/RangeFilter';
+import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import {
@@ -115,7 +116,33 @@ export function CreatorFilters({
         onChange={(min, max) => set({ min_views: min, max_views: max })}
       />
 
+      <div className="space-y-1.5">
+        <span className="text-xs font-medium text-muted-foreground">Worked in campaign?</span>
+        <Select
+          value={request.campaign_involvement ?? ''}
+          onChange={(event) => set({ in_campaign: event.target.value || null })}
+          aria-label="Worked in a campaign"
+        >
+          <option value="">Any</option>
+          <option value="worked">Yes — worked on a campaign</option>
+          <option value="never">No — never in a campaign</option>
+          <option value="dropped_only">Only ever dropped</option>
+        </Select>
+      </div>
+
       <div className="space-y-2 pt-0.5">
+        {/*
+          "Has contact" is the OR. The two below it are separate clauses, so
+          ticking both of them means email AND phone — that behaviour is
+          deliberate and unchanged; this is the "at least one" case.
+          It defaults to on, hence the inverted `no_contact` URL param.
+        */}
+        <FilterCheckbox
+          id="has-contact"
+          label="Has contact (email or phone)"
+          checked={request.has_contact}
+          onChange={(checked) => set({ no_contact: !checked })}
+        />
         <FilterCheckbox
           id="has-email"
           label="Has email"

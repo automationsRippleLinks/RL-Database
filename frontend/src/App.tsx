@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { Database, Download, LogOut, Moon, Search, Sun } from 'lucide-react';
+import { Database, Download, LogOut, Moon, Search, Sun, Tags } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingState } from '@/components/states';
@@ -32,10 +32,16 @@ export function App() {
             {/* Hidden unless the backend says this account may ingest. The route is
                 guarded too, and the backend's 403 remains the real gate. */}
             {canIngest && (
-              <TopNavLink to="/ingest">
-                <Download className="size-3.5" />
-                Ingest
-              </TopNavLink>
+              <>
+                <TopNavLink to="/ingest">
+                  <Download className="size-3.5" />
+                  Ingest
+                </TopNavLink>
+                <TopNavLink to="/taxonomy">
+                  <Tags className="size-3.5" />
+                  Taxonomy
+                </TopNavLink>
+              </>
             )}
           </nav>
 

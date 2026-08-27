@@ -2,7 +2,7 @@ import { AlertTriangle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatDateTime, formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import type { IngestJob, IngestJobStatus } from '@/types/api';
+import type { IngestJob, IngestJobStatus, IngestRowError } from '@/types/api';
 
 const STATUS_META: Record<
   IngestJobStatus,
@@ -49,30 +49,64 @@ export function JobResult({ job, title }: { job: IngestJob; title?: string }) {
         <CountTile label="Failed" value={counts.failed} tone={counts.failed ? 'destructive' : undefined} />
       </div>
 
-      {job.errors.length > 0 && (
-        <div>
-          <p className="mb-1.5 text-xs font-medium">
-            {formatNumber(job.errors.length)} row {job.errors.length === 1 ? 'error' : 'errors'}
-          </p>
-          <ul className="max-h-56 space-y-1 overflow-y-auto rounded-md border border-border p-2 scrollbar-thin">
-            {job.errors.map((rowError, index) => (
-              <li key={index} className="flex gap-2 text-[11px]">
-                <span className="shrink-0 font-mono text-muted-foreground">
-                  row {rowError.row + 1}
-                  {rowError.field ? `·${rowError.field}` : ''}
-                </span>
-                <span className="text-destructive">{rowError.message}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {job.errors.length > 0 && <IssueList job={job} />}
 
       <p className="text-[11px] text-muted-foreground">
         Started {formatDateTime(job.started_at)}
         {job.started_by ? ` by ${job.started_by}` : ''}
         {job.finished_at ? ` · finished ${formatDateTime(job.finished_at)}` : ''}
       </p>
+    </div>
+  );
+}
+
+/**
+ * Errors and warnings are not the same thing and must not look the same.
+ * Warnings mean the row went in with something coerced; they outnumber real
+ * errors on a typical export, and painting them all destructive-red made every
+ * successful ingest look like a disaster.
+ */
+function IssueList({ job }: { job: IngestJob }) {
+  const isError = (issue: IngestRowError) => (issue.severity ?? 'error') === 'error';
+  const errors = job.errors.filter(isError);
+  const warnings = job.errors.filter((issue) => !isError(issue));
+  const truncated = job.counts.errors_truncated ?? 0;
+
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium">
+        {errors.length > 0 && (
+          <span className="text-destructive">
+            {formatNumber(errors.length)} {errors.length === 1 ? 'error' : 'errors'}
+          </span>
+        )}
+        {errors.length > 0 && warnings.length > 0 && <span className="text-muted-foreground"> · </span>}
+        {warnings.length > 0 && (
+          <span className="text-[var(--warning)]">
+            {formatNumber(warnings.length)} {warnings.length === 1 ? 'warning' : 'warnings'}
+          </span>
+        )}
+      </p>
+
+      <ul className="max-h-56 space-y-1 overflow-y-auto rounded-md border border-border p-2 scrollbar-thin">
+        {[...errors, ...warnings].map((issue, index) => (
+          <li key={index} className="flex gap-2 text-[11px]">
+            <span className="shrink-0 font-mono text-muted-foreground">
+              row {issue.row}
+              {issue.field ? `·${issue.field}` : ''}
+            </span>
+            <span className={isError(issue) ? 'text-destructive' : 'text-[var(--warning)]'}>
+              {issue.message}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {truncated > 0 && (
+        <p className="text-[11px] text-muted-foreground">
+          …and {formatNumber(truncated)} more not stored with this job.
+        </p>
+      )}
     </div>
   );
 }

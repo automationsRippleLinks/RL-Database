@@ -110,10 +110,12 @@ const REQUIREMENT_POOL: PitchRequirement[] = [
 ];
 const STATUS_POOL: CampaignStatus[] = ['wip', 'completed', 'on hold', 'scrapped'];
 
+/** Mirrors `tier_for` in backend/app/services/parser.py. */
 function tierForFollowers(followers: number): Tier {
-  if (followers < 10_000) return 'nano';
+  if (!followers) return '';
+  if (followers < 20_000) return 'nano';
   if (followers < 100_000) return 'micro';
-  if (followers < 500_000) return 'mid-tier';
+  if (followers < 250_000) return 'mid-tier';
   if (followers < 1_000_000) return 'macro';
   return 'mega';
 }
@@ -141,28 +143,18 @@ export const MOCK_CREATORS: CreatorRow[] = Array.from({ length: 240 }, (_, i) =>
     name,
     username,
     platform,
-    // A few rows carry the empty-string tier, which is TierChoices.NA.
-    tier: rng() < 0.04 ? '' : tierForFollowers(followers),
+    // Tier is derived from followers, never carried on the row.
+    tier: tierForFollowers(followers),
     followers,
     avg_views: rng() < 0.9 ? Math.floor(followers * (0.05 + rng() * 0.6)) : null,
     city: rng() < 0.93 ? pick(CITIES) : null,
     gender: pick(GENDERS),
-    categories_raw: categories.join(', '),
-    languages_raw: languages.join(', '),
+    categories,
+    languages,
     email: hasEmail ? `${username.replace(/[^a-z0-9]/g, '')}@gmail.com` : null,
     phone: hasPhone ? `+91${intBetween(70, 99)}${intBetween(10_000_000, 99_999_999)}` : null,
   } satisfies CreatorRow;
 });
-
-export const MOCK_CREATOR_EXTRAS = new Map<string, { categories: string[]; languages: string[] }>(
-  MOCK_CREATORS.map((c) => [
-    c.id,
-    {
-      categories: c.categories_raw ? c.categories_raw.split(', ') : [],
-      languages: c.languages_raw ? c.languages_raw.split(', ') : [],
-    },
-  ]),
-);
 
 // ─── brands and companies ────────────────────────────────────────────────────
 //
