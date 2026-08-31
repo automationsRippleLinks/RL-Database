@@ -1,4 +1,4 @@
-from typing import Any, Annotated
+from typing import Any, Annotated, Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict, NoDecode
 from pydantic import computed_field, PostgresDsn, RedisDsn, HttpUrl, field_validator
@@ -9,7 +9,7 @@ class Settings(BaseSettings):
         env_file="../.env", env_ignore_empty=True, extra="ignore"
     )
     # general settings
-    ENVIRONMENT: str = "production"
+    ENVIRONMENT: Literal["dev", "prod"] = "dev"
     RL_LOGO_CDN_URL: HttpUrl
 
     # AUTH Settings
@@ -76,6 +76,13 @@ class Settings(BaseSettings):
             path=self.DB_NAME,
         )
 
+    # connection pooling
+    DB_POOL_SIZE: int = 10
+    DB_MAX_OVERFLOW: int = 20
+    DB_POOL_TIMEOUT: int = 30
+    DB_POOL_RECYCLE:int = 1800
+    DB_POOL_PRE_PING: bool = True
+
     @computed_field
     @property
     def DB_URL_MIGRATION(self) -> PostgresDsn:
@@ -92,6 +99,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_PATH: str = "0"
+    REDIS_MAX_CONNECTIONS: int = 40
 
     @computed_field
     @property

@@ -2,8 +2,9 @@ from typing import Optional
 from datetime import datetime, timezone
 
 from pydantic import BaseModel
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from app.core.db import Session_Factory
 from app.models import IngestJob as IngestJobRow
 from app.schemas.ingest import (
     IngestCounts,
@@ -30,6 +31,7 @@ class IngestResult(BaseModel):
 
 async def record_job(
     *,
+    session_factory: async_sessionmaker[AsyncSession],
     source,
     origin: str,
     dry_run: bool,
@@ -45,7 +47,7 @@ async def record_job(
     nothing to poll -- so this commits independently of that transaction
     """
 
-    async with Session_Factory() as session:
+    async with session_factory() as session:
         row = IngestJobRow(
             source=getattr(source, "value", str(source)),
             origin=origin,

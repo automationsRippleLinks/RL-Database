@@ -1,25 +1,44 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from redis import asyncio as redis
 
 from app.core.config import settings
-from app.core.redis_client import get_redis_pool
+from app.core.db import create_engine, create_session_factory
+from app.core.redis_client import create_redis, create_redis_pool
 from app.api.v1 import router as v1_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    pool = get_redis_pool()
-    app.state.redis = redis.Redis(connection_pool=pool)
-    yield
-    await app.state.redis.aclose()
-    await pool.aclose()
+    """
+    lifespan will now make the session_factory, engine and redis connection pool
+    so that those connection live and die with the backend, rather than being killed
+    by process termination
+    """
+    engine = create_engine()
+    redis_pool = create_redis_pool()
+
+    app.state.engine = engine
+    app.state.session_factory = create_session_factory(engine)
+    app.state.redis_pool = redis_pool
+    app.state.redis = create_redis(redis_pool)
+
+    try:
+        async with engine.connect():
+            pass
+        await app.state.redis.ping()
+        yield
+    finally:
+        try:
+            await app.state.redis.aclose()
+            await redis_pool.aclose()
+        finally:
+            await engine.dispose()
 
 
 app = FastAPI(
     lifespan=lifespan,
-    title="Ripple Pulse",
+    title=f"Ripple Pulse {settings.ENVIRONMENT}",
     version="0.1.0",
     openapi_url="/api/openapi.json",
     docs_url="/api/docs",

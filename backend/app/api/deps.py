@@ -1,10 +1,11 @@
 from typing import Annotated
 
 from fastapi import Depends, Request, HTTPException, status
+from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel.ext.asyncio.session import AsyncSession
 from redis import asyncio as redis
 
-from app.core.db import get_session
+from app.core.db import get_session, get_session_factory
 from app.core.redis_client import get_redis
 from app.models import User
 from app.core.security import read_session
@@ -12,6 +13,7 @@ from app.core.security import read_session
 # --- Dependencies (functions defined elsewhere) ---
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
+SessionFactoryDep = Annotated[async_sessionmaker[AsyncSession], Depends(get_session_factory)]
 RedisDep = Annotated[redis.Redis, Depends(get_redis)]
 
 

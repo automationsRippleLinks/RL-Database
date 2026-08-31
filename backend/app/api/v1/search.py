@@ -18,8 +18,7 @@ from app.core.config import (
     SEARCH_TTL,
 )
 from app.core.cache import cached, cache_key
-from app.core.db import Session_Factory
-from app.api.deps import SessionDep, CurrentUser, RedisDep
+from app.api.deps import SessionDep, CurrentUser, RedisDep, SessionFactoryDep
 from app.models.enums import PlatformChoices
 from app.schemas.search import (
     SearchResponse,
@@ -815,6 +814,7 @@ async def facets_pitches(session: SessionDep, redis: RedisDep, user: CurrentUser
 @router.get("")
 async def global_search(
     redis: RedisDep,
+    session_factory: SessionFactoryDep,
     user: CurrentUser,
     q: str = Query(..., min_length=2),
     limit: int = Query(default=5, ge=1, le=20),
@@ -824,7 +824,7 @@ async def global_search(
             handler: Callable[[BaseModel, AsyncSession, User], Awaitable[Any]],
             req: BaseModel,
         ):
-            async with Session_Factory() as session:
+            async with session_factory() as session:
                 return await handler(req, session, user)
 
         def envelope(took_ms, groups, profile_link=None):
@@ -845,7 +845,7 @@ async def global_search(
             link = parse_profile_link(q)
             with Timer() as t:
                 if link.username:
-                    async with Session_Factory() as session:
+                    async with session_factory() as session:
                         total, items = await _creators_by_username(
                             session, link.username, link.platform, limit
                         )
