@@ -4,9 +4,8 @@ import { AlertCircle, Database, Loader2, LogIn, MailWarning } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ApiError, USE_MOCKS, googleLoginUrl } from '@/lib/api-client';
-import { authApi } from '@/lib/endpoints';
-import { useAuth } from './useAuth';
+import { ApiError, googleLoginUrl } from '@/lib/api-client';
+import { useAuth } from './useAuth'; 
 import { describeAuthError } from './AuthProvider';
 import { ResendVerificationForm } from './ResendVerificationForm';
 import { ALLOWED_EMAIL_DOMAINS, validateWorkEmail } from './domain';
@@ -26,7 +25,7 @@ const GOOGLE_ERRORS: Record<AuthErrorCode, string> = {
 };
 
 export function LoginPage() {
-  const { status, login, loginError, isLoggingIn, refresh } = useAuth();
+  const { status, login, loginError, isLoggingIn } = useAuth();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,10 +46,6 @@ export function LoginPage() {
     (loginError instanceof ApiError && loginError.code === 'not_verified') ||
     authErrorParam === 'not_verified';
 
-  // In mock mode there is no backend to complete the Google round-trip, so the
-  // button simulates a successful callback instead of navigating away.
-  const [mockGoogleBusy, setMockGoogleBusy] = useState(false);
-
   useEffect(() => {
     document.title = 'Sign in · Ripple Pulse';
   }, []);
@@ -68,13 +63,7 @@ export function LoginPage() {
     }
   };
 
-  const startGoogle = async () => {
-    if (USE_MOCKS) {
-      setMockGoogleBusy(true);
-      await authApi.completeGoogleMock();
-      await refresh();
-      return;
-    }
+  const startGoogle = () => {
     // A full-page navigation, not a fetch: the browser has to follow the redirect
     // to Google and back for the backend to be able to set the session cookie.
     window.location.assign(googleLoginUrl(next));
@@ -181,9 +170,8 @@ export function LoginPage() {
             variant="outline"
             className="w-full"
             onClick={startGoogle}
-            disabled={mockGoogleBusy}
           >
-            {mockGoogleBusy ? <Loader2 className="animate-spin" /> : <GoogleMark />}
+            <GoogleMark />
             Continue with Google
           </Button>
 
@@ -198,13 +186,6 @@ export function LoginPage() {
             Create one
           </Link>
         </p>
-
-        {USE_MOCKS && (
-          <p className="mt-3 text-center text-[11px] text-muted-foreground">
-            Running on fixture data (<code className="font-mono">VITE_USE_MOCKS=true</code>). Any
-            @{ALLOWED_EMAIL_DOMAINS[0]} address with a 4+ character password signs in.
-          </p>
-        )}
       </div>
     </div>
   );

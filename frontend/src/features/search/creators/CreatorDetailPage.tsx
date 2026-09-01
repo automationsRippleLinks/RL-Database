@@ -27,11 +27,14 @@ import {
 } from '@/lib/format';
 import { MONTH_LABELS } from '@/lib/enums';
 import type { CreatorCampaignSummary, CreatorPitchSummary } from '@/types/api';
+import { useBackTo } from '@/hooks/useBackTo';
+import { withBackState } from '@/lib/navigation';
 import { useCreatorDetail } from '../queries';
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 export function CreatorDetailPage() {
   const { creatorId } = useParams<{ creatorId: string }>();
+  const goBack = useBackTo('/search/creators');
   const { data, isPending, isError, error, refetch } = useCreatorDetail(creatorId);
   useDocumentTitle(data?.name);
 
@@ -47,11 +50,9 @@ export function CreatorDetailPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <Button asChild variant="ghost" size="sm" className="-ml-2 mb-1 h-7 px-2 text-xs">
-            <Link to="/search/creators">
-              <ArrowLeft className="size-3" />
-              Back to creators
-            </Link>
+          <Button variant="ghost" size="sm" className="-ml-2 mb-1 h-7 px-2 text-xs" onClick={goBack}>
+            <ArrowLeft className="size-3" />
+            Back
           </Button>
           <h1 className="truncate text-xl font-semibold">{data.name}</h1>
           <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -155,7 +156,11 @@ const campaignSummaryColumns: Column<CreatorCampaignSummary>[] = [
     id: 'code',
     header: 'Code',
     cell: (row) => (
-      <Link to={`/campaigns/${row.campaign_id}`} className="font-mono text-xs text-primary hover:underline">
+      <Link
+        to={`/campaigns/${row.campaign_id}`}
+        state={withBackState(window.location).state}
+        className="font-mono text-xs text-primary hover:underline"
+      >
         {row.campaign_code}
       </Link>
     ),
@@ -179,7 +184,11 @@ const pitchSummaryColumns: Column<CreatorPitchSummary>[] = [
     id: 'code',
     header: 'Code',
     cell: (row) => (
-      <Link to={`/pitches/${row.pitch_id}`} className="font-mono text-xs text-primary hover:underline">
+      <Link
+        to={`/pitches/${row.pitch_id}`}
+        state={withBackState(window.location).state}
+        className="font-mono text-xs text-primary hover:underline"
+      >
         {row.pitch_code}
       </Link>
     ),

@@ -2,9 +2,7 @@ import { Suspense } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Database, Download, LogOut, Moon, Search, Sun, Tags } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { LoadingState } from '@/components/states';
-import { USE_MOCKS } from '@/lib/api-client';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/useAuth';
@@ -46,11 +44,6 @@ export function App() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            {USE_MOCKS && (
-              <Badge variant="warning" title="VITE_USE_MOCKS=true — serving fixture data">
-                Fixture data
-              </Badge>
-            )}
             <Button
               variant="ghost"
               size="icon-sm"

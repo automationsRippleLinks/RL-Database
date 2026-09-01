@@ -1,4 +1,5 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+// import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +14,8 @@ import {
   SectionTitle,
 } from '@/components/bits';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format';
+import { useBackTo } from '@/hooks/useBackTo';
+import { withBackState } from '@/lib/navigation';
 import { campaignColumns } from '../campaigns/columns';
 import { pitchColumns } from '../pitches/columns';
 import { creatorColumns } from '../creators/columns';
@@ -22,6 +25,9 @@ import { useDocumentTitle } from "@/lib/useDocumentTitle";
 export function BrandDetailPage() {
   const { brandId } = useParams<{ brandId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const goBack = useBackTo('/search/brands');
+
   // An id-keyed route needs no encode/decode dance, unlike the old name-keyed one.
   const id = brandId ? Number(brandId) : undefined;
   const { data, isPending, isError, error, refetch } = useBrandDetail(
@@ -35,13 +41,14 @@ export function BrandDetailPage() {
 
   return (
     <div className="space-y-5">
+
       <div className="min-w-0">
-        <Button asChild variant="ghost" size="sm" className="-ml-2 mb-1 h-7 px-2 text-xs">
-          <Link to="/search/brands">
-            <ArrowLeft className="size-3" />
-            Back to brands
-          </Link>
+       
+        <Button variant="ghost" size="sm" className="-ml-2 mb-1 h-7 px-2 text-xs" onClick={goBack}>
+          <ArrowLeft className="size-3" />
+          Back
         </Button>
+
         <h1 className="truncate text-xl font-semibold">{data.name}</h1>
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           {data.company?.name ?? 'No billing company linked'}
@@ -97,7 +104,9 @@ export function BrandDetailPage() {
           columns={campaignColumns}
           rows={data.campaigns}
           rowKey={(row) => row.id}
-          onRowClick={(row) => navigate(`/campaigns/${row.id}`)}
+          // onRowClick={(row) => navigate(`/campaigns/${row.id}`)}
+          onRowClick={(row) => navigate(`/campaigns/${row.id}`, withBackState(location))}
+
           maxHeightClass="max-h-96"
           emptyState={
             <p className="px-4 py-8 text-center text-xs text-muted-foreground">
@@ -113,7 +122,11 @@ export function BrandDetailPage() {
           columns={pitchColumns}
           rows={data.pitches}
           rowKey={(row) => row.id}
-          onRowClick={(row) => navigate(`/pitches/${row.id}`)}
+          // onRowClick={(row) => navigate(`/pitches/${row.id}`)}
+          
+          onRowClick={(row) => navigate(`/pitches/${row.id}`, withBackState(location))}
+
+
           maxHeightClass="max-h-96"
           emptyState={
             <p className="px-4 py-8 text-center text-xs text-muted-foreground">
@@ -130,7 +143,9 @@ export function BrandDetailPage() {
             columns={creatorColumns}
             rows={data.top_creators}
             rowKey={(row) => row.id}
-            onRowClick={(row) => navigate(`/creators/${row.id}`)}
+            // onRowClick={(row) => navigate(`/creators/${row.id}`)}
+            onRowClick={(row) => navigate(`/creators/${row.id}`, withBackState(location))}
+
             maxHeightClass="max-h-96"
           />
         </section>

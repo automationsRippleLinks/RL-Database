@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { AlertTriangle, Inbox, Loader2, PlugZap, ShieldOff } from 'lucide-react';
-import { ApiError, USE_MOCKS } from '@/lib/api-client';
+import { ApiError } from '@/lib/api-client';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
@@ -56,13 +56,10 @@ export function ErrorState({
   } else if (isUnreachable) {
     icon = <PlugZap className="size-7" />;
     title = 'Cannot reach the API';
-    description = USE_MOCKS ? (
-      apiError?.detail
-    ) : (
+    description = (
       <>
         The backend did not respond. Start it with <code className="font-mono">fastapi dev</code> in{' '}
-        <code className="font-mono">backend/</code>, or set{' '}
-        <code className="font-mono">VITE_USE_MOCKS=true</code> to work against fixtures.
+        <code className="font-mono">backend/</code>.
       </>
     );
   } else if (isMissing) {
@@ -71,8 +68,7 @@ export function ErrorState({
     description = (
       <>
         The backend has no <code className="font-mono">{apiError?.path}</code> route. Check that it
-        is running the same version as this frontend, or set{' '}
-        <code className="font-mono">VITE_USE_MOCKS=true</code> to preview this screen with fixtures.
+        is running the same version as this frontend.
       </>
     );
   }

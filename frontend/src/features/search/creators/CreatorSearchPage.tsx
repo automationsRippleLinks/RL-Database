@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Download, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/DataTable';
 import { Pagination } from '@/components/Pagination';
 import { EmptyState, ErrorState } from '@/components/states';
-import { USE_MOCKS } from '@/lib/api-client';
 import { downloadCsv, toCsv } from '@/lib/csv';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { CREATOR_SORTS, SCOPE_FILTER_KEYS, countActiveFilters, useCreatorRequest } from '../request-state';
@@ -14,6 +13,7 @@ import { useCreatorFacets, useCreatorSearch } from '../queries';
 import { CreatorFilters } from './CreatorFilters';
 import { creatorColumns } from './columns';
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
+import { withBackState } from '@/lib/navigation';
 
 const CSV_COLUMNS = [
   { key: 'name' as const, header: 'Name' },
@@ -36,6 +36,7 @@ export function CreatorSearchPage() {
 
   const url = useUrlSearchState();
   const navigate = useNavigate();
+  const location = useLocation();
   const request = useCreatorRequest();
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -88,7 +89,7 @@ export function CreatorSearchPage() {
               columns={creatorColumns}
               rows={result?.rows ?? []}
               rowKey={(row) => row.id}
-              onRowClick={(row) => navigate(`/creators/${row.id}`)}
+              onRowClick={(row) => navigate(`/creators/${row.id}`, withBackState(location))}
               isLoading={searchQuery.isPending}
               isFetching={searchQuery.isFetching && !searchQuery.isPending}
               emptyState={<CreatorEmptyState hasQuery={Boolean(request.text) || activeFilterCount > 0} />}
@@ -143,15 +144,11 @@ function CreatorEmptyState({ hasQuery }: { hasQuery: boolean }) {
       icon={<Users className="size-7" />}
       title="No creators in the database yet"
       description={
-        USE_MOCKS ? (
-          'Fixture data should have loaded here — check the mock handlers.'
-        ) : (
-          <>
-            Creator rows arrive from the <code className="font-mono">pitch_creator</code> and{' '}
-            <code className="font-mono">campaign_creator</code> uploads on the Ingest page. Until
-            one of those runs, this table stays empty.
-          </>
-        )
+        <>
+          Creator rows arrive from the <code className="font-mono">pitch_creator</code> and{' '}
+          <code className="font-mono">campaign_creator</code> uploads on the Ingest page. Until
+          one of those runs, this table stays empty.
+        </>
       }
     />
   );

@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,10 +29,14 @@ import {
 } from '@/lib/format';
 import type { CampaignCreatorRow } from '@/types/api';
 import { useCampaignDetail } from '../queries';
+import { useBackTo } from '@/hooks/useBackTo';
+import { withBackState } from '@/lib/navigation';
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 export function CampaignDetailPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
+  const location = useLocation();
+  const goBack = useBackTo('/search/campaigns');
   const { data, isPending, isError, error, refetch } = useCampaignDetail(campaignId);
   useDocumentTitle(data?.campaign_name);
 
@@ -46,11 +50,9 @@ export function CampaignDetailPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <Button asChild variant="ghost" size="sm" className="-ml-2 mb-1 h-7 px-2 text-xs">
-            <Link to="/search/campaigns">
-              <ArrowLeft className="size-3" />
-              Back to campaigns
-            </Link>
+          <Button variant="ghost" size="sm" className="-ml-2 mb-1 h-7 px-2 text-xs" onClick={goBack}>
+            <ArrowLeft className="size-3" />
+            Back
           </Button>
           <h1 className="truncate text-xl font-semibold">{data.campaign_name}</h1>
           <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -108,7 +110,11 @@ export function CampaignDetailPage() {
             <DefinitionItem label="Report completed">{formatDate(data.report_completion_date)}</DefinitionItem>
             <DefinitionItem label="Originating pitch">
               {data.pitch ? (
-                <Link to={`/pitches/${data.pitch.id}`} className="font-mono text-xs text-primary hover:underline">
+                <Link
+                  to={`/pitches/${data.pitch.id}`}
+                  state={withBackState(location).state}
+                  className="font-mono text-xs text-primary hover:underline"
+                >
                   {data.pitch.pitch_code}
                 </Link>
               ) : (
@@ -180,7 +186,11 @@ const creatorIdentityColumns: Column<CampaignCreatorRow>[] = [
     id: 'creator',
     header: 'Creator',
     cell: (row) => (
-      <Link to={`/creators/${row.creator_id}`} className="font-medium text-primary hover:underline">
+      <Link
+        to={`/creators/${row.creator_id}`}
+        state={withBackState(window.location).state}
+        className="font-medium text-primary hover:underline"
+      >
         {row.name}
       </Link>
     ),
@@ -294,16 +304,12 @@ const performanceColumns: Column<CampaignCreatorRow>[] = [
     id: 'er',
     header: 'ER',
     numeric: true,
-    // The link row carries both platforms' columns and the unused side is 0 rather
-    // than null, so pick by platform — coalescing with ?? would report a YouTube
-    // deliverable's engagement as 0%.
     cell: (row) => formatPercent(usesIgColumns(row) ? row.ig_reels_er_perc : row.yt_er_perc, 0),
   },
   {
     id: 'watch',
     header: 'Avg watch',
     numeric: true,
-    // Only the IG block has an average watch time; YouTube records totals only.
     cell: (row) => (usesIgColumns(row) ? formatDuration(row.ig_avg_watch_time) : '—'),
   },
   {
@@ -315,13 +321,6 @@ const performanceColumns: Column<CampaignCreatorRow>[] = [
   },
 ];
 
-/**
- * CampaignCreatorLink only has `ig_*` and `yt_*` tracker columns, so a deliverable
- * on LinkedIn, Facebook or "others" has nowhere of its own to store metrics and
- * lands in the YouTube block. Anything that isn't Instagram reads from `yt_*`.
- * (Flagged in PROPOSED_BACKEND_CHANGES.md — the schema has no home for those
- * platforms' numbers.)
- */
 function usesIgColumns(row: CampaignCreatorRow): boolean {
   return row.platform === 'instagram';
 }
