@@ -12,16 +12,15 @@ from app.api.v1 import router as v1_router
 async def lifespan(app: FastAPI):
     """
     lifespan will now make the session_factory, engine and redis connection pool
-    so that those connection live and die with the backend, rather than being killed
-    by process termination
+    so that those connections live and die with the lifespan, rather than lingering around
     """
-    engine = create_engine()
-    redis_pool = create_redis_pool()
+    engine = create_engine() # create pg pool of connections and let engine own and hand them out
+    redis_pool = create_redis_pool() # create redis connection pool to pick connections from
 
     app.state.engine = engine
-    app.state.session_factory = create_session_factory(engine)
+    app.state.session_factory = create_session_factory(engine) # builds sessions; each uses and returns connection to pool when done with the session
     app.state.redis_pool = redis_pool
-    app.state.redis = create_redis(redis_pool)
+    app.state.redis = create_redis(redis_pool)  # redis client sharing the pool; each uses and returns connection when done with command/function
 
     try:
         async with engine.connect():
