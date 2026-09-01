@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { Database } from 'lucide-react';
-import { USE_MOCKS } from '@/lib/api-client';
+
 
 /**
  * Shared frame for every unauthenticated page (login, signup, verify, reset), so the
@@ -38,11 +38,7 @@ export function AuthShell({
 
         {footer && <div className="mt-4 text-center text-xs text-muted-foreground">{footer}</div>}
 
-        {USE_MOCKS && (
-          <p className="mt-4 text-center text-[11px] text-muted-foreground">
-            Running on fixture data (<code className="font-mono">VITE_USE_MOCKS=true</code>).
-          </p>
-        )}
+       
       </div>
     </div>
   );

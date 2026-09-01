@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { withBackState } from '@/lib/navigation';
 import type { Column } from '@/components/DataTable';
 import { OrgTypeBadge, PlatformBadges } from '@/components/bits';
 import { formatDate, formatNumber } from '@/lib/format';
@@ -11,6 +12,7 @@ export const brandColumns: Column<BrandRow>[] = [
     cell: (row) => (
       <Link
         to={`/brands/${row.id}`}
+        state={withBackState(window.location).state}
         onClick={(event) => event.stopPropagation()}
         className="font-medium text-primary hover:underline"
       >
