@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.core.config import settings
+from app.core.config import settings, CACHE_REFRESH_PREFIX_LIST
+from app.core.cache import invalidate
 from app.core.db import create_engine, create_session_factory
 from app.core.redis_client import create_redis, create_redis_pool
 from app.api.v1 import router as v1_router
@@ -14,18 +15,26 @@ async def lifespan(app: FastAPI):
     lifespan will now make the session_factory, engine and redis connection pool
     so that those connections live and die with the lifespan, rather than lingering around
     """
-    engine = create_engine() # create pg pool of connections and let engine own and hand them out
-    redis_pool = create_redis_pool() # create redis connection pool to pick connections from
+    engine = (
+        create_engine()
+    )  # create pg pool of connections and let engine own and hand them out
+    redis_pool = (
+        create_redis_pool()
+    )  # create redis connection pool to pick connections from
 
     app.state.engine = engine
-    app.state.session_factory = create_session_factory(engine) # builds sessions; each uses and returns connection to pool when done with the session
+    app.state.session_factory = create_session_factory(
+        engine
+    )  # builds sessions; each uses and returns connection to pool when done with the session
     app.state.redis_pool = redis_pool
-    app.state.redis = create_redis(redis_pool)  # redis client sharing the pool; each uses and returns connection when done with command/function
-
+    app.state.redis = create_redis(
+        redis_pool
+    )  # redis client sharing the pool; each uses and returns connection when done with command/function
     try:
         async with engine.connect():
             pass
         await app.state.redis.ping()
+        await invalidate(app.state.redis, *CACHE_REFRESH_PREFIX_LIST)  # refresh cache
         yield
     finally:
         try:
@@ -41,7 +50,7 @@ app = FastAPI(
     version="0.1.0",
     openapi_url="/api/openapi.json",
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
 )
 
 app.add_middleware(

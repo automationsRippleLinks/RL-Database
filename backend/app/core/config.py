@@ -15,9 +15,13 @@ class Settings(BaseSettings):
     # AUTH Settings
     ALLOWED_DOMAINS: Annotated[list[str], NoDecode] = ["ripplelinks.com"]
     SESSION_TTL_SECONDS: int = 12 * 60 * 60  # 12 hours
-    OAUTH_STATE_TTL: int = 5 * 60                      # 5 minutes, user needs to complete google login in this timeframe
-    EMAIL_VERIFICATION_TTL: int = 24 * 60 * 60          # 24 hrs
-    PASSWORD_RESET_TTL: int = 10 * 60                    # 10 minutes, user needs to reset password in this timeframe
+    OAUTH_STATE_TTL: int = (
+        5 * 60
+    )  # 5 minutes, user needs to complete google login in this timeframe
+    EMAIL_VERIFICATION_TTL: int = 24 * 60 * 60  # 24 hrs
+    PASSWORD_RESET_TTL: int = (
+        10 * 60
+    )  # 10 minutes, user needs to reset password in this timeframe
 
     # SMTP settings
     SMTP_HOST: str
@@ -80,7 +84,7 @@ class Settings(BaseSettings):
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
     DB_POOL_TIMEOUT: int = 30
-    DB_POOL_RECYCLE:int = 1800
+    DB_POOL_RECYCLE: int = 1800
     DB_POOL_PRE_PING: bool = True
 
     @computed_field
@@ -105,7 +109,10 @@ class Settings(BaseSettings):
     @property
     def REDIS_URL(self) -> RedisDsn:
         return RedisDsn.build(
-            scheme="redis", host=self.REDIS_HOST, port=self.REDIS_PORT, path=self.REDIS_PATH
+            scheme="redis",
+            host=self.REDIS_HOST,
+            port=self.REDIS_PORT,
+            path=self.REDIS_PATH,
         )
 
 
@@ -122,6 +129,13 @@ OAUTH_STATE_PREFIX = "oauth_state:"
 USER_SESSIONS_PREFIX = "user_sessions:"
 EMAIL_VERIFY_PREFIX = "email_verify:"
 PASSWORD_RESET_PREFIX = "password_reset:"
+
+CACHE_REFRESH_PREFIX_LIST = [
+    FACETS_PREFIX,
+    SEARCH_PREFIX,
+    SUGGEST_PREFIX,
+    RATE_LIMIT_PREFIX,
+]
 
 # CACHE TTLS
 FACETS_TTL = 24 * 60 * 60
