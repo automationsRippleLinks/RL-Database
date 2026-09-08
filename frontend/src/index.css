@@ -25,6 +25,30 @@
   --input: oklch(0.91 0.006 260);
   --ring: oklch(0.52 0.19 265);
   --radius: 0.5rem;
+
+  /* ── Ripple Pulse design tokens ─────────────────────────────────────────────
+     The redesign's own palette, authored in oklch exactly as the handoff
+     specifies. They sit alongside the shadcn-style tokens above rather than
+     replacing them: the auth screens, ingest and taxonomy still run on those.
+     The handoff writes dark on :root and light under [data-theme=light]; this
+     file keeps the codebase's own convention (light on :root, dark under
+     `.dark`) so the two token sets flip together off one class.            */
+  --rp-bg: oklch(0.985 0.002 250);
+  --rp-surface: oklch(1 0 0);
+  --rp-surface2: oklch(0.965 0.004 260);
+  --rp-head: oklch(0.968 0.004 260);
+  --rp-border: oklch(0.9 0.006 260);
+  --rp-text: oklch(0.22 0.01 260);
+  --rp-muted: oklch(0.5 0.012 260);
+  --rp-faint: oklch(0.82 0.006 260);
+  --rp-primary: oklch(0.5 0.19 262);
+  --rp-primary-fg: oklch(1 0 0);
+  --rp-primary-soft: oklch(0.5 0.19 262 / 0.1);
+  --rp-success: oklch(0.55 0.14 155);
+  --rp-warn: oklch(0.62 0.15 70);
+  --rp-danger: oklch(0.55 0.2 25);
+  --rp-shadow: 0 16px 40px oklch(0 0 0 / 0.14);
+  --rp-box: oklch(0.74 0.008 260);
 }
 
 .dark {
@@ -49,6 +73,24 @@
   --border: oklch(0.3 0.016 265);
   --input: oklch(0.32 0.018 265);
   --ring: oklch(0.68 0.16 265);
+
+  /* Ripple Pulse tokens — the handoff's default (dark) values. */
+  --rp-bg: oklch(0.17 0.012 265);
+  --rp-surface: oklch(0.21 0.014 265);
+  --rp-surface2: oklch(0.245 0.016 265);
+  --rp-head: oklch(0.228 0.014 265);
+  --rp-border: oklch(0.3 0.016 265);
+  --rp-text: oklch(0.95 0.005 260);
+  --rp-muted: oklch(0.68 0.013 260);
+  --rp-faint: oklch(0.37 0.02 265);
+  --rp-primary: oklch(0.72 0.15 260);
+  --rp-primary-fg: oklch(0.15 0.012 265);
+  --rp-primary-soft: oklch(0.72 0.15 260 / 0.16);
+  --rp-success: oklch(0.78 0.14 155);
+  --rp-warn: oklch(0.83 0.14 75);
+  --rp-danger: oklch(0.74 0.17 25);
+  --rp-shadow: 0 16px 40px oklch(0 0 0 / 0.42);
+  --rp-box: oklch(0.42 0.014 265);
 }
 
 @theme inline {
@@ -73,6 +115,22 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-rp-bg: var(--rp-bg);
+  --color-rp-surface: var(--rp-surface);
+  --color-rp-surface2: var(--rp-surface2);
+  --color-rp-head: var(--rp-head);
+  --color-rp-border: var(--rp-border);
+  --color-rp-text: var(--rp-text);
+  --color-rp-muted: var(--rp-muted);
+  --color-rp-faint: var(--rp-faint);
+  --color-rp-primary: var(--rp-primary);
+  --color-rp-primary-fg: var(--rp-primary-fg);
+  --color-rp-primary-soft: var(--rp-primary-soft);
+  --color-rp-success: var(--rp-success);
+  --color-rp-warn: var(--rp-warn);
+  --color-rp-danger: var(--rp-danger);
+  --color-rp-box: var(--rp-box);
+  --shadow-rp: var(--rp-shadow);
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
@@ -110,5 +168,79 @@
   }
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Ripple Pulse motion.
+   Durations and easings are from the handoff and are load-bearing: the drawer's
+   exit animation runs for 185ms before the component unmounts, so changing
+   `rpDrawerOut` here without changing DRAWER_EXIT_MS in CreatorDrawer.tsx makes
+   the panel vanish mid-slide.
+   ────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  @keyframes rpDrawer {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  @keyframes rpDrawerOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(102%);
+      opacity: 0.4;
+    }
+  }
+  @keyframes rpMenu {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-rp-drawer {
+    animation: rpDrawer 0.2s cubic-bezier(0, 0, 0.2, 1);
+  }
+  .animate-rp-drawer-out {
+    animation: rpDrawerOut 0.19s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+  .animate-rp-menu {
+    animation: rpMenu 0.14s ease-out;
+  }
+
+  /* The rail's own scrollbar. Thinner and quieter than .scrollbar-thin because
+     it sits inside a 214px panel where an 8px track eats a visible slice. */
+  .rp-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rp-faint) transparent;
+  }
+  .rp-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .rp-scroll::-webkit-scrollbar-thumb {
+    background: var(--rp-faint);
+    border-radius: 9999px;
+  }
+  .rp-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rp-drawer,
+  .animate-rp-drawer-out,
+  .animate-rp-menu {
+    animation-duration: 0.01ms;
   }
 }

@@ -186,6 +186,26 @@ export const detailApi = {
     api.get<PitchDetail>(`/pitches/${id}`, { signal }),
 };
 
+// ─── feedback ────────────────────────────────────────────────────────────────
+//
+// The redesign puts a "tell us what's not working" button in the header, next to
+// the account avatar. There is no /feedback route on the backend yet, so the
+// caller treats a missing-endpoint 404 as "fall back to the mail client" rather
+// than as an error — see FeedbackDialog. Written here, with the rest of the
+// paths, so wiring it up later is a one-line change in this file.
+
+export interface FeedbackRequest {
+  /** One of the three chips: what kind of report this is. */
+  kind: string;
+  message: string;
+  /** Where the reporter was when they hit the button — the first thing anyone triaging asks. */
+  page: string;
+}
+
+export const feedbackApi = {
+  send: (body: FeedbackRequest): Promise<void> => api.post<void>("/feedback", body),
+};
+
 // ─── ingestion ───────────────────────────────────────────────────────────────
 
 export const ingestApi = {

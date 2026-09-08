@@ -145,3 +145,46 @@ export function maskPhone(phone: string): string {
 export function pluralise(count: number, singular: string, plural = `${singular}s`): string {
   return count === 1 ? singular : plural;
 }
+
+/**
+ * The results table's number format, distinct from `humaniseCount` above.
+ *
+ * humaniseCount targets prose ("1.3M followers"); this targets a right-aligned
+ * numeric column, where the handoff asks for two decimals in the millions and
+ * whole thousands past 100K so the digits line up: 3.79M · 828K · 61.2K.
+ */
+export function compact(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '—';
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2).replace(/\.0+$/, '')}M`;
+  if (value >= 1_000) {
+    return `${(value / 1_000).toFixed(value >= 100_000 ? 0 : 1).replace(/\.0$/, '')}K`;
+  }
+  return String(value);
+}
+
+/**
+ * Reads the shorthand people actually type into the reach filters: `25000`,
+ * `25,000`, `25k`, `1.5m`. Anything else is null, which the caller treats as
+ * "no bound" rather than as an error — a half-typed "1." shouldn't blank the
+ * result set mid-keystroke.
+ */
+export function parseAmount(raw: string | null | undefined): number | null {
+  if (raw === null || raw === undefined) return null;
+  const text = String(raw).trim().toLowerCase().replace(/[, ]/g, '');
+  if (!text) return null;
+  const match = /^([0-9]*\.?[0-9]+)([km])?$/.exec(text);
+  if (!match) return null;
+  const multiplier = match[2] === 'm' ? 1_000_000 : match[2] === 'k' ? 1_000 : 1;
+  return Math.round(parseFloat(match[1]) * multiplier);
+}
+
+/** "Ananya Deshpande" → "AD". Used for the avatar tiles in the table and drawer. */
+export function initials(name: string): string {
+  return (name || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
