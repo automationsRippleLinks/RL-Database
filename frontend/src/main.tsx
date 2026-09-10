@@ -11,7 +11,7 @@ const container = document.getElementById('root');
 if (!container) throw new Error('Missing #root element');
 
 createRoot(container).render(
-  <StrictMode>
+  // <StrictMode>
     <QueryClientProvider client={queryClient}>
       {/* BrowserRouter wraps AuthProvider because the provider navigates on 401. */}
       <BrowserRouter>
@@ -20,5 +20,5 @@ createRoot(container).render(
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
-  </StrictMode>,
+  // </StrictMode>,
 );

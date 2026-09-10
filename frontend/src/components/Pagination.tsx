@@ -37,7 +37,7 @@ export function Pagination({
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">Per page</span>
           <Select
-            className="h-8 w-[5.5rem] text-xs"
+            className="h-8 w-22 text-xs"
             value={pageSize}
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
             disabled={disabled}
@@ -61,7 +61,7 @@ export function Pagination({
           >
             <ChevronLeft />
           </Button>
-          <span className="min-w-[5.5rem] text-center text-xs text-muted-foreground tnum">
+          <span className="min-w-22  text-center text-xs text-muted-foreground tnum">
             Page {page} of {Math.max(pages, 1)}
           </span>
           <Button

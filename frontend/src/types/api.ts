@@ -137,7 +137,13 @@ export type CreatorSort =
   | 'avg_views_desc'
   | 'avg_views_asc'
   | 'name_asc'
-  | 'name_desc';
+  | 'name_desc'
+  /**
+   * Added for the redesign's Sort menu ("Most campaigns with us"). The backend
+   * has to recognise it; an unknown sort falls back to relevance there, so the
+   * failure mode is a wrongly-ordered page rather than an error.
+   */
+  | 'campaigns_desc';
 
 /**
  * How a creator relates to the campaigns they appear on. `worked` excludes
@@ -162,6 +168,26 @@ export interface CreatorFilters {
    */
   has_contact: boolean;
   campaign_involvement: CampaignInvolvement | null;
+  /**
+   * "Worked with" — brands this creator has actually run a campaign for.
+   *
+   * REQUIRES BACKEND WORK. There is no brand clause on CreatorSearchRequest in
+   * backend/app/schemas/search.py yet; the join exists (Creator →
+   * CampaignCreatorLink → Campaign.brand_id) but nothing filters on it. Pydantic
+   * ignores unknown request fields, so until that clause lands this key is
+   * accepted and silently does nothing — the rail's Brand group will look
+   * applied while returning unfiltered rows. Submits brand.id, like every other
+   * brand filter in this app.
+   */
+  brand_ids: number[];
+  /**
+   * Creator tags (`Tag` / `TagCreatorLink` in backend/app/models/tag.py).
+   *
+   * REQUIRES BACKEND WORK, in two places: this filter clause, and `tags` on the
+   * creator facets so the control has a vocabulary to offer. Same silent-no-op
+   * caveat as brand_ids above.
+   */
+  tags: string[];
   min_followers: number | null;
   max_followers: number | null;
   min_avg_views: number | null;
@@ -195,6 +221,17 @@ export interface CreatorRow {
   email: string | null;
   phone: string | null;
   /**
+   * How many campaigns this creator has actually run for us — the redesign's
+   * "Worked with us" column, and the `campaigns_desc` sort.
+   *
+   * REQUIRES BACKEND WORK: it is a count over CampaignCreatorLink excluding
+   * dropped links, which the detail endpoint already computes but the row does
+   * not carry. Optional, so the column renders an em-dash rather than a wrong
+   * "Not yet" while it is missing — claiming a creator has never worked with us
+   * because the field is absent would be worse than admitting we don't know.
+   */
+  campaign_count?: number | null;
+  /**
    * Creator has no profile_url column. The backend should compute this from
    * platform + username; lib/format.ts derives the same value as a fallback so
    * the column works even if the backend omits it.
@@ -210,6 +247,25 @@ export interface CreatorPitchSummary {
   platform: Platform[];
   final_cost: number | null;
   brand_cost: number | null;
+  /**
+   * Per-deliverable costs, for the drawer's "Commercial package" breakdown.
+   *
+   * These columns already exist on PitchCreatorLink (backend/app/models/
+   * link_models.py) and are already exposed on PitchCreatorRow; they are simply
+   * not on CreatorPitchSummary yet, so widening that schema is all this needs.
+   * Every field is optional and the drawer omits any deliverable that is absent
+   * or zero — which is also what makes it correct for a real quote, where a
+   * creator prices reels and stories but never a YouTube integration.
+   */
+  reel_cost?: number | null;
+  reel_story_cost?: number | null;
+  video_story_cost?: number | null;
+  static_carousel_cost?: number | null;
+  short_form_videos_cost?: number | null;
+  reshare_short_form_videos_cost?: number | null;
+  dedicated_video_cost?: number | null;
+  integrated_video_cost?: number | null;
+  package_cost?: number | null;
 }
 
 export interface CreatorCampaignSummary {
@@ -589,6 +645,12 @@ export interface CreatorFacets {
   languages: string[];
   cities: string[];
   genders: string[];
+  /**
+   * Optional because the endpoint does not return it yet — see the `tags` filter
+   * on CreatorFilters. The Tags control renders an explanatory empty state
+   * rather than an unusable search box while this is missing.
+   */
+  tags?: string[];
   total_creators: number;
 }
 
