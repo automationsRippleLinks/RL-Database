@@ -38,7 +38,8 @@ export function DataTable<Row>({
   isFetching = false,
   isLoading = false,
   emptyState,
-  maxHeightClass = 'max-h-[calc(100vh-19rem)]',
+  // maxHeightClass = 'max-h-[calc(100vh-19rem)]',
+  maxHeightClass = 'flex-1 min-h-0',
 }: DataTableProps<Row>) {
   if (isLoading) {
     return (

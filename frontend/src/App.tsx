@@ -1,95 +1,72 @@
 import { Suspense } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
-import { Database, Download, LogOut, Moon, Search, Sun, Tags } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Outlet, useLocation } from 'react-router-dom';
+import { ToastProvider } from '@/components/Toast';
 import { LoadingState } from '@/components/states';
-import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/features/auth/useAuth';
+import { AppRail } from '@/features/pulse/AppRail';
+import { DataRail } from '@/features/pulse/DataRail';
+import { PulseHeader } from '@/features/pulse/PulseHeader';
+import { ShellStateProvider } from '@/features/pulse/shell-state';
+import { useCampaignFacets, useCreatorFacets } from '@/features/search/queries';
 
+/**
+ * The Ripple Pulse shell: a fixed header over App rail | Data rail | content.
+ *
+ * The page itself never scrolls — `h-screen overflow-hidden` — and each region
+ * owns its own scrolling. That is what lets the results table keep a sticky
+ * header at 250 rows per page and the rail keep a pinned Collapse button, both
+ * of which would drift off-screen under a single document scroll.
+ */
 export function App() {
-  const { user, canIngest, logout } = useAuth();
-  const { theme, toggle } = useTheme();
+  const location = useLocation();
+  const isSearch = location.pathname.startsWith('/search');
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4">
-          <Link to="/search" className="flex shrink-0 items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
-              <Database className="size-4" />
-            </span>
-            <span className="hidden text-sm font-semibold sm:inline">Ripple Pulse</span>
-          </Link>
+    <ShellStateProvider>
+      <ToastProvider>
+        <div className="flex h-full flex-col overflow-hidden bg-rp-bg text-rp-text">
+          <PulseHeader />
 
-          <nav className="flex items-center gap-1">
-            <TopNavLink to="/search">
-              <Search className="size-3.5" />
-              Search
-            </TopNavLink>
-            {/* Hidden unless the backend says this account may ingest. The route is
-                guarded too, and the backend's 403 remains the real gate. */}
-            {canIngest && (
-              <>
-                <TopNavLink to="/ingest">
-                  <Download className="size-3.5" />
-                  Ingest
-                </TopNavLink>
-                <TopNavLink to="/taxonomy">
-                  <Tags className="size-3.5" />
-                  Taxonomy
-                </TopNavLink>
-              </>
-            )}
-          </nav>
+          <div className="flex min-h-0 flex-1">
+            <AppRail />
+            {/* The data rail belongs to search. Ingest and Taxonomy are their
+                own destinations and take the full width. */}
+            {isSearch && <SearchRail />}
 
-          <div className="ml-auto flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={toggle}
-              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-            >
-              {theme === 'dark' ? <Sun /> : <Moon />}
-            </Button>
-            {user && (
-              <>
-                <span className="hidden max-w-48 truncate text-xs text-muted-foreground md:inline">
-                  {user.email}
-                </span>
-                <Button variant="ghost" size="icon-sm" onClick={() => void logout()} aria-label="Sign out">
-                  <LogOut />
-                </Button>
-              </>
-            )}
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+              <Suspense fallback={<LoadingState />}>
+                {isSearch ? (
+                  <Outlet />
+                ) : (
+                  // Ingest and Taxonomy were written as ordinary scrolling pages,
+                  // so they get the page padding and scroll container the old
+                  // <main> used to give them.
+                  <div className={cn('min-h-0 flex-1 overflow-y-auto px-4 py-5')}>
+                    <div className="mx-auto max-w-[1600px]">
+                      <Outlet />
+                    </div>
+                  </div>
+                )}
+              </Suspense>
+            </div>
           </div>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-[1600px] px-4 py-5">
-        {/* Detail pages and the ingest screen are lazy-loaded (see router.tsx). */}
-        <Suspense fallback={<LoadingState />}>
-          <Outlet />
-        </Suspense>
-      </main>
-    </div>
+      </ToastProvider>
+    </ShellStateProvider>
   );
 }
 
-function TopNavLink({ to, children }: { to: string; children: React.ReactNode }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        cn(
-          'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
-          isActive
-            ? 'bg-secondary text-foreground'
-            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
-        )
-      }
-    >
-      {children}
-    </NavLink>
-  );
+/**
+ * Split out so the two facet queries are only mounted on search routes.
+ *
+ * Both are cached hard (10 minutes; filter vocabularies only change on ingest),
+ * and the creator facets are the same query the results page runs — so this
+ * shares one subscription with it rather than adding a request. The campaign
+ * facets are here for the brand list the "Worked with" filter offers.
+ */
+function SearchRail() {
+  const creatorFacets = useCreatorFacets();
+  const campaignFacets = useCampaignFacets();
+
+  return <DataRail facets={creatorFacets.data} brands={campaignFacets.data?.brands} />;
 }

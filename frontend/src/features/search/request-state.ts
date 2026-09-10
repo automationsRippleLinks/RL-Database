@@ -9,6 +9,8 @@
 import { useMemo } from 'react';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { toWireTier } from '@/lib/enums';
+import { parseAmount } from '@/lib/format';
+import { resolveCityFilter } from '@/lib/geo';
 import type {
   BrandSearchRequest,
   BrandSort,
@@ -28,16 +30,28 @@ import type {
 
 export const DEFAULT_PAGE_SIZE = 50;
 
-/** Sort vocabularies, kept identical to the ones the Streamlit app established. */
+export const CREATOR_PAGE_SIZES = [50, 100, 150, 200, 250];
+
+/**
+ * The five orderings the redesign specifies, in its wording.
+ *
+ * Note what is missing: 'relevance'. The old list opened with it and it was the
+ * default, so a text search came back ranked by how well each row matched. This
+ * menu has no such option, which means a search for "mumbai food" is now ordered
+ * by follower count instead of by match quality. That is what the handoff asks
+ * for and it is what ships; if ranked text search turns out to be missed, adding
+ * a sixth "Best match" row here and defaulting to it while a query is present is
+ * the whole fix — the backend still accepts 'relevance'.
+ */
 export const CREATOR_SORTS: { value: CreatorSort; label: string }[] = [
-  { value: 'relevance', label: 'Relevance' },
-  { value: 'followers_desc', label: 'Followers — high to low' },
-  { value: 'followers_asc', label: 'Followers — low to high' },
-  { value: 'avg_views_desc', label: 'Avg views — high to low' },
-  { value: 'avg_views_asc', label: 'Avg views — low to high' },
-  { value: 'name_asc', label: 'Name — A to Z' },
-  { value: 'name_desc', label: 'Name — Z to A' },
+  { value: 'followers_desc', label: 'Most followers' },
+  { value: 'followers_asc', label: 'Fewest followers' },
+  { value: 'avg_views_desc', label: 'Most avg views' },
+  { value: 'name_asc', label: 'Name A–Z' },
+  { value: 'campaigns_desc', label: 'Most campaigns with us' },
 ];
+
+export const DEFAULT_CREATOR_SORT: CreatorSort = 'followers_desc';
 
 export const BRAND_SORTS: { value: BrandSort; label: string }[] = [
   { value: 'relevance', label: 'Relevance' },
@@ -79,10 +93,26 @@ export function useQueryText(): string {
   return useUrlSearchState().getString('q');
 }
 
-export function useCreatorRequest(): CreatorSearchRequest {
+/**
+ * Region and State have no column behind them — the creator table stores a city
+ * and nothing else — so both are resolved into `cities` here, against the city
+ * vocabulary the facets endpoint returns. See lib/geo.ts for why that is the
+ * right boundary to do it at.
+ *
+ * Passing the facet cities in (rather than reading them from a hook) keeps this
+ * a pure derivation of the URL: the same URL plus the same vocabulary always
+ * produces the same request object, which is what makes it safe as a query key.
+ * Before the facets resolve the list is empty, so a region-only filter sends no
+ * cities for one render and then narrows — the same shape as any other
+ * filter-then-refetch, and TanStack keeps the previous rows on screen through it.
+ */
+export function useCreatorRequest(facetCities: string[] = []): CreatorSearchRequest {
   const url = useUrlSearchState();
   const paging = usePaging();
   const text = url.getString('q');
+  // Joined so the memo compares by value: the array identity changes on every
+  // facets render even when the vocabulary has not.
+  const cityVocabulary = facetCities.join('\u0000');
 
   return useMemo(
     () => ({
@@ -94,7 +124,16 @@ export function useCreatorRequest(): CreatorSearchRequest {
       genders: url.getList('gender'),
       categories: url.getList('category'),
       languages: url.getList('language'),
-      cities: url.getList('city'),
+      cities: resolveCityFilter(
+        cityVocabulary ? cityVocabulary.split('\u0000') : [],
+        url.getList('region'),
+        url.getList('state'),
+        url.getList('city'),
+      ),
+      // `c_brand` rather than `brand_id`: the campaigns scope already owns that
+      // key, and the two must not reinterpret each other across a tab switch.
+      brand_ids: url.getList('c_brand').map(Number).filter(Number.isFinite),
+      tags: url.getList('tag'),
       has_email: url.getBool('has_email'),
       has_phone: url.getBool('has_phone'),
       // Inverted on purpose. This filter defaults to ON, and setParams drops
@@ -103,15 +142,30 @@ export function useCreatorRequest(): CreatorSearchRequest {
       has_contact: !url.getBool('no_contact'),
       campaign_involvement:
         (url.getString('in_campaign') as CampaignInvolvement) || null,
-      min_followers: url.getNumber('min_followers'),
-      max_followers: url.getNumber('max_followers'),
-      min_avg_views: url.getNumber('min_views'),
-      max_avg_views: url.getNumber('max_views'),
-      sort: (url.getString('sort', 'relevance') as CreatorSort) || 'relevance',
+      min_followers: parseAmount(url.getString('min_followers')),
+      max_followers: parseAmount(url.getString('max_followers')),
+      min_avg_views: parseAmount(url.getString('min_views')),
+      max_avg_views: parseAmount(url.getString('max_views')),
+      sort:
+        (url.getString('sort', DEFAULT_CREATOR_SORT) as CreatorSort) || DEFAULT_CREATOR_SORT,
       ...paging,
     }),
-    [url, paging, text],
+    [url, paging, text, cityVocabulary],
   );
+}
+
+/**
+ * The rail's own view of the location filters, before they collapse into
+ * `cities`. The controls have to show what was picked, and the request object
+ * no longer remembers.
+ */
+export function useCreatorRailFilters() {
+  const url = useUrlSearchState();
+  return {
+    regions: url.getList('region'),
+    states: url.getList('state'),
+    cities: url.getList('city'),
+  };
 }
 
 export function useBrandRequest(): BrandSearchRequest {
@@ -187,7 +241,8 @@ export function usePitchRequest(): PitchSearchRequest {
 /** Param keys owned by each scope, so "reset filters" can clear precisely. */
 export const SCOPE_FILTER_KEYS: Record<string, string[]> = {
   creators: [
-    'platform', 'tier', 'gender', 'category', 'language', 'city',
+    'platform', 'tier', 'gender', 'category', 'language',
+    'region', 'state', 'city', 'c_brand', 'tag',
     'has_email', 'has_phone', 'no_contact', 'in_campaign',
     'min_followers', 'max_followers', 'min_views', 'max_views',
   ],
