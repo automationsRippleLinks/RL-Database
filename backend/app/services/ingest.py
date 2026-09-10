@@ -38,7 +38,7 @@ from app.schemas.ingest import (
     PITCH_CREATOR_ONLY_FIELDS,
 )
 from app.services.ingest_job import IngestResult
-from app.core.config import PG_MAX_PARAMS, MAX_STORED_ERRORS
+from app.core.config import settings
 
 
 #: Splits a multi-value cell while KEEPING the delimiters, so a term that
@@ -166,9 +166,9 @@ class Ingest:
         if not rows:
             return
         per_row = len(rows[0])
-        chunk = max(1, PG_MAX_PARAMS // per_row)
+        chunk = max(1, settings.PG_MAX_PARAMS // per_row)
         for i in range(0, len(rows), chunk):
-            await session.execute(pg_insert(model).values(rows[i : i + chunk]))
+            await session.exec(pg_insert(model).values(rows[i : i + chunk]))
 
     async def _load_creators(
         self, session: AsyncSession, wanted: set[tuple]
@@ -432,9 +432,9 @@ class Ingest:
                     updated=0,
                     skipped=0,
                     failed=received,
-                    errors_truncated=max(0, len(all_errors) - MAX_STORED_ERRORS),
+                    errors_truncated=max(0, len(all_errors) - settings.MAX_STORED_ERRORS),
                 ),
-                errors=all_errors[:MAX_STORED_ERRORS],
+                errors=all_errors[:settings.MAX_STORED_ERRORS],
                 message=f"Rejected: {summary_text}.",
             )
         )
@@ -462,7 +462,7 @@ class Ingest:
             )
         ]
         written = 0
-        chunk = max(1, PG_MAX_PARAMS // 2)
+        chunk = max(1, settings.PG_MAX_PARAMS // 2)
         for i in range(0, len(rows), chunk):
             result = await session.exec(
                 pg_insert(link_model)
@@ -910,7 +910,7 @@ class Ingest:
             await session.flush()
 
         failed = sum(1 for e in errors if e.severity == "error")
-        truncated = max(0, len(errors) - MAX_STORED_ERRORS)
+        truncated = max(0, len(errors) - settings.MAX_STORED_ERRORS)
 
         return IngestResult(
             counts=IngestCounts(
@@ -922,7 +922,7 @@ class Ingest:
                 errors_truncated=truncated,
             ),
             errors=sorted(errors, key=lambda e: e.severity != "error")[
-                :MAX_STORED_ERRORS
+                :settings.MAX_STORED_ERRORS
             ],
             message=(
                 self._reconcile(
@@ -990,7 +990,7 @@ class Ingest:
                         failed=len(data),
                         errors_truncated=0,
                     ),
-                    errors=errors[:MAX_STORED_ERRORS],
+                    errors=errors[: settings.MAX_STORED_ERRORS],
                     message="Aborted: record/model field mismatch would corrupt the insert.",
                 )
             )
@@ -1087,7 +1087,7 @@ class Ingest:
             if not rows:
                 continue
             per_row = len(rows[0])
-            chunk = max(1, PG_MAX_PARAMS // per_row)
+            chunk = max(1, settings.PG_MAX_PARAMS // per_row)
             for i in range(0, len(rows), chunk):
                 batch = rows[i : i + chunk]
                 stmt = pg_insert(CampaignCreatorLink).values(batch)
@@ -1101,7 +1101,7 @@ class Ingest:
             await session.flush()
 
         failed = sum(1 for e in errors if e.severity == "error")
-        truncated = max(0, len(errors) - MAX_STORED_ERRORS)
+        truncated = max(0, len(errors) - settings.MAX_STORED_ERRORS)
 
         return IngestResult(
             counts=IngestCounts(
@@ -1113,7 +1113,7 @@ class Ingest:
                 errors_truncated=truncated,
             ),
             errors=sorted(errors, key=lambda e: e.severity != "error")[
-                :MAX_STORED_ERRORS
+                : settings.MAX_STORED_ERRORS
             ],
             message=(
                 self._reconcile(

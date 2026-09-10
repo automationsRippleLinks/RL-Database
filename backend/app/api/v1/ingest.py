@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status, Query, UploadFile, File, Form
 from sqlmodel import select, col, func
 
-from app.core.config import MAX_UPLOAD_BYTES, FACETS_PREFIX, SEARCH_PREFIX, SUGGEST_PREFIX
+from app.core.config import settings
 from app.core.cache import invalidate
 from app.api.deps import SessionDep, IngestUser, CSRFProtected, RedisDep, SessionFactoryDep
 from app.models import (
@@ -136,7 +136,7 @@ async def upload(
         )
 
     raw = await file.read()
-    if len(raw) > MAX_UPLOAD_BYTES:
+    if len(raw) > settings.MAX_UPLOAD_BYTES:
         raise HTTPException(
             status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="File exceeds 25 MB"
         )
@@ -181,7 +181,12 @@ async def upload(
         )
     else:
         if not dry_run:  # redis should not report successful ingest as a failure
-            await invalidate(redis, FACETS_PREFIX, SEARCH_PREFIX, SUGGEST_PREFIX)
+            await invalidate(
+                redis,
+                settings.FACETS_PREFIX,
+                settings.SEARCH_PREFIX,
+                settings.SUGGEST_PREFIX,
+            )
 
     row = await record_job(
         session_factory=session_factory,

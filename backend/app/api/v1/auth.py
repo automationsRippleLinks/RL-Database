@@ -7,7 +7,7 @@ from sqlmodel import select
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
-from app.core.config import settings, OAUTH_STATE_PREFIX
+from app.core.config import settings
 from app.core.security import (
     hash_password,
     new_token,
@@ -44,7 +44,7 @@ from app.models import User
 router = APIRouter()
 
 _DUMMY_HASH = hash_password(new_csrf_token())
-IS_PROD = settings.ENVIRONMENT == "production"
+IS_PROD = settings.ENVIRONMENT == "PROD"
 
 
 def _set_session_cookies(response: Response, sid: str, csrf_token: str) -> None:
@@ -55,7 +55,7 @@ def _set_session_cookies(response: Response, sid: str, csrf_token: str) -> None:
         secure=IS_PROD,
         samesite="lax",
         path="/",
-        max_age=settings.SESSION_TTL_SECONDS,
+        max_age=settings.SESSION_TTL,
     )
     response.set_cookie(
         "csrf_token",
@@ -64,7 +64,7 @@ def _set_session_cookies(response: Response, sid: str, csrf_token: str) -> None:
         secure=IS_PROD,
         samesite="lax",
         path="/",
-        max_age=settings.SESSION_TTL_SECONDS,
+        max_age=settings.SESSION_TTL,
     )
 
 
@@ -145,7 +145,7 @@ async def google_login(request: Request, redis: RedisDep, next: str | None = Non
 
     state = new_token()
     await redis.setex(
-        f"{OAUTH_STATE_PREFIX}{state}", settings.OAUTH_STATE_TTL, safe_next
+        f"{settings.OAUTH_STATE_PREFIX}{state}", settings.OAUTH_STATE_TTL, safe_next
     )
 
     params = {
@@ -180,7 +180,7 @@ async def google_callback(
         return _error_redirect("unknown")
 
     # State must match what we stored, and is single-use.
-    state_key = f"{OAUTH_STATE_PREFIX}{state}"
+    state_key = f"{settings.OAUTH_STATE_PREFIX}{state}"
     safe_next = await redis.get(state_key)
     if safe_next is None:
         return _error_redirect("state_mismatch")

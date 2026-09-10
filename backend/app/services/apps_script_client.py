@@ -19,7 +19,7 @@ class Client:
                 detail=f"Invalid Action : {action} for apps script api_call",
             )
 
-        timeout = min(timeout, settings.MAX_API_CALL_TIMEOUT)
+        timeout = min(timeout, settings.APPS_SCRIPT_API_CALL_TIMEOUT)
         payload = {
             "action": action,
             "secret": settings.APPS_SCRIPT_API_SECRET,

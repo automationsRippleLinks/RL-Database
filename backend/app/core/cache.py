@@ -5,7 +5,7 @@ import hashlib
 from pydantic import BaseModel
 from redis.asyncio import Redis as RedisClient
 
-from app.core.config import CACHE_VERSION
+from app.core.config import settings
 
 def _canonical(payload: Any) -> str:
     if isinstance(payload, BaseModel):
@@ -19,9 +19,9 @@ def _canonical(payload: Any) -> str:
 
 def cache_key(prefix: str, payload: Any = None) -> str:
     if payload is None:
-        return f"{prefix}{CACHE_VERSION}"
+        return f"{prefix}{settings.REDIS_CACHE_VERSION}"
     digest = hashlib.sha256(_canonical(payload).encode()).hexdigest()[:16]
-    return f"{prefix}{CACHE_VERSION}:{digest}"
+    return f"{prefix}{settings.REDIS_CACHE_VERSION}:{digest}"
 
 
 async def cached(

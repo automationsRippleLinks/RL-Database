@@ -14,7 +14,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.api.deps import SessionDep, CurrentUser, IngestUser, CSRFProtected, RedisDep
 from app.core.cache import invalidate
-from app.core.config import FACETS_PREFIX, SEARCH_PREFIX, SUGGEST_PREFIX
+from app.core.config import settings
 from app.models import (
     Category,
     Language,
@@ -37,7 +37,7 @@ _TABLES = {
 }
 
 
-def _tables(kind: TaxonomyKind):
+def _tables(kind: TaxonomyKind) -> dict:
     return _TABLES[kind]
 
 
@@ -81,7 +81,9 @@ async def _reject_duplicate(
 
 async def _invalidate(redis) -> None:
     """The creator facets are cached for 24h; a rename would otherwise linger."""
-    await invalidate(redis, FACETS_PREFIX, SEARCH_PREFIX, SUGGEST_PREFIX)
+    await invalidate(
+        redis, settings.FACETS_PREFIX, settings.SEARCH_PREFIX, settings.SUGGEST_PREFIX
+    )
 
 
 @router.get("/{kind}", response_model=TaxonomyList)

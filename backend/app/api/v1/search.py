@@ -9,14 +9,7 @@ from pydantic import BaseModel
 from sqlmodel import select, col, and_, or_, func, exists, union, Column
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.config import (
-    FACETS_PREFIX,
-    SUGGEST_PREFIX,
-    SEARCH_PREFIX,
-    SUGGEST_TTL,
-    FACETS_TTL,
-    SEARCH_TTL,
-)
+from app.core.config import settings
 from app.core.cache import cached, cache_key
 from app.api.deps import SessionDep, CurrentUser, RedisDep, SessionFactoryDep
 from app.models.enums import PlatformChoices
@@ -721,7 +714,7 @@ async def facets_creators(session: SessionDep, redis: RedisDep, user: CurrentUse
         }
 
     return await cached(
-        redis, cache_key(f"{FACETS_PREFIX}creators"), FACETS_TTL, produce
+        redis, cache_key(f"{settings.FACETS_PREFIX}creators"), settings.FACETS_TTL, produce
     )
 
 
@@ -749,7 +742,10 @@ async def facets_campaigns(session: SessionDep, redis: RedisDep, user: CurrentUs
         }
 
     return await cached(
-        redis, cache_key(f"{FACETS_PREFIX}campaigns"), FACETS_TTL, produce
+        redis,
+        cache_key(f"{settings.FACETS_PREFIX}campaigns"),
+        settings.FACETS_TTL,
+        produce,
     )
 
 
@@ -774,7 +770,12 @@ async def facets_brands(session: SessionDep, redis: RedisDep, user: CurrentUser)
             ).one(),
         }
 
-    return await cached(redis, cache_key(f"{FACETS_PREFIX}brands"), FACETS_TTL, produce)
+    return await cached(
+        redis,
+        cache_key(f"{settings.FACETS_PREFIX}brands"),
+        settings.FACETS_TTL,
+        produce,
+    )
 
 
 @router.get("/facets/pitches")
@@ -804,7 +805,10 @@ async def facets_pitches(session: SessionDep, redis: RedisDep, user: CurrentUser
         }
 
     return await cached(
-        redis, cache_key(f"{FACETS_PREFIX}pitches"), FACETS_TTL, produce
+        redis,
+        cache_key(f"{settings.FACETS_PREFIX}pitches"),
+        settings.FACETS_TTL,
+        produce,
     )
 
 
@@ -907,8 +911,8 @@ async def global_search(
 
     return await cached(
         redis,
-        cache_key(f"{SEARCH_PREFIX}global", {"q": q.strip().lower(), "limit": limit}),
-        SEARCH_TTL,
+        cache_key(f"{settings.SEARCH_PREFIX}global", {"q": q.strip().lower(), "limit": limit}),
+        settings.SEARCH_TTL,
         produce,
     )
 
@@ -1041,7 +1045,7 @@ async def suggest(
 
     return await cached(
         redis,
-        cache_key(SUGGEST_PREFIX, {"q": q.strip().lower(), "limit": limit}),
-        SUGGEST_TTL,
+        cache_key(settings.SUGGEST_PREFIX, {"q": q.strip().lower(), "limit": limit}),
+        settings.SUGGEST_TTL,
         produce,
     )

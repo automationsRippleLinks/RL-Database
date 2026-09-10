@@ -5,7 +5,7 @@ from decimal import Decimal
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select, col, func
 
-from app.core.config import BRAND_DETAIL_LIMIT, TOP_CREATORS_LIMIT
+from app.core.config import settings
 from app.api.deps import SessionDep, CurrentUser
 from app.api.v1.search import search_campaigns, search_pitches, _tags_for_creators
 from app.models import *
@@ -347,7 +347,7 @@ async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
         CampaignSearchRequest(
             brand_ids=[brand_id],
             page=1,
-            page_size=BRAND_DETAIL_LIMIT,
+            page_size=settings.BRAND_DETAIL_LIMIT,
             sort="start_date_desc",
         ),
         session,
@@ -358,7 +358,7 @@ async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
         PitchSearchRequest(
             brand_ids=[brand_id],
             page=1,
-            page_size=BRAND_DETAIL_LIMIT,
+            page_size=settings.BRAND_DETAIL_LIMIT,
             sort="created_desc",
         ),
         session,
@@ -423,7 +423,7 @@ async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
         )  # highest spend. ALT: spend[cr.id] = spend.get(cr.id, 0) + 1
 
     top_ids = sorted(spend, key=lambda cid: spend[cid], reverse=True)[
-        :TOP_CREATORS_LIMIT
+        : settings.TOP_CREATORS_LIMIT
     ]
     top_cats, top_langs = await _tags_for_creators(session, top_ids)
 

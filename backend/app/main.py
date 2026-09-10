@@ -2,11 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.core.config import settings, CACHE_REFRESH_PREFIX_LIST
+from app.core.config import settings
 from app.core.cache import invalidate
 from app.core.db import create_engine, create_session_factory
 from app.core.redis_client import create_redis, create_redis_pool
 from app.api.v1 import router as v1_router
+
+CACHE_REFRESH_PREFIX_LIST = [
+    settings.FACETS_PREFIX,
+    settings.SEARCH_PREFIX,
+    settings.SUGGEST_PREFIX,
+    settings.RATE_LIMIT_PREFIX,
+]
 
 
 @asynccontextmanager
@@ -33,7 +40,7 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.connect():
             pass
-        await app.state.redis.ping()
+        await app.state.redis.ping()  # check if redis is alive
         await invalidate(app.state.redis, *CACHE_REFRESH_PREFIX_LIST)  # refresh cache
         yield
     finally:
@@ -47,10 +54,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     title=f"Ripple Pulse {settings.ENVIRONMENT}",
-    version="0.1.0",
-    openapi_url="/api/openapi.json",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    version=settings.API_VERSION,
+    root_path=settings.API_ROOT_PATH,
 )
 
 app.add_middleware(
@@ -63,9 +68,9 @@ app.add_middleware(
 )
 
 
-app.include_router(v1_router, prefix="/api/v1")
+app.include_router(v1_router)
 
 
-@app.get("/api/home")
+@app.get("/home")
 async def home_route():
     return {"message": "Connected to RL Database backend!!"}

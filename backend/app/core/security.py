@@ -3,13 +3,7 @@ import secrets
 from pwdlib import PasswordHash
 from redis.asyncio import Redis as RedisClient
 
-from app.core.config import (
-    settings,
-    USER_SESSIONS_PREFIX,
-    SESSION_PREFIX,
-    EMAIL_VERIFY_PREFIX,
-    PASSWORD_RESET_PREFIX,
-)
+from app.core.config import settings
 
 password_hasher = PasswordHash.recommended()
 
@@ -37,42 +31,42 @@ def new_token() -> str:
 
 async def create_session(redis: RedisClient, user_id: int) -> str:
     sid = new_token()
-    key = f"{USER_SESSIONS_PREFIX}{user_id}"
+    key = f"{settings.USER_SESSIONS_PREFIX}{user_id}"
     await redis.setex(
-        f"{SESSION_PREFIX}{sid}", settings.SESSION_TTL_SECONDS, str(user_id)
+        f"{settings.SESSION_PREFIX}{sid}", settings.SESSION_TTL, str(user_id)
     )
     await redis.sadd(key, sid)
-    await redis.expire(key, settings.SESSION_TTL_SECONDS)
+    await redis.expire(key, settings.SESSION_TTL)
     return sid
 
 
 async def read_session(redis: RedisClient, sid: str) -> int | None:
-    user_id = await redis.get(f"{SESSION_PREFIX}{sid}")
+    user_id = await redis.get(f"{settings.SESSION_PREFIX}{sid}")
     if user_id is None:
         return None
     pipe = redis.pipeline()
-    pipe.expire(f"{SESSION_PREFIX}{sid}", settings.SESSION_TTL_SECONDS)
-    pipe.expire(f"{USER_SESSIONS_PREFIX}{user_id}", settings.SESSION_TTL_SECONDS)
+    pipe.expire(f"{settings.SESSION_PREFIX}{sid}", settings.SESSION_TTL)
+    pipe.expire(f"{settings.USER_SESSIONS_PREFIX}{user_id}", settings.SESSION_TTL)
     await pipe.execute()
     return int(user_id)
 
 
 async def destroy_session(redis: RedisClient, sid: str) -> None:
-    user_id = await redis.get(f"{SESSION_PREFIX}{sid}")
-    await redis.delete(f"{SESSION_PREFIX}{sid}")
+    user_id = await redis.get(f"{settings.SESSION_PREFIX}{sid}")
+    await redis.delete(f"{settings.SESSION_PREFIX}{sid}")
     if user_id is not None:
-        await redis.srem(f"{USER_SESSIONS_PREFIX}{user_id}", sid)
+        await redis.srem(f"{settings.USER_SESSIONS_PREFIX}{user_id}", sid)
 
 
 async def destroy_other_sessions(
     redis: RedisClient, user_id: int, keep_sid: str
 ) -> None:
-    key = f"{USER_SESSIONS_PREFIX}{user_id}"
+    key = f"{settings.USER_SESSIONS_PREFIX}{user_id}"
     sids = await redis.smembers(key)
     for sid in sids:
         if sid == keep_sid:
             continue
-        await redis.delete(f"{SESSION_PREFIX}{sid}")
+        await redis.delete(f"{settings.SESSION_PREFIX}{sid}")
         await redis.srem(key, sid)
 
 
@@ -89,18 +83,20 @@ def new_csrf_token() -> str:
 async def create_email_verification_token(redis: RedisClient, user_id: int) -> str:
     token = new_token()
     await redis.setex(
-        f"{EMAIL_VERIFY_PREFIX}{token}", settings.EMAIL_VERIFICATION_TTL, str(user_id)
+        f"{settings.EMAIL_VERIFY_PREFIX}{token}",
+        settings.EMAIL_VERIFICATION_TTL,
+        str(user_id),
     )
     return token
 
 
 async def read_email_verification_token(redis: RedisClient, token: str) -> int | None:
-    user_id = await redis.get(f"{EMAIL_VERIFY_PREFIX}{token}")
+    user_id = await redis.get(f"{settings.EMAIL_VERIFY_PREFIX}{token}")
     return int(user_id) if user_id is not None else None
 
 
 async def destroy_email_verification_token(redis: RedisClient, token: str) -> None:
-    await redis.delete(f"{EMAIL_VERIFY_PREFIX}{token}")
+    await redis.delete(f"{settings.EMAIL_VERIFY_PREFIX}{token}")
 
 
 # --- Password Reset ---
@@ -109,15 +105,17 @@ async def destroy_email_verification_token(redis: RedisClient, token: str) -> No
 async def create_password_reset_token(redis: RedisClient, user_id: int) -> str:
     token = new_token()
     await redis.setex(
-        f"{PASSWORD_RESET_PREFIX}{token}", settings.PASSWORD_RESET_TTL, str(user_id)
+        f"{settings.PASSWORD_RESET_PREFIX}{token}",
+        settings.PASSWORD_RESET_TTL,
+        str(user_id),
     )
     return token
 
 
 async def read_password_reset_token(redis: RedisClient, token: str) -> int | None:
-    user_id = await redis.get(f"{PASSWORD_RESET_PREFIX}{token}")
+    user_id = await redis.get(f"{settings.PASSWORD_RESET_PREFIX}{token}")
     return int(user_id) if user_id is not None else None
 
 
 async def destory_password_reset_token(redis: RedisClient, token: str) -> None:
-    await redis.delete(f"{PASSWORD_RESET_PREFIX}{token}")
+    await redis.delete(f"{settings.PASSWORD_RESET_PREFIX}{token}")
