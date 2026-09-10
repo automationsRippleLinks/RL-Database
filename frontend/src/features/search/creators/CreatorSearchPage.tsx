@@ -102,6 +102,7 @@ export function CreatorSearchPage() {
   const openCreator = (row: CreatorRow) => {
     rememberRecent({ scope: 'creators', id: row.id, label: row.name });
     url.setParams({ creator: row.id }, { replace: false });
+
   };
   const closeDrawer = useCallback(
     () => url.setParams({ creator: null }, { replace: false }),
@@ -117,7 +118,7 @@ export function CreatorSearchPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* ── view controls ────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-end gap-[7px] px-[18px] pt-[9px]">
+      <div className="flex shrink-0 items-center justify-end gap-1.75 px-4.5 pt-2.25">
         <SortMenu
           value={request.sort}
           open={shell.openMenu === 'sort'}
@@ -131,7 +132,7 @@ export function CreatorSearchPage() {
           type="button"
           onClick={exportCsv}
           disabled={!rows.length && !pickedCount}
-          className="inline-flex cursor-pointer items-center gap-[7px] rounded-[9px] border border-rp-border px-3 py-[7px] text-[12.5px] font-semibold hover:bg-rp-surface2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex cursor-pointer items-center gap-1.75 rounded-[9px] border border-rp-border px-3 py-1.75 text-[12.5px] font-semibold hover:bg-rp-surface2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Download className="size-3.5" />
           {pickedCount ? `Export ${pickedCount} selected` : 'Export page'}
@@ -139,8 +140,8 @@ export function CreatorSearchPage() {
       </div>
 
       {/* ── results ──────────────────────────────────────────────────────── */}
-      <div className="flex min-h-0 flex-1 flex-col px-[18px]">
-        <div className="flex shrink-0 flex-wrap items-center gap-[9px] pt-2.5 pb-[9px]">
+      <div className="flex min-h-0 flex-1 flex-col px-4.5">
+        <div className="flex shrink-0 flex-wrap items-center gap-2.25 pt-2.5 pb-2.25">
           <h1 className="text-[14.5px] font-bold">
             <span className="tabular-nums">{formatNumber(total)}</span>{' '}
             {total === 1 ? 'creator' : 'creators'}
@@ -149,7 +150,7 @@ export function CreatorSearchPage() {
           {model.pills.map((pill) => (
             <span
               key={pill.key}
-              className="inline-flex items-center gap-1.5 rounded-full bg-rp-primary-soft py-1 pr-[7px] pl-2.5 text-[11.5px] font-semibold text-rp-primary"
+              className="inline-flex items-center gap-1.5 rounded-full bg-rp-primary-soft py-1 pr-1.75 pl-2.5 text-[11.5px] font-semibold text-rp-primary"
             >
               {pill.label}
               <button
@@ -165,7 +166,7 @@ export function CreatorSearchPage() {
           ))}
 
           {request.text && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-rp-primary-soft py-1 pr-[7px] pl-2.5 text-[11.5px] font-semibold text-rp-primary">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-rp-primary-soft py-1 pr-1.75 pl-2.5 text-[11.5px] font-semibold text-rp-primary">
               “{request.text}”
               <button
                 type="button"
@@ -186,7 +187,7 @@ export function CreatorSearchPage() {
                 model.actions.clearAll();
                 url.setParams({ q: null }, { replace: true, resetPage: true });
               }}
-              className="cursor-pointer rounded-full px-[9px] py-1 text-[11.5px] font-semibold text-rp-muted hover:bg-rp-surface2 hover:text-rp-text"
+              className="cursor-pointer rounded-full px-2.25 py-1 text-[11.5px] font-semibold text-rp-muted hover:bg-rp-surface2 hover:text-rp-text"
             >
               Clear all
             </button>
@@ -197,7 +198,7 @@ export function CreatorSearchPage() {
             part of the same surface: clicking another row swaps the record. */}
         <div
           data-rp-pop="results"
-          className="min-h-0 flex-1 overflow-auto rounded-[13px] border border-rp-border bg-rp-surface"
+          className="min-h-0 flex-1 overflow-auto rounded-[13px] border border-rp-border bg-rp-surface scrollbar-thin"
         >
           {searchQuery.isError ? (
             <ErrorState
@@ -222,8 +223,8 @@ export function CreatorSearchPage() {
         </div>
 
         {/* ── paging ─────────────────────────────────────────────────────── */}
-        <div className="flex shrink-0 items-center justify-between gap-3 pt-[9px] pb-3">
-          <div className="flex items-center gap-[9px]">
+        <div className="flex shrink-0 items-center justify-between gap-3 pt-2.25 pb-3">
+          <div className="flex items-center gap-2.25">
             <span className="text-xs tabular-nums text-rp-muted">
               {total === 0
                 ? 'No rows'
@@ -236,7 +237,7 @@ export function CreatorSearchPage() {
               }
               title="Rows per page"
               aria-label="Rows per page"
-              className="cursor-pointer rounded-lg border border-rp-border bg-rp-surface px-2 py-[5px] text-xs"
+              className="cursor-pointer rounded-lg border border-rp-border bg-rp-surface px-2 py-1.25 text-xs"
             >
               {CREATOR_PAGE_SIZES.map((size) => (
                 <option key={size} value={size}>
@@ -251,7 +252,7 @@ export function CreatorSearchPage() {
               label="Previous page"
               disabled={page <= 1}
               onClick={() => url.setParams({ page: page - 1 }, { replace: false })}
-              icon={<ChevronLeft className="size-[15px]" />}
+              icon={<ChevronLeft className="size-3.75" />}
             />
             <span className="text-xs tabular-nums text-rp-muted">
               Page {page} of {pages}
@@ -260,7 +261,7 @@ export function CreatorSearchPage() {
               label="Next page"
               disabled={page >= pages}
               onClick={() => url.setParams({ page: page + 1 }, { replace: false })}
-              icon={<ChevronRight className="size-[15px]" />}
+              icon={<ChevronRight className="size-3.75" />}
             />
           </div>
         </div>

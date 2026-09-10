@@ -167,7 +167,7 @@
     border-radius: 9999px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
+    background: transparent; 
   }
 }
 
@@ -175,7 +175,7 @@
    Ripple Pulse motion.
    Durations and easings are from the handoff and are load-bearing: the drawer's
    exit animation runs for 185ms before the component unmounts, so changing
-   `rpDrawerOut` here without changing DRAWER_EXIT_MS in CreatorDrawer.tsx makes
+   `rpDrawerOut` here without changing EXIT_MS in CreatorDrawer.tsx makes
    the panel vanish mid-slide.
    ────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
@@ -243,4 +243,10 @@
   .animate-rp-menu {
     animation-duration: 0.01ms;
   }
+}
+
+/* index.css */
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }

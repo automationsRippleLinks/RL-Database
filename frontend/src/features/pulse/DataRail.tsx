@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Building2, ChevronLeft, FileText, Megaphone, Users, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { formatNumber } from '@/lib/format';
+import { compact } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { BrandRef, CreatorFacets, SearchScope } from '@/types/api';
 import { CreatorFilterGroups, RailLabel } from './filters/CreatorFilterGroups';
@@ -81,20 +81,20 @@ export function DataRail({
         }
       }}
       className={cn(
-        'relative z-40 box-border shrink-0 transition-[width] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]',
-        shell.railExpanded ? 'w-[214px]' : 'w-14',
+        'relative z-40 box-border shrink-0 transition-[width] duration-200 ease-in-out',
+        shell.railExpanded ? 'w-53.5' : 'w-14',
       )}
     >
       <div
         className={cn(
           'absolute top-0 left-0 flex h-full flex-col justify-between border-r border-rp-border bg-rp-bg',
-          'transition-[width,box-shadow] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]',
-          shell.railOpen ? 'w-[214px]' : 'w-14',
+          'transition-[width,box-shadow] duration-200 ease-in-out',
+          shell.railOpen ? 'w-53.5' : 'w-14',
           shell.railPeek && !shell.railExpanded && 'rounded-r-[14px] shadow-rp',
         )}
       >
         {/* ── data types ─────────────────────────────────────────────────── */}
-        <div className="flex shrink-0 flex-col gap-[3px] px-[7px] pt-[9px]">
+        <div className="flex shrink-0 flex-col gap-0.75 px-1.75 pt-2.25">
           {SECTIONS.map(({ scope, label, icon: Icon, oneLiner }) => {
             const active = scope === activeScope;
             const count = active && shell.sectionCount !== null ? shell.sectionCount : null;
@@ -106,25 +106,30 @@ export function DataRail({
                 title={`${label} — ${oneLiner}`}
                 onClick={() => navigate(linkFor(scope))}
                 className={cn(
-                  'relative flex cursor-pointer items-center gap-[9px] rounded-full text-[12.5px] transition-colors',
-                  shell.railExpanded ? 'px-[10px] py-[9px]' : 'justify-center overflow-visible px-0 py-[9px]',
+                  'relative flex cursor-pointer items-center gap-2.25 rounded-full text-[12.5px] transition-colors',
+                  shell.railExpanded ? 'px-2.5 py-2.25' : 'justify-center overflow-visible px-2.5 py-2.25',
                   active
                     ? 'bg-rp-primary-soft font-bold text-rp-primary'
                     : 'font-medium text-rp-text hover:bg-rp-surface2',
                 )}
               >
-                <Icon className="size-[18px] shrink-0" />
+                <Icon className="size-4.5 shrink-0" />
                 <RailLabel open={shell.railOpen}>{label}</RailLabel>
                 {count !== null &&
                   (shell.railExpanded ? (
                     <span className="shrink-0 rounded-full bg-rp-primary-soft px-1.5 py-px text-[10.5px] font-bold tabular-nums text-rp-primary">
-                      {formatNumber(count)}
+                      {compact(count)}
                     </span>
                   ) : (
                     // Ringed in the rail's background so it clears the glyph.
-                    <span className="absolute -top-[3px] -right-[3px] min-w-[15px] rounded-full border-[1.5px] border-rp-bg bg-rp-primary px-[3px] text-center text-[9px] leading-[14px] font-bold tabular-nums text-rp-primary-fg">
-                      {count}
-                    </span>
+                    shell.railPeek ? (<span className="shrink-0 rounded-full bg-rp-primary-soft px-1.5 py-px text-[10.5px] font-bold tabular-nums text-rp-primary">
+                      {compact(count)}
+                    </span>)
+                      : (
+                        <span className="absolute -top-0.75 -right-0.75 min-w-3.75 rounded-full border-[1.5px] border-rp-bg bg-rp-primary px-0.75 text-center text-[9px] leading-3.5 font-bold tabular-nums text-rp-primary-fg">
+                          {compact(count)}
+                        </span>
+                      )
                   ))}
               </button>
             );
@@ -138,10 +143,10 @@ export function DataRail({
                 "Clear all" stays reachable however far down the groups you are. */}
             <div
               className={cn(
-                'flex shrink-0 items-center justify-between overflow-hidden px-[9px]',
+                'flex shrink-0 items-center justify-between overflow-hidden px-2.25',
                 shell.railOpen
-                  ? 'h-[34px] opacity-100 transition-[opacity,height] delay-[50ms] duration-200 ease-out'
-                  : 'h-[9px] opacity-0 transition-[opacity,height] duration-200 ease-out',
+                  ? 'h-8.5 opacity-100 transition-[opacity,height] delay-50 duration-200 ease-out'
+                  : 'h-2.25 opacity-0 transition-[opacity,height] duration-200 ease-out',
               )}
             >
               <span className="text-[10.5px] font-bold tracking-[0.06em] text-rp-muted uppercase">
@@ -166,14 +171,14 @@ export function DataRail({
                 type="button"
                 onClick={model.actions.clearAll}
                 title={`${model.totalApplied} filter${model.totalApplied === 1 ? '' : 's'} on — click to clear`}
-                className="mx-[7px] mt-[7px] mb-0.5 flex cursor-pointer items-center justify-center gap-1 rounded-lg bg-rp-primary-soft py-[5px] text-[10.5px] font-bold text-rp-primary"
+                className="mx-1.75 mt-1.75 mb-0.5 flex cursor-pointer items-center justify-center gap-1 rounded-lg bg-rp-primary-soft py-1.25 text-[10.5px] font-bold text-rp-primary"
               >
                 {model.totalApplied}
-                <X className="size-[11px]" strokeWidth={3} />
+                <X className="size-2.75" strokeWidth={3} />
               </button>
             )}
 
-            <div className="rp-scroll flex min-h-0 flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-[7px] pt-0.5 pb-2.5">
+            <div className="rp-scroll flex min-h-0 flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto px-1.75 pt-0.5 pb-2.5">
               <CreatorFilterGroups
                 model={model}
                 facets={facets}
@@ -193,7 +198,7 @@ export function DataRail({
           type="button"
           onClick={shell.toggleRail}
           title={shell.railExpanded ? 'Collapse to icons' : 'Show section names'}
-          className="flex shrink-0 cursor-pointer items-center justify-center gap-[7px] border-t border-rp-border px-2 py-[11px] text-rp-muted hover:text-rp-text"
+          className="flex shrink-0 cursor-pointer items-center justify-center gap-1.75 border-t border-rp-border px-2 py-2.75 text-rp-muted hover:text-rp-text"
         >
           <ChevronLeft
             className={cn('size-4 shrink-0 transition-transform', !shell.railExpanded && 'rotate-180')}
@@ -202,7 +207,7 @@ export function DataRail({
             className={cn(
               'overflow-hidden text-[11.5px] font-semibold whitespace-nowrap',
               shell.railOpen
-                ? 'max-w-[90px] opacity-100 transition-[opacity,max-width] delay-[50ms] duration-200 ease-out'
+                ? 'max-w-22.5 opacity-100 transition-[opacity,max-width] delay-50 duration-200 ease-out'
                 : 'max-w-0 opacity-0 transition-[opacity,max-width] duration-200 ease-out',
             )}
           >

@@ -24,7 +24,7 @@ export function App() {
   return (
     <ShellStateProvider>
       <ToastProvider>
-        <div className="flex h-screen flex-col overflow-hidden bg-rp-bg text-rp-text">
+        <div className="flex h-full flex-col overflow-hidden bg-rp-bg text-rp-text">
           <PulseHeader />
 
           <div className="flex min-h-0 flex-1">

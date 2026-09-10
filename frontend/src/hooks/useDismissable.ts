@@ -32,7 +32,7 @@ export function useDismissOnOutside(
 
     const onMouseDown = (event: MouseEvent) => {
       const target = event.target as Element | null;
-      if (target?.closest?.(selector)) return;
+      if (target?.closest?.(selector)) return; // only closing the drawer when not clicked on the drawer or the results table
       onDismiss();
     };
 

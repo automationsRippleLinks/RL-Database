@@ -107,7 +107,7 @@ export function ShellStateProvider({ children }: { children: ReactNode }) {
     [railExpanded, toggleRail, railPeek, expandRail, openGroup, openMenu, sectionCount],
   );
 
-  return <ShellContext.Provider value={value}>{children}</ShellContext.Provider>;
+  return <ShellContext value={value}>{children}</ShellContext>;
 }
 
 export function useShellState(): ShellState {

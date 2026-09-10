@@ -87,7 +87,7 @@ export function FacetMultiSelect({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-56 p-0">
+        <PopoverContent className="w-var(--radix-popover-trigger-width) min-w-56 p-0">
           {showFilter && (
             <div className="border-b border-border p-1.5">
               <Input

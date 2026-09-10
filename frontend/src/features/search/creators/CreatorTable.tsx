@@ -2,7 +2,6 @@ import {
   Check,
   CircleDashed,
   CircleUserRound,
-  ExternalLink,
   Mail,
   Mars,
   NonBinary,
@@ -69,28 +68,30 @@ export function CreatorTable({
   const allPicked = rows.length > 0 && rows.every((row) => picked[row.id]);
 
   return (
-    <table className="w-full border-collapse text-[13px]">
+    <table className="w-full table-fixed border-collapse text-[11px]">
       <thead>
         <tr>
-          <th className={cn(TH, 'text-center')}>
+          <th className={cn(TH, 'text-left w-10')}>
             <TickBox
               checked={allPicked}
               onClick={onTogglePage}
               label="Select everyone on this page"
             />
           </th>
-          <th className={cn(TH, 'text-left')}>Creator</th>
-          <th className={cn(TH, 'text-center')}>Platform</th>
-          <th className={cn(TH, 'text-right')}>Followers</th>
-          <th className={cn(TH, 'text-right')}>Avg views</th>
-          <th className={cn(TH, 'text-left')}>Location</th>
-          <th className={cn(TH, 'text-center')}>Gender</th>
-          <th className={cn(TH, 'text-left')}>Languages</th>
-          <th className={cn(TH, 'text-left')}>Categories</th>
-          <th className={cn(TH, 'text-left')}>Worked with us</th>
-          <th className={cn(TH, 'text-center')}>Email</th>
-          <th className={cn(TH, 'text-center')}>Phone</th>
-          <th className={cn(TH, 'text-center')}>Profile</th>
+          {/* <th className={cn(TH, 'text-left')}>Creator</th>
+          <th className={cn(TH, 'text-center')}>Platform</th> */}
+          <th className={cn(TH, 'text-left w-46 text-[12px]')}>Creator</th>
+          <th className={cn(TH, 'text-center w-20 text-[12px] ')}>Platform</th>
+          <th className={cn(TH, 'text-center w-20 text-[12px]')}>Followers</th>
+          <th className={cn(TH, 'text-center w-23 text-[12px]')}>Avg views</th>
+          <th className={cn(TH, 'text-left w-20 text-[12px]')}>Location</th>
+          <th className={cn(TH, 'text-center w-30 text-[12px]')}>Gender</th>
+          <th className={cn(TH, 'text-left w-25 text-[12px]')}>Languages</th>
+          <th className={cn(TH, 'text-left w-38 text-[12px]')}>Categories</th>
+          {/* <th className={cn(TH, 'text-center')}>Email</th> */}
+          <th className={cn(TH, 'text-center w-25 text-[12px]')}>Contact</th>
+          {/* <th className={cn(TH, 'text-left w-30 text-[10px]')}>Worked with us</th> */}
+          {/* <th className={cn(TH, 'text-center')}>Profile</th> */}
         </tr>
       </thead>
 
@@ -98,7 +99,12 @@ export function CreatorTable({
         {rows.map((row) => {
           const isActive = row.id === activeId;
           const isPicked = Boolean(picked[row.id]);
-          const state = stateOf(row.city);
+          // const state = stateOf(row.city);
+          // const profileUrl = profileUrlFor(row);
+          const locationParts = row.city?.split(',').map((part) => part.trim()) ?? [];
+          const city = locationParts[0] || '—';
+          const state = locationParts[1] || stateOf(row.city);
+
           const profileUrl = profileUrlFor(row);
 
           return (
@@ -114,7 +120,7 @@ export function CreatorTable({
                     : 'hover:bg-rp-surface2',
               )}
             >
-              <td className={cn(TD, 'text-center')}>
+              <td className={cn(TD, 'text-left')}>
                 <TickBox
                   checked={isPicked}
                   label={`Select ${row.name}`}
@@ -125,8 +131,9 @@ export function CreatorTable({
                 />
               </td>
 
-              <td className={TD}>
-                <span className="flex items-center gap-[9px]">
+              {/* <td className={TD}> */}
+              <td className={cn(TD, 'w-180')}>
+                <span className="flex items-center gap-2.25">
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-rp-border bg-rp-surface2 text-[10.5px] font-bold">
                     {initials(row.name)}
                   </span>
@@ -151,31 +158,56 @@ export function CreatorTable({
                 </span>
               </td>
 
-              <td className={cn(TD, 'text-center')}>
+              {/* <td className={cn(TD, 'text-center')}> */}
+              <td className={cn(TD, 'w-20 text-center')}>
                 <span className="inline-flex">
                   <PlatformMark platform={row.platform} />
                 </span>
               </td>
 
               <td
-                className={cn(TD, 'text-right tabular-nums')}
+                className={cn(TD, 'text-center tabular-nums')}
                 title={row.followers !== null ? `${formatNumber(row.followers)} followers` : undefined}
               >
                 {compact(row.followers)}
               </td>
               <td
-                className={cn(TD, 'text-right tabular-nums')}
+                className={cn(TD, 'text-center tabular-nums')}
                 title={row.avg_views !== null ? `${formatNumber(row.avg_views)} views per post` : undefined}
               >
                 {compact(row.avg_views)}
               </td>
 
-              <td className={TD}>
+              {/* <td className={TD}>
                 <span className="block whitespace-nowrap">{row.city ?? '—'}</span>
                 {state && (
                   <span className="block text-[11px] whitespace-nowrap text-rp-muted">{state}</span>
                 )}
+              </td> */}
+              {/* <td className={TD}>
+                <span className="block text-[13px] font-medium leading[16px] whitespace-nowrap">
+                  {row.city ?? '—'}
+                </span>
+                {state && (
+                  <span className="block text-[8px] font-medium leading-3 whitespace-nowrap text-rp-muted">
+                    {state}
+                  </span>
+                )}
+              </td> */}
+              <td className={TD}>
+                <span className="block text-[12px] font-medium leading-5 whitespace-nowrap">
+                  {city}
+                </span>
+
+                {state && (
+                  <span className="block text-[10px] leading-4 text-rp-muted whitespace-nowrap">
+                    {state}
+                  </span>
+                )}
               </td>
+
+
+
 
               <td className={cn(TD, 'text-center')}>
                 <GenderGlyph gender={row.gender} />
@@ -186,14 +218,30 @@ export function CreatorTable({
               </td>
 
               <td className={TD}>
+
                 <TruncatedList items={row.categories} overflowTitle="Also" chipFirst />
               </td>
 
-              <td className={TD}>
-                <WorkedWithUs count={row.campaign_count} />
-              </td>
+              <td className={cn(TD, 'text-center w-50')}>
+                <span className="inline-flex items-center justify-center gap-2">
+                  <ContactGlyph
+                    href={row.email ? `mailto:${row.email}` : null}
+                    title={row.email ? 'Email this creator' : 'No email on file'}
+                    icon={<Mail className="size-4.25" />}
+                  />
 
-              <td className={cn(TD, 'text-center')}>
+                  <ContactGlyph
+                    href={row.phone ? `tel:${row.phone.replace(/\s/g, '')}` : null}
+                    title={row.phone ? 'Call this creator' : 'No phone on file'}
+                    icon={<Smartphone className="size-4.25" />}
+                  />
+                </span>
+              </td>
+              {/* <td className={cn(TD, 'text-center')}>
+                <WorkedWithUs count={row.campaign_count} />
+              </td> */}
+
+              {/* <td className={cn(TD, 'text-center')}>
                 <ContactGlyph
                   href={row.email ? `mailto:${row.email}` : null}
                   title={row.email ? 'Email this creator' : 'No email on file'}
@@ -206,16 +254,16 @@ export function CreatorTable({
                   title={row.phone ? 'Call this creator' : 'No phone on file'}
                   icon={<Smartphone className="size-[17px]" />}
                 />
-              </td>
+              </td> */}
 
-              <td className={cn(TD, 'text-center')}>
+              {/* <td className={cn(TD, 'text-center')}>
                 <ContactGlyph
                   href={profileUrl}
                   title={profileUrl ? 'Open their profile' : 'No profile link'}
                   icon={<ExternalLink className="size-4" />}
                   external
                 />
-              </td>
+              </td> */}
             </tr>
           );
         })}
@@ -242,11 +290,11 @@ function TickBox({
       title={label}
       onClick={onClick}
       className={cn(
-        'inline-flex size-[15px] cursor-pointer items-center justify-center rounded border-[1.5px] align-middle transition-colors',
+        'inline-flex size-3.75 cursor-pointer items-center justify-center rounded border-[1.5px] align-middle transition-colors',
         checked ? 'border-rp-primary bg-rp-primary text-rp-primary-fg' : 'border-rp-box',
       )}
     >
-      <Check className={cn('size-[11px]', !checked && 'opacity-0')} strokeWidth={3.4} />
+      <Check className={cn('size-2.75', !checked && 'opacity-0')} strokeWidth={3.4} />
     </button>
   );
 }
@@ -268,7 +316,7 @@ function GenderGlyph({ gender }: { gender: string | null }) {
   const Icon = GENDER_GLYPH.find(({ test }) => test.test(gender))?.icon ?? CircleUserRound;
   return (
     <span title={gender} aria-label={gender} className="inline-flex text-rp-muted">
-      <Icon className="size-[17px]" />
+      <Icon className="size-4.25" />
     </span>
   );
 }
@@ -287,10 +335,10 @@ function TruncatedList({
   const rest = items.length - 1;
 
   return (
-    <span className="flex items-center gap-[5px] whitespace-nowrap">
+    <span className="flex items-center gap-1.25 whitespace-nowrap">
       <span
         className={cn(
-          'rounded-md bg-rp-surface2 px-[7px] py-0.5 text-[11px]',
+          'rounded-md bg-rp-surface2 px-1.75 py-0.5 text-[11px]',
           chipFirst && 'border border-rp-border',
         )}
       >
@@ -299,7 +347,7 @@ function TruncatedList({
       {rest > 0 && (
         <span
           title={`${overflowTitle}: ${items.slice(1).join(', ')}`}
-          className="cursor-help rounded-md border border-dashed border-rp-box px-[5px] py-0.5 text-[10.5px] text-rp-muted"
+          className="cursor-help rounded-md border border-dashed border-rp-box px-1.25   py-0.5 text-[10.5px] text-rp-muted"
         >
           +{rest}
         </span>

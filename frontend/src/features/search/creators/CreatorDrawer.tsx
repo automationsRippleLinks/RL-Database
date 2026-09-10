@@ -55,30 +55,51 @@ export function CreatorDrawer({
   const [contactIndex, setContactIndex] = useState({ email: 0, phone: 0 });
   const exitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const { data, isPending, isError, error, refetch } = useCreatorDetail(creatorId);
+  const [displayedId, setDisplayedId] = useState(creatorId);
+  const swapTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const { data, isPending, isError, error, refetch } = useCreatorDetail(displayedId);
+  useCreatorDetail(creatorId);
 
   // Clicking another row swaps the contents in place. Everything that was
   // "opened" belongs to the creator who was showing, not to the panel — and a
   // close that was already in flight is abandoned, so a click that both
   // dismisses and re-opens lands on the new record instead of unmounting.
   useEffect(() => {
+    if (creatorId === displayedId) return;
+
+    clearTimeout(exitTimer.current);   // a row click overrides a pending close
+    exitTimer.current = undefined;
+    clearTimeout(swapTimer.current);
+    swapTimer.current = undefined;
+
+    setClosing(true); // trigger closing animation
+    swapTimer.current = setTimeout(() => {
+      setDisplayedId(creatorId);
+      setClosing(false);
+      setDealsOpen(false);
+      setCampaignsOpen(false);
+      setContactIndex({ email: 0, phone: 0 });
+    }, EXIT_MS);
+  }, [creatorId, displayedId]);
+
+  useEffect(() => () => {
+    clearTimeout(swapTimer.current);
     clearTimeout(exitTimer.current);
-    setClosing(false);
-    setDealsOpen(false);
-    setCampaignsOpen(false);
-    setContactIndex({ email: 0, phone: 0 });
-  }, [creatorId]);
+    exitTimer.current = undefined;
+    swapTimer.current = undefined;
+  }, []);
 
   const requestClose = useCallback(() => {
-    setClosing((already) => {
-      if (already) return already;
-      clearTimeout(exitTimer.current);
-      exitTimer.current = setTimeout(onClose, EXIT_MS);
-      return true;
-    });
-  }, [onClose]);
+    if (exitTimer.current) return;
 
-  useEffect(() => () => clearTimeout(exitTimer.current), []);
+    clearTimeout(swapTimer.current);
+    swapTimer.current = undefined;
+
+    setClosing(true);
+    exitTimer.current = setTimeout(onClose, EXIT_MS);
+
+  }, [onClose]);
 
   // ×, Escape and a click anywhere outside all close it, through the same
   // capture-phase listener every other transient surface uses — except the
@@ -88,7 +109,7 @@ export function CreatorDrawer({
   return (
     // The overlay itself is inert: the results stay clickable to the drawer's
     // left, so a click on another row swaps the panel rather than being eaten.
-    <div className="pointer-events-none fixed inset-0 z-[60]">
+    <div className="pointer-events-none fixed inset-0 z-60">
       <div
         data-rp-pop="drawer"
         role="dialog"
@@ -97,7 +118,7 @@ export function CreatorDrawer({
         className={cn(
           'pointer-events-auto absolute top-0 right-0 flex h-full max-w-[96vw] flex-col border-l border-rp-border bg-rp-surface shadow-rp',
           'transition-[width] duration-200 ease-out',
-          campaignsOpen ? 'w-[724px]' : 'w-[424px]',
+          campaignsOpen ? 'w-181' : 'w-106',
           closing ? 'animate-rp-drawer-out' : 'animate-rp-drawer',
         )}
       >
@@ -111,7 +132,7 @@ export function CreatorDrawer({
         ) : isPending || !data ? (
           <div className="flex h-full flex-col">
             <DrawerBar onClose={requestClose} />
-            <div className="space-y-3 p-[18px]">
+            <div className="space-y-3 p-4.5">
               <Skeleton className="h-11 w-2/3" />
               <Skeleton className="h-20 w-full" />
               <Skeleton className="h-28 w-full" />
@@ -145,7 +166,7 @@ export function CreatorDrawer({
 /** The close button alone, for the loading and error states. */
 function DrawerBar({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex shrink-0 justify-end border-b border-rp-border px-[18px] py-[17px]">
+    <div className="flex shrink-0 justify-end border-b border-rp-border px-4.5 py-4.5 ">
       <CloseButton onClose={onClose} />
     </div>
   );
@@ -158,7 +179,7 @@ function CloseButton({ onClose }: { onClose: () => void }) {
       onClick={onClose}
       title="Close"
       aria-label="Close"
-      className="flex shrink-0 cursor-pointer rounded-lg p-[5px] text-rp-muted hover:bg-rp-surface2 hover:text-rp-text"
+      className="flex shrink-0 cursor-pointer rounded-lg p-1 text-rp-muted hover:bg-rp-surface2 hover:text-rp-text"
     >
       <X className="size-4" />
     </button>
@@ -204,13 +225,13 @@ function DrawerBody({
   return (
     <>
       {/* ── header ─────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-start gap-3 border-b border-rp-border px-[18px] pt-[17px] pb-[15px]">
-        <span className="flex size-[42px] shrink-0 items-center justify-center rounded-xl bg-rp-primary-soft text-[13px] font-bold text-rp-primary">
+      <div className="flex shrink-0 items-start gap-3 border-b border-rp-border px-4.5 pt-4.5 pb-3.75">
+        <span className="flex size-10.25 shrink-0 items-center justify-center rounded-xl bg-rp-primary-soft text-[13px] font-bold text-rp-primary">
           {initials(detail.name)}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[16px] font-bold tracking-[-0.01em]">{detail.name}</span>
-          <span className="mt-[3px] flex items-center gap-1.5">
+          <span className="mt-0.75   flex items-center gap-1.5">
             <PlatformMark platform={detail.platform} size={14} />
             {profileUrl ? (
               <a
@@ -571,10 +592,10 @@ function CampaignRow({ campaign }: { campaign: CreatorCampaignSummary }) {
   const status = campaign.is_dropped
     ? { label: 'Dropped from this', icon: CircleDashed, className: 'text-rp-warn' }
     : (STATUS_STYLE[campaign.status] ?? {
-        label: campaign.status,
-        icon: CircleDashed,
-        className: 'text-rp-muted',
-      });
+      label: campaign.status,
+      icon: CircleDashed,
+      className: 'text-rp-muted',
+    });
   const StatusIcon = status.icon;
 
   const period = `${MONTH_LABELS[campaign.month_name] ?? campaign.month_name} ${campaign.year}`;

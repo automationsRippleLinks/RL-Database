@@ -50,19 +50,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const value = useMemo(() => ({ flash, copy }), [flash, copy]);
 
   return (
-    <ToastContext.Provider value={value}>
+    <ToastContext value={value}>
       {children}
       {message && (
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-[80] flex -translate-x-1/2 items-center gap-[9px] rounded-[11px] border border-rp-border bg-rp-surface px-4 py-[11px] text-[12.5px] font-[550] shadow-rp"
+          className="fixed bottom-5 left-1/2 z-80 flex -translate-x-1/2 items-center gap-2.25 rounded-[11px] border border-rp-border bg-rp-surface px-4 py-2.75 text-[12.5px] font-[550] shadow-rp"
         >
           <CheckCircle2 className="size-4 text-rp-success" />
           {message}
         </div>
       )}
-    </ToastContext.Provider>
+    </ToastContext>
   );
 }
 

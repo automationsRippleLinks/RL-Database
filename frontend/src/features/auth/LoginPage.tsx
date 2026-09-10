@@ -70,7 +70,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+    <div className="flex min-h-full items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-7 flex flex-col items-center gap-2 text-center">
           <div className="flex size-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
