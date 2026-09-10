@@ -136,7 +136,7 @@ class Settings(BaseSettings):
     GSTIN_REGEX: str = r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
 
     # === Search related settings =============================================================================================================
-    MAX_PAGE_SIZE: int = 100
+    MAX_PAGE_SIZE: int = 500
     BRAND_DETAIL_LIMIT: int = 100
     TOP_CREATORS_LIMIT: int = 10
 

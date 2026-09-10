@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field, Relationship, Index
 from sqlalchemy import CheckConstraint
 from pydantic import field_validator, ConfigDict
 
-from app.core.config import GSTIN_REGEX
+from app.core.config import settings
 
 if TYPE_CHECKING:
     from .company import Company
@@ -12,14 +12,12 @@ if TYPE_CHECKING:
     from .campaign import Campaign
 
 
-
-
 class Brand(SQLModel, table=True):
     model_config = ConfigDict(validate_assignment=True)
 
     __table_args__ = (
         CheckConstraint(
-            f"gstin = '' OR gstin ~ '{GSTIN_REGEX}'",
+            f"gstin = '' OR gstin ~ '{settings.GSTIN_REGEX}'",
             name="ck_brand_gstin_format",
         ),
         Index(

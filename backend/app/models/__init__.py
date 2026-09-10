@@ -5,6 +5,7 @@ from .link_models import (
     CategoryCreatorLink,
     CampaignCreatorLink,
     TagCreatorLink,
+    BrandCreatorLink
 )
 from .pitch import Pitch
 from .category import Category
@@ -32,6 +33,7 @@ __all__ = [
     "CategoryCreatorLink",
     "CampaignCreatorLink",
     "TagCreatorLink",
+    "BrandCreatorLink",
     "Tag",
     "Category",
     "Language",

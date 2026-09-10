@@ -2,8 +2,8 @@ from uuid import uuid4, UUID
 from typing import TYPE_CHECKING, Optional
 from datetime import datetime, timezone
 
-from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Enum as SaEnum, Column, String, DateTime
+from sqlmodel import SQLModel, Field, Relationship, func
+from sqlalchemy import Enum as SaEnum, Column, DateTime
 from sqlalchemy.dialects.postgresql import ARRAY
 from pydantic import ConfigDict, HttpUrl, field_validator
 
@@ -16,9 +16,7 @@ if TYPE_CHECKING:
 
 
 class Pitch(SQLModel, table=True):
-    model_config = ConfigDict(
-        validate_assignment=True
-    )
+    model_config = ConfigDict(validate_assignment=True)
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)
     pitch_code: str = Field(default=None, nullable=False, unique=True)
@@ -37,7 +35,7 @@ class Pitch(SQLModel, table=True):
     )
     sales_lead: str = Field(nullable=False)
     list_lead: str
-    spreadsheet_link: str = Field(sa_column=Column(String, unique=True, nullable=False))
+    spreadsheet_id: str = Field(unique=True, nullable=False)
 
     creators: list["PitchCreatorLink"] = Relationship(
         back_populates="pitch",
@@ -45,16 +43,20 @@ class Pitch(SQLModel, table=True):
 
     created_at: datetime | None = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column=Column(DateTime(timezone=True), nullable=False)
+        nullable=False,
+        sa_column_kwargs={"server_default": func.now()},
     )
     updated_at: datetime | None = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column=Column(DateTime(timezone=True), nullable=False)
+        nullable=False,
+        sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
     )
 
-    campaign: Optional["Campaign"] = Relationship(back_populates="pitch", sa_relationship_kwargs={"uselist": False})
+    campaign: Optional["Campaign"] = Relationship(
+        back_populates="pitch", sa_relationship_kwargs={"uselist": False}
+    )
 
-    @field_validator("spreadsheet_link", mode="before")
+    @field_validator("spreadsheet_id", mode="before")
     @classmethod
     def _validate_and_stringify_url(cls, v: str | HttpUrl) -> str:
         # HttpUrl(...) raises pydantic.ValidationError if v isn't a valid URL

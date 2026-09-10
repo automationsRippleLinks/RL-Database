@@ -5,18 +5,17 @@ from sqlmodel import SQLModel, Field, text, Relationship
 from sqlalchemy import CheckConstraint
 from pydantic import field_validator
 
-from app.core.config import GSTIN_REGEX
+from app.core.config import settings
 
 if TYPE_CHECKING:
     from .brand import Brand
-
 
 
 class Company(SQLModel, table=True):
 
     __table_args__ = (
         CheckConstraint(
-            f"gstin = '' OR gstin ~ '{GSTIN_REGEX}'",
+            f"gstin = '' OR gstin ~ '{settings.GSTIN_REGEX}'",
             name="ck_company_gstin_format",
         ),
     )
@@ -37,7 +36,7 @@ class Company(SQLModel, table=True):
         upper_val = value.upper().strip()
         if upper_val == "":
             return upper_val
-        if not re.match(GSTIN_REGEX, upper_val):
+        if not re.match(settings.GSTIN_REGEX, upper_val):
             raise ValueError("Invalid GSTIN format structure")
         return upper_val
 
