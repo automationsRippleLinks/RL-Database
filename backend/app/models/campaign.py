@@ -5,7 +5,7 @@ from datetime import date
 from sqlmodel import SQLModel, Field, Relationship, text
 from sqlalchemy import Enum as SaEnum, String, Column
 from sqlalchemy.dialects.postgresql import ARRAY
-from pydantic import ConfigDict, HttpUrl, field_validator
+from pydantic import ConfigDict
 
 from .enums import CampaignStatusChoices, MonthChoices
 
@@ -33,7 +33,10 @@ class Campaign(SQLModel, table=True):
 
     campaign_name: str = Field(nullable=False, index=True)
     manager: str = Field(nullable=False)
-    member_names: list[str] = Field(default_factory=list, sa_column=Column(ARRAY(String), server_default=text("ARRAY[]::VARCHAR[]")))
+    member_names: list[str] = Field(
+        default_factory=list,
+        sa_column=Column(ARRAY(String), server_default=text("ARRAY[]::VARCHAR[]")),
+    )
 
     pitch_id: UUID | None = Field(default=None, foreign_key=("pitch.id"))
     pitch: "Pitch" = Relationship(
@@ -48,7 +51,7 @@ class Campaign(SQLModel, table=True):
         sa_type=SaEnum(CampaignStatusChoices),
         nullable=False,
     )
-    
+
     expected_end_date: date = Field(nullable=False)
     start_date: date = Field(nullable=False)
     end_date: Optional[date] = Field(nullable=True)
@@ -61,9 +64,3 @@ class Campaign(SQLModel, table=True):
     report_completion_date: Optional[date] = Field(nullable=True)
 
     creator_data: list["CampaignCreatorLink"] = Relationship(back_populates="campaign")
-
-    @field_validator("spreadsheet_id", "report_id", mode="before")
-    @classmethod
-    def _validate_and_stringify_url(cls, v: str | HttpUrl) -> str:
-        # HttpUrl(...) raises pydantic.ValidationError if v isn't a valid URL
-        return str(HttpUrl(v))

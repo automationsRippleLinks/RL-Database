@@ -4,9 +4,9 @@ from sqlmodel import SQLModel, Field, Relationship
 
 from .link_models import LanguageCreatorLink
 
-
 if TYPE_CHECKING:
     from .creator import Creator
+
 
 class Language(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

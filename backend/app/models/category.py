@@ -7,6 +7,7 @@ from .link_models import CategoryCreatorLink
 if TYPE_CHECKING:
     from .creator import Creator
 
+
 class Category(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(unique=True, nullable=False)

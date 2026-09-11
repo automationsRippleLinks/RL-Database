@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class MonthChoices(str, Enum):
     JANUARY = "january"
     FEBRUARY = "february"
@@ -38,7 +39,7 @@ class TierChoices(str, Enum):
     MACRO = "macro"
     MEGA = "mega"
     CELEB = "celeb"
-    NA = ""
+    NA = "NA"
 
 
 class OrgTypeChoices(str, Enum):

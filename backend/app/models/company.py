@@ -23,11 +23,9 @@ class Company(SQLModel, table=True):
     name: str = Field(unique=True, index=True)
     gstin: Optional[str] = Field(
         default=None,
-        sa_column_kwargs={
-            "server_default": text("NULL"),
-        },
+        unique=True,
         schema_extra={"placeholder": "27AAAAA1111A1Z1"},
-        nullable=True
+        nullable=True,
     )
 
     @field_validator("gstin")

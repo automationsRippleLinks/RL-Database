@@ -66,20 +66,14 @@ class Creator(SQLModel, table=True):
         back_populates="creators", link_model=BrandCreatorLink
     )
 
-    gender: str = Field(
-        default="", nullable=False, sa_column_kwargs={"server_default": ""}
-    )
-    city: str = Field(
-        default="", nullable=False, sa_column_kwargs={"server_default": ""}
-    )
-    state: str = Field(
-        default="", nullable=False, sa_column_kwargs={"server_default": ""}
-    )
-    region: str = Field(
-        default="", nullable=False, sa_column_kwargs={"server_default": ""}
-    )
+    gender: str = Field(default=None, nullable=True)
+    city: str = Field(default=None, nullable=True)
+    state: str = Field(default=None, nullable=True)
+    region: str = Field(default=None, nullable=True)
 
-    commercial_packages: list["CommercialPackage"] = Relationship(back_populates="creator")
+    commercial_packages: list["CommercialPackage"] = Relationship(
+        back_populates="creator"
+    )
 
     emails: list[str] = Field(
         default_factory=list,

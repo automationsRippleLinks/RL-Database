@@ -1,6 +1,6 @@
 from typing import Optional, TYPE_CHECKING
 
-from sqlmodel import SQLModel, Field, Relationship, Index
+from sqlmodel import SQLModel, Field, Relationship, Index, text
 from sqlalchemy import CheckConstraint
 from pydantic import field_validator, ConfigDict
 
@@ -32,7 +32,10 @@ class Brand(SQLModel, table=True):
     name: str = Field(unique=True, nullable=False)
     display_name: str = Field(nullable=False)
     gstin: Optional[str] = Field(
-        unique=True, schema_extra={"placeholder": "27AAAAA1111A1Z1"}, nullable=True
+        default=None,
+        unique=True,
+        schema_extra={"placeholder": "27AAAAA1111A1Z1"},
+        nullable=True,
     )
 
     company_id: Optional[int] = Field(default=None, foreign_key="company.id")

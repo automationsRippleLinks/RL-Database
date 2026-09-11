@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Optional
 from datetime import datetime, timezone
 
 from sqlmodel import SQLModel, Field, Relationship, func
-from sqlalchemy import Enum as SaEnum, Column, DateTime
+from sqlalchemy import Enum as SaEnum, Column
 from sqlalchemy.dialects.postgresql import ARRAY
-from pydantic import ConfigDict, HttpUrl, field_validator
+from pydantic import ConfigDict
 
 from .enums import PlatformChoices, OrgTypeChoices, PitchRequirementChoices
 
@@ -55,9 +55,3 @@ class Pitch(SQLModel, table=True):
     campaign: Optional["Campaign"] = Relationship(
         back_populates="pitch", sa_relationship_kwargs={"uselist": False}
     )
-
-    @field_validator("spreadsheet_id", mode="before")
-    @classmethod
-    def _validate_and_stringify_url(cls, v: str | HttpUrl) -> str:
-        # HttpUrl(...) raises pydantic.ValidationError if v isn't a valid URL
-        return str(HttpUrl(v))

@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime, timezone
 
-from sqlmodel import SQLModel, Field, func
+from sqlmodel import SQLModel, Field, func, text
 from pydantic import ConfigDict, field_validator
 
 
@@ -17,9 +17,7 @@ class User(SQLModel, table=True):
         sa_column_kwargs={"server_default": "password"},
     )
 
-    hashed_password: Optional[str] = Field(
-        default=None, nullable=True, sa_column_kwargs={"server_default": ""}
-    )
+    hashed_password: Optional[str] = Field(default=None, nullable=True)
     is_verified: bool = Field(
         default=False, nullable=False, sa_column_kwargs={"server_default": "false"}
     )
@@ -32,8 +30,14 @@ class User(SQLModel, table=True):
     is_admin: bool = Field(
         default=False, nullable=False, sa_column_kwargs={"server_default": "false"}
     )
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), sa_column_kwargs={"server_default": func.now()})
-    last_activity_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), sa_column_kwargs={"server_default": func.now()})
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column_kwargs={"server_default": func.now()},
+    )
+    last_activity_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column_kwargs={"server_default": func.now()},
+    )
 
     # permissions
     can_ingest: bool = Field(

@@ -179,12 +179,8 @@ class CampaignCreatorLink(SQLModel, table=True):
         default=0, nullable=False, sa_column_kwargs={"server_default": "0"}
     )
 
-    product_status: str = Field(
-        default="", nullable=False, sa_column_kwargs={"server_default": ""}
-    )
-    product_ordered_by: str = Field(
-        default="", nullable=False, sa_column_kwargs={"server_default": ""}
-    )
+    product_status: str = Field(default=None, nullable=True)
+    product_ordered_by: str = Field(default=None, nullable=True)
 
     product_cost: int = Field(
         default=0, nullable=False, sa_column_kwargs={"server_default": "0"}
