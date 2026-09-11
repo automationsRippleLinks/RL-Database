@@ -110,7 +110,7 @@ export function useCreatorFilterModel(
     setCities: (next: string[]) => set({ city: next }),
     setFollowers: (min: string, max: string) => set({ min_followers: min, max_followers: max }),
     setViews: (min: string, max: string) => set({ min_views: min, max_views: max }),
-    clearAll: () =>
+    clearAll: (clearQuery: boolean = false) =>
       set({
         platform: null,
         c_brand: null,
@@ -124,6 +124,7 @@ export function useCreatorFilterModel(
         max_followers: null,
         min_views: null,
         max_views: null,
+        ...(clearQuery && {q: null})
       }),
   };
 

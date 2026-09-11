@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Check, Copy, Eye } from 'lucide-react';
 import { maskEmail, maskPhone } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { copyToClipboard } from '@/lib/clipboard';
 
 /**
  * Creator emails and phone numbers are personal data. The Streamlit app rendered
@@ -25,18 +26,29 @@ export function MaskedContact({
 
   const masked = kind === 'email' ? maskEmail(value) : maskPhone(value);
 
+  // const copy = async (event: React.MouseEvent) => {
+  //   event.stopPropagation();
+  //   try {
+  //     await navigator.clipboard.writeText(value);
+  //     setCopied(true);
+  //     setTimeout(() => setCopied(false), 1400);
+  //   } catch {
+  //     // Clipboard can be blocked by permissions; revealing still lets them select it.
+  //     setRevealed(true);
+  //   }
+  // };
   const copy = async (event: React.MouseEvent) => {
     event.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(value);
+    const ok = await copyToClipboard(value);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1400);
-    } catch {
-      // Clipboard can be blocked by permissions; revealing still lets them select it.
+    } else {
+      // Genuinely couldn't copy — reveal so they can select it manually,
+      // but don't pretend it succeeded.
       setRevealed(true);
     }
   };
-
   return (
     <span className={cn('group/contact inline-flex items-center gap-1.5', className)}>
       <span className={cn('truncate', !revealed && 'text-muted-foreground')}>
@@ -64,7 +76,7 @@ export function MaskedContact({
         title={`Copy ${kind}`}
       >
         {copied ? (
-          <Check className="size-3.5 text-[var(--success)]" />
+          <Check className="size-3.5 text-success" />
         ) : (
           <Copy className="size-3.5 text-muted-foreground hover:text-foreground" />
         )}

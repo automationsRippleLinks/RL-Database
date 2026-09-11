@@ -184,8 +184,7 @@ export function CreatorSearchPage() {
             <button
               type="button"
               onClick={() => {
-                model.actions.clearAll();
-                url.setParams({ q: null }, { replace: true, resetPage: true });
+                model.actions.clearAll(true);
               }}
               className="cursor-pointer rounded-full px-2.25 py-1 text-[11.5px] font-semibold text-rp-muted hover:bg-rp-surface2 hover:text-rp-text"
             >
@@ -297,14 +296,14 @@ function SortMenu({
         onClick={onToggle}
         title="Sort"
         aria-expanded={open}
-        className="inline-flex cursor-pointer items-center gap-1.5 rounded-[9px] border border-rp-border px-[11px] py-[7px] text-[12.5px] font-semibold whitespace-nowrap"
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-[9px] border border-rp-border px-2.75 py-1.75 text-[12.5px] font-semibold whitespace-nowrap"
       >
         <ArrowUpDown className="size-3.5" />
         {label}
       </button>
 
       {open && (
-        <div className="animate-rp-menu absolute top-[calc(100%+6px)] right-0 z-50 min-w-[190px] rounded-xl border border-rp-border bg-rp-surface p-1.5 shadow-rp">
+        <div className="animate-rp-menu absolute top-[calc(100%+6px)] right-0 z-50 min-w-47.5 rounded-xl border border-rp-border bg-rp-surface p-1.5 shadow-rp">
           {CREATOR_SORTS.map((option) => {
             const active = option.value === value;
             return (
@@ -313,13 +312,13 @@ function SortMenu({
                 type="button"
                 onClick={() => onPick(option.value)}
                 className={cn(
-                  'flex w-full cursor-pointer items-center gap-[9px] rounded-lg px-2.5 py-2 text-left text-[12.5px] transition-colors',
+                  'flex w-full cursor-pointer items-center gap-2.25 rounded-lg px-2.5 py-2 text-left text-[12.5px] transition-colors',
                   active
                     ? 'bg-rp-primary-soft font-semibold text-rp-primary'
                     : 'font-medium text-rp-text hover:bg-rp-surface2',
                 )}
               >
-                <Check className={cn('size-[15px] shrink-0', !active && 'opacity-0')} strokeWidth={2.4} />
+                <Check className={cn('size-3.75 shrink-0', !active && 'opacity-0')} strokeWidth={2.4} />
                 <span className="flex-1">{option.label}</span>
               </button>
             );

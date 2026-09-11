@@ -439,7 +439,7 @@ function DrawerBody({
 
       {/* ── footer ───────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 gap-2 border-t border-rp-border px-[18px] py-3.5">
-        {emails.length > 0 && (
+        {/* {emails.length > 0 && (
           <a
             href={`mailto:${emails[0]}`}
             title="Email this creator"
@@ -448,7 +448,7 @@ function DrawerBody({
           >
             <Mail className="size-4" />
           </a>
-        )}
+        )} */}
         <button
           type="button"
           // Pitch lists are the next thing to build, not something this screen
@@ -456,7 +456,7 @@ function DrawerBody({
           onClick={() => onFlash("Pitch lists aren't built yet — this is where they'll start")}
           className="flex-1 cursor-pointer rounded-[10px] bg-rp-primary px-3.5 py-2.5 text-[12.5px] font-bold text-rp-primary-fg"
         >
-          Add to a pitch list
+          We don't know what do with this button!
         </button>
       </div>
     </>
@@ -482,12 +482,12 @@ function Stat({
   full?: number | null;
 }) {
   return (
-    <div className="bg-rp-surface px-4 py-[13px]">
+    <div className="bg-rp-surface px-4 py-3.25">
       <span className="block text-[10.5px] font-semibold tracking-[0.04em] text-rp-muted uppercase">
         {label}
       </span>
       <span
-        className="mt-[3px] block text-[15px] font-bold tabular-nums"
+        className="mt-0.75 block text-[15px] font-bold tabular-nums"
         title={full !== null && full !== undefined ? formatNumber(full) : undefined}
       >
         {value}
@@ -509,7 +509,7 @@ function Fact({
 }) {
   return (
     <div className="flex items-baseline gap-3">
-      <span className="w-[98px] shrink-0 text-xs text-rp-muted">{label}</span>
+      <span className="w-24.5 shrink-0 text-xs text-rp-muted">{label}</span>
       <span className="min-w-0 flex-1 text-[12.5px] font-medium text-pretty">{value}</span>
       {extra && (
         <span
@@ -563,7 +563,7 @@ function ContactRow({
       </a>
       <IconButton title={`Copy ${label.toLowerCase()}`} onClick={() => onCopy(value)} icon={Copy} />
       {values.length > 1 && (
-        <span className="inline-flex shrink-0 items-center gap-[3px]">
+        <span className="inline-flex shrink-0 items-center gap-0.75">
           <span className="text-[10px] tabular-nums text-rp-muted">
             {position + 1}/{values.length}
           </span>
