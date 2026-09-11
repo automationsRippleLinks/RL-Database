@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from .tag import Tag
     from .brand import Brand
     from .link_models import PitchCreatorLink, CampaignCreatorLink
+    from .commercial_package import CommercialPackage
 
 
 class Creator(SQLModel, table=True):
@@ -77,6 +78,8 @@ class Creator(SQLModel, table=True):
     region: str = Field(
         default="", nullable=False, sa_column_kwargs={"server_default": ""}
     )
+
+    commercial_packages: list["CommercialPackage"] = Relationship(back_populates="creator")
 
     emails: list[str] = Field(
         default_factory=list,

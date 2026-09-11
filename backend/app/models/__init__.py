@@ -17,6 +17,7 @@ from .campaign import Campaign
 from .brand import Brand
 from .ingest_job import IngestJob
 from .tag import Tag
+from .commercial_package import CommercialPackage, PackageDeliverables
 
 # resolving forward references to avoid circular import error
 Pitch.model_rebuild()
@@ -44,4 +45,6 @@ __all__ = [
     "Campaign",
     "Brand",
     "IngestJob",
+    "CommercialPackage",
+    "PackageDeliverables",
 ]
