@@ -1,4 +1,5 @@
 from typing import Annotated
+from datetime import datetime, timezone
 
 from fastapi import Depends, Request, HTTPException, status
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -13,7 +14,9 @@ from app.core.security import read_session
 # --- Dependencies (functions defined elsewhere) ---
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
-SessionFactoryDep = Annotated[async_sessionmaker[AsyncSession], Depends(get_session_factory)]
+SessionFactoryDep = Annotated[
+    async_sessionmaker[AsyncSession], Depends(get_session_factory)
+]
 RedisDep = Annotated[redis.Redis, Depends(get_redis)]
 
 
@@ -39,7 +42,12 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Account unavailable"
         )
 
+    user.last_activity_at = datetime.now(timezone.utc)
+    session.add(user)
+    await session.commit()
+
     return user
+
 
 async def verify_csrf(request: Request) -> None:
     cookie_token = request.cookies.get("csrf_token")
@@ -48,7 +56,7 @@ async def verify_csrf(request: Request) -> None:
     if not cookie_token or not header_token or cookie_token != header_token:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="CSRF token missing or invalid"
+            detail="CSRF token missing or invalid",
         )
 
 
@@ -63,8 +71,31 @@ async def require_ingest(user: CurrentUser) -> User:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not permitted to ingest",
-            headers={"X-Error-Code": "forbidden"}
+            headers={"X-Error-Code": "forbidden"},
         )
     return user
 
+
+async def require_superAdmin(user: CurrentUser) -> User:
+    if not user.is_superadmin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not a super admin",
+            headers={"X-Error-Code": "forbidden"},
+        )
+    return user
+
+
+async def require_admin(user: CurrentUser) -> User:
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not an admin",
+            headers={"X-Error-Code": "forbidden"},
+        )
+    return user
+
+
 IngestUser = Annotated[User, Depends(require_ingest)]
+SuperAdminUser = Annotated[User, Depends(require_superAdmin)]
+AdminUser = Annotated[User, Depends(require_admin)]
