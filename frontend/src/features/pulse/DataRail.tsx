@@ -7,6 +7,7 @@ import type { BrandRef, CreatorFacets, SearchScope } from '@/types/api';
 import { CreatorFilterGroups, RailLabel } from './filters/CreatorFilterGroups';
 import { useCreatorFilterModel } from './filters/useCreatorFilterModel';
 import { useShellState } from './shell-state';
+import { useEffect, useRef } from 'react';
 
 const SECTIONS: { scope: SearchScope; label: string; icon: LucideIcon; oneLiner: string }[] = [
   {
@@ -55,6 +56,16 @@ export function DataRail({
   const navigate = useNavigate();
   const shell = useShellState();
   const model = useCreatorFilterModel(facets, brands);
+  const peekTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearPeekTimer = () => {
+    if (peekTimer.current) {
+      clearTimeout(peekTimer.current);
+      peekTimer.current = null;
+    }
+  };
+
+  useEffect(() => () => clearPeekTimer(), []);
 
   const activeScope = SECTIONS.find(
     (section) => location.pathname === `/search/${section.scope}`,
@@ -72,9 +83,12 @@ export function DataRail({
     <aside
       data-rp-pop="rail"
       onMouseEnter={() => {
-        if (!shell.railExpanded) shell.setRailPeek(true);
+        if (shell.railExpanded) return;
+        clearPeekTimer();
+        peekTimer.current = setTimeout(() => shell.setRailPeek(true), 150); // delay of 150 ms
       }}
       onMouseLeave={() => {
+        clearPeekTimer();
         if (shell.railPeek) {
           shell.setRailPeek(false);
           shell.setOpenMenu(null);
@@ -155,7 +169,7 @@ export function DataRail({
               {model.totalApplied > 0 && (
                 <button
                   type="button"
-                  onClick={model.actions.clearAll}
+                  onClick={() => model.actions.clearAll()}
                   className="cursor-pointer rounded-md px-1.5 py-0.5 text-[11px] font-bold text-rp-primary hover:bg-rp-surface2"
                 >
                   Clear all
@@ -169,7 +183,7 @@ export function DataRail({
             {!shell.railOpen && model.totalApplied > 0 && (
               <button
                 type="button"
-                onClick={model.actions.clearAll}
+                onClick={() => model.actions.clearAll()}
                 title={`${model.totalApplied} filter${model.totalApplied === 1 ? '' : 's'} on — click to clear`}
                 className="mx-1.75 mt-1.75 mb-0.5 flex cursor-pointer items-center justify-center gap-1 rounded-lg bg-rp-primary-soft py-1.25 text-[10.5px] font-bold text-rp-primary"
               >
@@ -211,7 +225,7 @@ export function DataRail({
                 : 'max-w-0 opacity-0 transition-[opacity,max-width] duration-200 ease-out',
             )}
           >
-            Collapse
+            {shell.railExpanded ? "Collapse" : "Expand"}
           </span>
         </button>
       </div>
