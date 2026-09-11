@@ -41,6 +41,7 @@ from app.models import (
     Language,
     CategoryCreatorLink,
     LanguageCreatorLink,
+    BrandCreatorLink,
 )
 
 router = APIRouter()
@@ -200,6 +201,10 @@ def _link_payload(link: ProfileLink) -> dict:
         "platform": link.platform.value if link.platform else None,
         "username": link.username,
     }
+
+
+def _convert_to_link(id: str) -> str:
+    return f"https://docs.google.com/open?id={id}"
 
 
 # --- full search ---
@@ -548,8 +553,8 @@ async def search_campaigns(
             end_date=c.end_date,
             report_completion_date=c.report_completion_date,
             creator_count=cc,
-            spreadsheet_link=c.spreadsheet_link,
-            report_link=c.report_link,
+            spreadsheet_link=_convert_to_link(c.spreadsheet_id),
+            report_link=_convert_to_link(c.report_id),
         )
         for c, b, cc in results
     ]
@@ -661,7 +666,7 @@ async def search_pitches(
             list_lead=p.list_lead,
             creator_count=cc,
             converted=conv,
-            spreadsheet_link=p.spreadsheet_link,
+            spreadsheet_link=_convert_to_link(p.spreadsheet_id),
             created_at=p.created_at,
             updated_at=p.updated_at,
         )
@@ -706,7 +711,12 @@ async def facets_creators(session: SessionDep, redis: RedisDep, user: CurrentUse
             "languages": await _tag_facet(
                 Language, LanguageCreatorLink, LanguageCreatorLink.language_id
             ),
+            "brands": await _tag_facet(
+                Brand, BrandCreatorLink, BrandCreatorLink.brand_id
+            ),
             "cities": await _distinct(session, Creator.city),
+            "states": await _distinct(session, Creator.state),
+            "regions": await _distinct(session, Creator.region),
             "genders": await _distinct(session, Creator.gender),
             "total_creators": (
                 await session.exec(select(func.count()).select_from(Creator))
@@ -714,7 +724,10 @@ async def facets_creators(session: SessionDep, redis: RedisDep, user: CurrentUse
         }
 
     return await cached(
-        redis, cache_key(f"{settings.FACETS_PREFIX}creators"), settings.FACETS_TTL, produce
+        redis,
+        cache_key(f"{settings.FACETS_PREFIX}creators"),
+        settings.FACETS_TTL,
+        produce,
     )
 
 
@@ -911,7 +924,9 @@ async def global_search(
 
     return await cached(
         redis,
-        cache_key(f"{settings.SEARCH_PREFIX}global", {"q": q.strip().lower(), "limit": limit}),
+        cache_key(
+            f"{settings.SEARCH_PREFIX}global", {"q": q.strip().lower(), "limit": limit}
+        ),
         settings.SEARCH_TTL,
         produce,
     )
