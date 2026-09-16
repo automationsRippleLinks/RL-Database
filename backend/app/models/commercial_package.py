@@ -2,7 +2,7 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 from datetime import datetime, timezone
 
-from sqlmodel import SQLModel, Field, text, Relationship, Index
+from sqlmodel import SQLModel, Field, text, Relationship, Index, Column, DateTime, func
 
 if TYPE_CHECKING:
     from .creator import Creator
@@ -19,12 +19,19 @@ class CommercialPackage(SQLModel, table=True):
     cost: int = Field(nullable=False)
 
     valid_from: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, server_default=func.now()
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": text("now()")},
-        nullable=False,
     )
 
-    valid_to: Optional[datetime] = Field(default=None, nullable=True)
+    valid_to: Optional[datetime] = Field(
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=True,
+        ),
+        default=None,
+    )
 
     creator: "Creator" = Relationship(back_populates="commercial_packages")
     deliverables: list["PackageDeliverables"] = Relationship(back_populates="package")

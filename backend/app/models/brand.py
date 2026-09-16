@@ -23,15 +23,15 @@ class Brand(SQLModel, table=True):
             name="ck_brand_gstin_format",
         ),
         Index(
-            "ix_brand_name_trgm",
-            "name",
+            "ix_brand_display_name_trgm",
+            "display_name",
             postgresql_using="gin",
-            postgresql_ops={"name": "gin_trgm_ops"},
+            postgresql_ops={"display_name": "gin_trgm_ops"},
         ),
     )
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str = Field(unique=True, nullable=False)
+    name: str = Field(unique=True, nullable=False)  
     display_name: str = Field(nullable=False)
     gstin: Optional[str] = Field(
         default=None,
