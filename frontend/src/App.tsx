@@ -7,7 +7,7 @@ import { AppRail } from '@/features/pulse/AppRail';
 import { DataRail } from '@/features/pulse/DataRail';
 import { PulseHeader } from '@/features/pulse/PulseHeader';
 import { ShellStateProvider } from '@/features/pulse/shell-state';
-import { useCampaignFacets, useCreatorFacets } from '@/features/search/queries';
+import { useCreatorFacets } from '@/features/search/queries';
 
 /**
  * The Ripple Pulse shell: a fixed header over App rail | Data rail | content.
@@ -66,7 +66,6 @@ export function App() {
  */
 function SearchRail() {
   const creatorFacets = useCreatorFacets();
-  const campaignFacets = useCampaignFacets();
 
-  return <DataRail facets={creatorFacets.data} brands={campaignFacets.data?.brands} />;
+  return <DataRail facets={creatorFacets.data} brands={creatorFacets.data?.brands} />;
 }

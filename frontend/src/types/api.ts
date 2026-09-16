@@ -641,12 +641,8 @@ export interface CreatorFacets {
   languages: string[];
   cities: string[];
   genders: string[];
-  /**
-   * Optional because the endpoint does not return it yet — see the `tags` filter
-   * on CreatorFilters. The Tags control renders an explanatory empty state
-   * rather than an unusable search box while this is missing.
-   */
-  tags?: string[];
+  tags: string[];
+  brands: BrandRef[];
   total_creators: number;
 }
 

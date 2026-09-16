@@ -42,6 +42,8 @@ from app.models import (
     CategoryCreatorLink,
     LanguageCreatorLink,
     BrandCreatorLink,
+    Tag,
+    TagCreatorLink,
 )
 
 router = APIRouter()
@@ -85,6 +87,30 @@ def _has_any_language(names: Sequence[str]):
         Language,
         LanguageCreatorLink.language_id,
         func.lower(col(Language.name)).in_(wanted),
+    )
+
+
+def _has_any_tag(names: Sequence[str]):
+    wanted = [n.strip().lower() for n in names if n and n.strip()]
+    if not wanted:
+        return None
+    return _tag_exists(
+        TagCreatorLink,
+        Tag,
+        TagCreatorLink.tag_id,
+        func.lower(col(Tag.name)).in_(wanted),
+    )
+
+
+def _linked_to_any_brand(brand_ids: Sequence[int]):
+    wanted = [b for b in brand_ids if b is not None]
+    if not wanted:
+        return None
+    return exists(
+        select(BrandCreatorLink.creator_id)
+        .where(col(BrandCreatorLink.creator_id) == Creator.id)
+        .where(col(BrandCreatorLink.brand_id).in_(wanted))
+        .correlate(Creator)
     )
 
 
@@ -217,17 +243,23 @@ async def search_creators(
     with Timer() as t:
         stmnt = select(Creator)
 
-        tc = text_clause(
-            req.text,
-            [
-                col(Creator.name),
-                col(Creator.username),
-                col(Creator.city),
-            ],
-            extra=[_category_token, _language_token],
-        )
-        if tc is not None:
-            stmnt = stmnt.where(tc)
+        link = parse_profile_link(req.text) if looks_like_link(req.text) else None
+        if link is not None and link.username:
+            stmnt = stmnt.where(col(Creator.username) == link.username)
+            if link.platform is not None:
+                stmnt = stmnt.where(col(Creator.platform) == link.platform)
+        else:
+            tc = text_clause(
+                req.text,
+                [
+                    col(Creator.name),
+                    col(Creator.username),
+                    col(Creator.city),
+                ],
+                extra=[_category_token, _language_token],
+            )
+            if tc is not None:
+                stmnt = stmnt.where(tc)
 
         if req.platforms:
             stmnt = stmnt.where(col(Creator.platform).in_(req.platforms))
@@ -242,9 +274,19 @@ async def search_creators(
         cat_clause = _has_any_category(req.categories)
         if cat_clause is not None:
             stmnt = stmnt.where(cat_clause)
+
         lang_clause = _has_any_language(req.languages)
         if lang_clause is not None:
             stmnt = stmnt.where(lang_clause)
+
+        tag_clause = _has_any_tag(req.tags)
+        if tag_clause is not None:
+            stmnt = stmnt.where(tag_clause)
+
+        brand_clause = _linked_to_any_brand(req.brand_ids)
+        if brand_clause is not None:
+            stmnt = stmnt.where(brand_clause)
+
         if req.has_email:
             stmnt = stmnt.where(_has_value(Creator.emails))
         if req.has_phone:
@@ -276,7 +318,7 @@ async def search_creators(
         page, pages = clamp_page(total, req.page, req.page_size)
 
         sort = req.sort
-        if sort == "relevance" and not tokens(req.text):
+        if sort == "relevance" and (link is not None or not tokens(req.text)):
             sort = "followers_desc"
 
         order = {
@@ -695,12 +737,22 @@ async def facets_creators(session: SessionDep, redis: RedisDep, user: CurrentUse
                 for name, _ in (
                     await session.exec(
                         select(tag_model.name, usage.label("usage"))
-                        .join(link_model, col(fk) == col(tag_model.id), isouter=True)
+                        .join(link_model, col(fk) == col(tag_model.id), isouter=True) # convert to false to return only tags/categories/languages linked to something
                         .group_by(col(tag_model.id), col(tag_model.name))
                         .order_by(usage.desc(), col(tag_model.name))
                     )
                 ).all()
             ]
+
+        usage = func.count(col(BrandCreatorLink.creator_id))
+        brands = (
+            await session.exec(
+                select(Brand.id, Brand.display_name)
+                .join(BrandCreatorLink, col(BrandCreatorLink.brand_id) == col(Brand.id))
+                .group_by(col(Brand.id), col(Brand.display_name))
+                .order_by(usage.desc(), col(Brand.display_name))
+            )
+        ).all()
 
         return {
             "platforms": await _distinct(session, Creator.platform),
@@ -711,9 +763,8 @@ async def facets_creators(session: SessionDep, redis: RedisDep, user: CurrentUse
             "languages": await _tag_facet(
                 Language, LanguageCreatorLink, LanguageCreatorLink.language_id
             ),
-            "brands": await _tag_facet(
-                Brand, BrandCreatorLink, BrandCreatorLink.brand_id
-            ),
+            "tags": await _tag_facet(Tag, TagCreatorLink, TagCreatorLink.tag_id),
+            "brands": [BrandRef(id=i, name=n).model_dump() for i, n in brands],
             "cities": await _distinct(session, Creator.city),
             "states": await _distinct(session, Creator.state),
             "regions": await _distinct(session, Creator.region),

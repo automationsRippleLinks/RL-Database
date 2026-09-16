@@ -63,6 +63,8 @@ class CreatorSearchRequest(Paging):
     genders: list[str] = []
     categories: list[str] = []
     languages: list[str] = []
+    brand_ids: list[int] = []
+    tags: list[str] = []
     cities: list[str] = []
     has_email: bool = False
     has_phone: bool = False
