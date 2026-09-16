@@ -107,7 +107,7 @@ def _on_campaign(live_only: bool):
 
 
 def _has_value(column) -> Any:
-    return and_(col(column).is_not(None), col(column) != "")
+    return and_(col(column).is_not(None))
 
 
 def _category_token(token: str):
@@ -246,12 +246,12 @@ async def search_creators(
         if lang_clause is not None:
             stmnt = stmnt.where(lang_clause)
         if req.has_email:
-            stmnt = stmnt.where(_has_value(Creator.email))
+            stmnt = stmnt.where(_has_value(Creator.emails))
         if req.has_phone:
-            stmnt = stmnt.where(_has_value(Creator.phone))
+            stmnt = stmnt.where(_has_value(Creator.phones))
         if req.has_contact:
             stmnt = stmnt.where(
-                or_(_has_value(Creator.email), _has_value(Creator.phone))
+                or_(_has_value(Creator.emails), _has_value(Creator.phones))
             )
 
         if req.campaign_involvement == "worked":

@@ -11,7 +11,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { PlatformMark } from '@/components/PlatformMark';
 import { Skeleton } from '@/components/ui/skeleton';
-import { stateOf } from '@/lib/geo';
 import { compact, formatNumber, initials, profileUrlFor } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { CreatorRow } from '@/types/api';
@@ -100,10 +99,9 @@ export function CreatorTable({
           const isActive = row.id === activeId;
           const isPicked = Boolean(picked[row.id]);
           // const state = stateOf(row.city);
-          // const profileUrl = profileUrlFor(row);
-          const locationParts = row.city?.split(',').map((part) => part.trim()) ?? [];
-          const city = locationParts[0] || '—';
-          const state = locationParts[1] || stateOf(row.city);
+          const city = row.city?.trim() || '—';
+          const state = row.state?.trim() || "—";
+          const region = row.region?.trim() || "—";
 
           const profileUrl = profileUrlFor(row);
 
@@ -225,14 +223,14 @@ export function CreatorTable({
               <td className={cn(TD, 'text-center w-50')}>
                 <span className="inline-flex items-center justify-center gap-2">
                   <ContactGlyph
-                    href={row.email ? `mailto:${row.email}` : null}
-                    title={row.email ? 'Email this creator' : 'No email on file'}
+                    href={row.emails.length ? `mailto:${row.emails[0]}` : null}
+                    title={row.emails.length ? 'Email this creator' : 'No email on file'}
                     icon={<Mail className="size-4.25" />}
                   />
 
                   <ContactGlyph
-                    href={row.phone ? `tel:${row.phone.replace(/\s/g, '')}` : null}
-                    title={row.phone ? 'Call this creator' : 'No phone on file'}
+                    href={row.phones.length ? `tel:${row.phones[0].replace(/\s/g, '')}` : null}
+                    title={row.phones.length ? 'Call this creator' : 'No phone on file'}
                     icon={<Smartphone className="size-4.25" />}
                   />
                 </span>

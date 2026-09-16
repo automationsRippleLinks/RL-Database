@@ -7,7 +7,6 @@ import {
   ClipboardList,
   Clock,
   Copy,
-  Mail,
   Maximize2,
   Minimize2,
   PauseCircle,
@@ -21,7 +20,7 @@ import { ErrorState } from '@/components/states';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDismissable } from '@/hooks/useDismissable';
 import { MONTH_LABELS, PLATFORM_LABELS } from '@/lib/enums';
-import { compact, formatNumber, initials, profileUrlFor } from '@/lib/format';
+import { compact, formatDate, formatNumber, initials, profileUrlFor } from '@/lib/format';
 import { describePlace } from '@/lib/geo';
 import { cn } from '@/lib/utils';
 import type { CampaignStatus, CreatorCampaignSummary, CreatorDetail } from '@/types/api';
@@ -214,8 +213,8 @@ function DrawerBody({
   const profileUrl = profileUrlFor(detail);
   const packageQuote = commercialPackageFor(detail);
 
-  const emails = [detail.email, ...(detail.additional_emails ?? [])].filter(Boolean) as string[];
-  const phones = [detail.phone, ...(detail.additional_phones ?? [])].filter(Boolean) as string[];
+  const emails = [...detail.emails].filter(Boolean) as string[];
+  const phones = [...detail.phones].filter(Boolean) as string[];
 
   // "Worked with us" counts campaigns that ran. A dropped link means they were
   // proposed and cut, which is a different fact and is worth saying separately.
@@ -230,7 +229,9 @@ function DrawerBody({
           {initials(detail.name)}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-bold tracking-[-0.01em]">{detail.name}</span>
+          <span className="block text-[16px] font-bold tracking-[-0.01em]">
+            {detail.name}
+          </span>
           <span className="mt-0.75   flex items-center gap-1.5">
             <PlatformMark platform={detail.platform} size={14} />
             {profileUrl ? (
@@ -244,12 +245,14 @@ function DrawerBody({
                 @{detail.username}
               </a>
             ) : (
-              <span className="truncate text-xs text-rp-muted">@{detail.username}</span>
+              <span className="truncate text-xs text-rp-muted">
+                @{detail.username}
+              </span>
             )}
             {profileUrl && (
               <IconButton
                 title="Copy profile link"
-                onClick={() => onCopy(profileUrl, 'Profile link copied')}
+                onClick={() => onCopy(profileUrl, "Profile link copied")}
                 icon={Copy}
               />
             )}
@@ -258,30 +261,47 @@ function DrawerBody({
         <CloseButton onClose={onClose} />
       </div>
 
-      <div className={cn('flex min-h-0 flex-1', campaignsOpen ? 'flex-row' : 'flex-col')}>
+      <div
+        className={cn(
+          "flex min-h-0 flex-1",
+          campaignsOpen ? "flex-row" : "flex-col",
+        )}
+      >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
           {/* ── stats ────────────────────────────────────────────────────── */}
           <div className="grid shrink-0 grid-cols-2 gap-px bg-rp-border">
-            <Stat label="Followers" value={compact(detail.followers)} full={detail.followers} />
-            <Stat label="Avg views" value={compact(detail.avg_views)} full={detail.avg_views} />
+            <Stat
+              label="Followers"
+              value={compact(detail.followers)}
+              full={detail.followers}
+            />
+            <Stat
+              label="Avg views"
+              value={compact(detail.avg_views)}
+              full={detail.avg_views}
+            />
             <Stat label="Campaigns with us" value={String(ran.length)} />
             <Stat label="Times pitched" value={String(detail.pitches.length)} />
           </div>
 
           {/* ── commercial package ───────────────────────────────────────── */}
           {packageQuote && (
-            <section className="shrink-0 border-t border-rp-border px-[18px] py-[15px]">
+            <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
               <Eyebrow>Commercial package</Eyebrow>
-              <div className="mb-[11px] flex items-baseline gap-2.5">
+              <div className="mb-2.75 flex items-baseline gap-2.5">
                 <span className="shrink-0 text-2xl font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums">
-                  ₹{packageQuote.total.toLocaleString('en-IN')}
+                  ₹{packageQuote.total.toLocaleString("en-IN")}
                 </span>
                 <span
-                  title={packageQuote.items.map((item) => item.label).join(' + ')}
+                  title={packageQuote.items
+                    .map((item) => item.label)
+                    .join(" + ")}
                   className="min-w-0 truncate text-[11.5px] text-rp-muted"
                 >
-                  package of {packageQuote.items.length}{' '}
-                  {packageQuote.items.length === 1 ? 'deliverable' : 'deliverables'}
+                  package of {packageQuote.items.length}{" "}
+                  {packageQuote.items.length === 1
+                    ? "deliverable"
+                    : "deliverables"}
                 </span>
               </div>
 
@@ -290,73 +310,95 @@ function DrawerBody({
                 onClick={onToggleDeals}
                 aria-expanded={dealsOpen}
                 className={cn(
-                  'flex w-full cursor-pointer items-center gap-2 rounded-[10px] border border-rp-border px-[11px] py-[9px] text-xs font-semibold',
-                  dealsOpen ? 'text-rp-primary' : 'text-rp-text',
+                  "flex w-full cursor-pointer items-center gap-2 rounded-[10px] border border-rp-border px-2.75 py-2.25 text-xs font-semibold",
+                  dealsOpen ? "text-rp-primary" : "text-rp-text",
                 )}
               >
-                <ClipboardList className="size-[15px] shrink-0" />
+                <ClipboardList className="size-3.75 shrink-0" />
                 <span className="flex-1 text-left">Deliverables</span>
                 <ChevronDown
-                  className={cn('size-3.5 shrink-0 transition-transform', dealsOpen && 'rotate-180')}
+                  className={cn(
+                    "size-3.5 shrink-0 transition-transform",
+                    dealsOpen && "rotate-180",
+                  )}
                   strokeWidth={2.2}
                 />
               </button>
 
               {dealsOpen && (
                 <div className="mt-2.5 flex flex-wrap gap-2">
-                  {packageQuote.items.map(({ key, label, icon: Icon, cost }) => (
-                    <div
-                      key={key}
-                      className="flex min-w-0 flex-[0_1_calc(50%-4px)] items-center gap-2.5 rounded-[11px] border border-rp-border bg-rp-surface2 px-3 py-[11px]"
-                    >
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-rp-primary-soft text-rp-primary">
-                        <Icon className="size-[15px]" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-[11px] whitespace-nowrap text-rp-muted">
-                          {label}
+                  {packageQuote.items.map(
+                    ({ key, label, icon: Icon, quantity, cost }) => (
+                      <div
+                        key={key}
+                        className="flex min-w-0 flex-[0_1_calc(50%-4px)] items-center gap-2.5 rounded-sm border border-rp-border bg-rp-surface2 px-3 py-2.75"
+                      >
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-sm bg-rp-primary-soft text-rp-primary">
+                          <Icon className="size-3.75" />
                         </span>
-                        <span className="mt-px block text-sm font-bold tabular-nums">
-                          ₹{cost.toLocaleString('en-IN')}
+                        <span className="min-w-0">
+                          <span className="block text-2.75 whitespace-nowrap text-rp-muted">
+                            {label}
+                            {quantity > 1 && (
+                              <span className="ml-1 tabular-nums">
+                                ×{quantity}
+                              </span>
+                            )}
+                          </span>
+                          <span className="mt-px block text-sm font-bold tabular-nums">
+                            {cost > 0
+                              ? `₹${cost.toLocaleString("en-IN")}`
+                              : "in package"}
+                          </span>
                         </span>
-                      </span>
-                    </div>
-                  ))}
+                      </div>
+                    ),
+                  )}
                 </div>
               )}
 
-              <span className="mt-2.5 block text-[11px] text-rp-muted">
-                Indicative, from the last quote we have on file. Confirm before pitching.
+              <span className="mt-2.5 block text-rp-muted text-[11px]">
+                LQP on {formatDate(packageQuote.validFrom)}.
+                <br />
+                Confirm before pitching.
               </span>
             </section>
           )}
 
           {/* ── profile ──────────────────────────────────────────────────── */}
-          <section className="shrink-0 border-t border-rp-border px-[18px] py-[15px]">
+          <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
             <Eyebrow>Profile</Eyebrow>
-            <div className="flex flex-col gap-[9px]">
+            <div className="flex flex-col gap-2.25">
               <Fact label="Location" value={describePlace(detail.city)} />
               <Fact
                 label="Categories"
-                value={detail.categories[0] ?? '—'}
-                extra={detail.categories.length > 1 ? `+${detail.categories.length - 1}` : ''}
-                extraTitle={`Also: ${detail.categories.slice(1).join(', ')}`}
+                value={detail.categories[0] ?? "—"}
+                extra={
+                  detail.categories.length > 1
+                    ? `+${detail.categories.length - 1}`
+                    : ""
+                }
+                extraTitle={`Also: ${detail.categories.slice(1).join(", ")}`}
               />
               <Fact
                 label="Languages"
-                value={detail.languages.slice(0, 2).join(', ') || '—'}
-                extra={detail.languages.length > 2 ? `+${detail.languages.length - 2}` : ''}
-                extraTitle={`Also: ${detail.languages.slice(2).join(', ')}`}
+                value={detail.languages.slice(0, 2).join(", ") || "—"}
+                extra={
+                  detail.languages.length > 2
+                    ? `+${detail.languages.length - 2}`
+                    : ""
+                }
+                extraTitle={`Also: ${detail.languages.slice(2).join(", ")}`}
               />
-              <Fact label="Gender" value={detail.gender ?? '—'} />
+              <Fact label="Gender" value={detail.gender ?? "—"} />
               <Fact
                 label="Worked with us"
                 value={
                   ran.length
-                    ? `Yes — ${ran.length} ${ran.length === 1 ? 'campaign' : 'campaigns'}`
+                    ? `Yes — ${ran.length} ${ran.length === 1 ? "campaign" : "campaigns"}`
                     : dropped.length
-                      ? 'Proposed but dropped'
-                      : 'Not yet'
+                      ? "Proposed but dropped"
+                      : "Not yet"
                 }
               />
             </div>
@@ -364,9 +406,9 @@ function DrawerBody({
 
           {/* ── contact ──────────────────────────────────────────────────── */}
           {(emails.length > 0 || phones.length > 0) && (
-            <section className="shrink-0 border-t border-rp-border px-[18px] py-[15px]">
+            <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
               <Eyebrow>Contact</Eyebrow>
-              <div className="flex flex-col gap-[9px]">
+              <div className="flex flex-col gap-2.25">
                 {emails.length > 0 && (
                   <ContactRow
                     label="Email"
@@ -374,8 +416,8 @@ function DrawerBody({
                     index={contactIndex.email}
                     href={(value) => `mailto:${value}`}
                     actionTitle="Send an email"
-                    onCopy={(value) => onCopy(value, 'Email copied')}
-                    onNext={() => onCycleContact('email', emails.length)}
+                    onCopy={(value) => onCopy(value, "Email copied")}
+                    onNext={() => onCycleContact("email", emails.length)}
                   />
                 )}
                 {phones.length > 0 && (
@@ -383,10 +425,10 @@ function DrawerBody({
                     label="Phone"
                     values={phones}
                     index={contactIndex.phone}
-                    href={(value) => `tel:${value.replace(/\s/g, '')}`}
+                    href={(value) => `tel:${value.replace(/\s/g, "")}`}
                     actionTitle="Call this number"
-                    onCopy={(value) => onCopy(value, 'Phone number copied')}
-                    onNext={() => onCycleContact('phone', phones.length)}
+                    onCopy={(value) => onCopy(value, "Phone number copied")}
+                    onNext={() => onCycleContact("phone", phones.length)}
                   />
                 )}
               </div>
@@ -397,33 +439,33 @@ function DrawerBody({
         {/* ── campaigns ──────────────────────────────────────────────────── */}
         <div
           className={cn(
-            'flex flex-col',
+            "flex flex-col",
             campaignsOpen
-              ? 'min-h-0 flex-[0_0_300px] overflow-hidden border-l border-rp-border bg-rp-surface'
-              : 'flex-[0_0_auto] border-t border-rp-border',
+              ? "min-h-0 flex-[0_0_300px] overflow-hidden border-l border-rp-border bg-rp-surface"
+              : "flex-[0_0_auto] border-t border-rp-border",
           )}
         >
           <button
             type="button"
             onClick={onToggleCampaigns}
             aria-expanded={campaignsOpen}
-            className="flex w-full shrink-0 cursor-pointer items-center gap-[9px] px-[18px] pt-[15px] pb-[11px] text-left"
+            className="flex w-full shrink-0 cursor-pointer items-center gap-2.25 px-4.5 pt-3.75 pb-2.75 text-left"
           >
             <span className="flex-1 text-[10.5px] font-bold tracking-[0.06em] text-rp-muted uppercase">
               Campaigns
             </span>
-            <span className="rounded-full bg-rp-surface2 px-[7px] py-px text-[10.5px] font-bold tabular-nums text-rp-muted">
+            <span className="rounded-full bg-rp-surface2 px-1.75 py-px text-[10.5px] font-bold tabular-nums text-rp-muted">
               {detail.campaigns.length}
             </span>
             {campaignsOpen ? (
-              <Minimize2 className="size-[15px] shrink-0 text-rp-primary" />
+              <Minimize2 className="size-3.75 shrink-0 text-rp-primary" />
             ) : (
-              <Maximize2 className="size-[15px] shrink-0 text-rp-muted" />
+              <Maximize2 className="size-3.75 shrink-0 text-rp-muted" />
             )}
           </button>
 
           {campaignsOpen && (
-            <div className="min-h-0 flex-1 overflow-y-auto px-[18px] pb-[15px]">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4.5 pb-3.75">
               {detail.campaigns.map((campaign) => (
                 <CampaignRow key={campaign.campaign_id} campaign={campaign} />
               ))}
@@ -438,7 +480,7 @@ function DrawerBody({
       </div>
 
       {/* ── footer ───────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 gap-2 border-t border-rp-border px-[18px] py-3.5">
+      <div className="flex shrink-0 gap-2 border-t border-rp-border px-4.5 py-3.5">
         {/* {emails.length > 0 && (
           <a
             href={`mailto:${emails[0]}`}
@@ -453,7 +495,11 @@ function DrawerBody({
           type="button"
           // Pitch lists are the next thing to build, not something this screen
           // can fake. Saying so is better than a button that appears to work.
-          onClick={() => onFlash("Pitch lists aren't built yet — this is where they'll start")}
+          onClick={() =>
+            onFlash(
+              "Pitch lists aren't built yet — this is where they'll start",
+            )
+          }
           className="flex-1 cursor-pointer rounded-[10px] bg-rp-primary px-3.5 py-2.5 text-[12.5px] font-bold text-rp-primary-fg"
         >
           We don't know what do with this button!
@@ -465,7 +511,7 @@ function DrawerBody({
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <span className="mb-[11px] block text-[10.5px] font-bold tracking-[0.06em] text-rp-muted uppercase">
+    <span className="mb-2.75 block text-[10.5px] font-bold tracking-[0.06em] text-rp-muted uppercase">
       {children}
     </span>
   );
@@ -487,7 +533,7 @@ function Stat({
         {label}
       </span>
       <span
-        className="mt-0.75 block text-[15px] font-bold tabular-nums"
+        className="mt-0.75 block text-3.75 font-bold tabular-nums"
         title={full !== null && full !== undefined ? formatNumber(full) : undefined}
       >
         {value}
@@ -552,8 +598,8 @@ function ContactRow({
   const value = values[position];
 
   return (
-    <div className="flex h-[22px] items-center gap-2.5">
-      <span className="w-[82px] shrink-0 text-xs text-rp-muted">{label}</span>
+    <div className="flex h-5.5 items-center gap-2.5">
+      <span className="w-20.5 shrink-0 text-xs text-rp-muted">{label}</span>
       <a
         href={href(value)}
         title={actionTitle}
@@ -602,7 +648,7 @@ function CampaignRow({ campaign }: { campaign: CreatorCampaignSummary }) {
   const brand = campaign.brand?.name ?? 'no brand linked';
 
   return (
-    <div className="flex items-center gap-[11px] border-t border-rp-border py-[9px]">
+    <div className="flex items-center gap-2.75 border-t border-rp-border py-2.25">
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[12.5px] font-semibold">{campaign.campaign_name}</span>
         <span className="block truncate text-[11.5px] text-rp-muted">
@@ -634,9 +680,9 @@ function IconButton({
       }}
       title={title}
       aria-label={title}
-      className="flex shrink-0 cursor-pointer rounded-md p-[3px] text-rp-muted hover:bg-rp-surface2 hover:text-rp-text"
+      className="flex shrink-0 cursor-pointer rounded-md p-0.75 text-rp-muted hover:bg-rp-surface2 hover:text-rp-text"
     >
-      <Icon className="size-[13px]" />
+      <Icon className="size-3.25" />
     </button>
   );
 }

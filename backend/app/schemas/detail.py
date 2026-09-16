@@ -1,4 +1,4 @@
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from uuid import UUID
 from typing import Optional
 from decimal import Decimal
@@ -52,10 +52,21 @@ class CreatorCampaignSummary(BaseModel):
     views: Optional[int] = None
     cpv: Optional[Decimal] = None
 
+class CreatorPackageItem(BaseModel):
+    deliverable_type: str
+    quantity: int = 1
+    price: int = 0
+
+class CreatorPackage(BaseModel):
+    id: UUID
+    name: str
+    cost: int
+    valid_from: datetime
+    items: list[CreatorPackageItem] = []
+
 
 class CreatorDetail(CreatorRow):
-    additional_emails: list[str] = []
-    additional_phones: list[str] = []
+    package: Optional[CreatorPackage] = None
     pitches: list[CreatorPitchSummary] = []
     campaigns: list[CreatorCampaignSummary] = []
 

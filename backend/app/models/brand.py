@@ -1,15 +1,17 @@
 from typing import Optional, TYPE_CHECKING
 
-from sqlmodel import SQLModel, Field, Relationship, Index, text
+from sqlmodel import SQLModel, Field, Relationship, Index
 from sqlalchemy import CheckConstraint
 from pydantic import field_validator, ConfigDict
 
 from app.core.config import settings
+from app.models.link_models import BrandCreatorLink
 
 if TYPE_CHECKING:
     from .company import Company
     from .pitch import Pitch
     from .campaign import Campaign
+    from .creator import Creator
 
 
 class Brand(SQLModel, table=True):
@@ -43,6 +45,9 @@ class Brand(SQLModel, table=True):
 
     pitches: list["Pitch"] = Relationship(back_populates="brand")
     campaigns: list["Campaign"] = Relationship(back_populates="brand")
+    creators: list["Creator"] = Relationship(
+        back_populates="brands", link_model=BrandCreatorLink
+    )
 
     @field_validator("name", mode="after")
     @classmethod

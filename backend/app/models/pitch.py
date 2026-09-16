@@ -2,7 +2,7 @@ from uuid import uuid4, UUID
 from typing import TYPE_CHECKING, Optional
 from datetime import datetime, timezone
 
-from sqlmodel import SQLModel, Field, Relationship, func
+from sqlmodel import SQLModel, Field, Relationship, func, DateTime
 from sqlalchemy import Enum as SaEnum, Column
 from sqlalchemy.dialects.postgresql import ARRAY
 from pydantic import ConfigDict
@@ -41,15 +41,20 @@ class Pitch(SQLModel, table=True):
         back_populates="pitch",
     )
 
-    created_at: datetime | None = Field(
+    created_at: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, server_default=func.now()
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
-        nullable=False,
-        sa_column_kwargs={"server_default": func.now()},
     )
-    updated_at: datetime | None = Field(
+    updated_at: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            server_default=func.now(),
+            onupdate=func.now(),
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
-        nullable=False,
-        sa_column_kwargs={"server_default": func.now(), "onupdate": func.now()},
     )
 
     campaign: Optional["Campaign"] = Relationship(

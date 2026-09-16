@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime, timezone
 
-from sqlmodel import SQLModel, Field, func, text
+from sqlmodel import SQLModel, Field, func, Column, DateTime
 from pydantic import ConfigDict, field_validator
 
 
@@ -31,12 +31,16 @@ class User(SQLModel, table=True):
         default=False, nullable=False, sa_column_kwargs={"server_default": "false"}
     )
     created_at: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, server_default=func.now()
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": func.now()},
     )
     last_activity_at: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, server_default=func.now()
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": func.now()},
     )
 
     # permissions

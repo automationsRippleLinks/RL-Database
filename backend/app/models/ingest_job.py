@@ -26,10 +26,14 @@ class IngestJob(SQLModel, table=True):
     file_name: Optional[str] = Field(default=None, nullable=True)
 
     started_at: datetime = Field(
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, server_default=func.now()
+        ),
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"server_default": func.now()},
     )
-    finished_at: Optional[datetime] = Field(default=None, nullable=True)
+    finished_at: Optional[datetime] = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=True, default=None)
+    )
     started_by: Optional[str] = Field(default=None, nullable=True)
 
     received: int = Field(

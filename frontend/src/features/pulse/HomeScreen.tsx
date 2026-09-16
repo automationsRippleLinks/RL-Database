@@ -50,6 +50,7 @@ export function HomeScreen() {
       title: 'Creators',
       oneLiner: 'People who post — reach, topics and contacts.',
       count: creators.data?.total_creators,
+      // count: 10000,
       noun: 'creators',
     },
     {
@@ -57,6 +58,7 @@ export function HomeScreen() {
       title: 'Brands',
       oneLiner: 'Companies we sell to, and our history with them.',
       count: brands.data?.total_brands,
+      // count: 100,
       noun: 'brands',
     },
     {
@@ -64,6 +66,7 @@ export function HomeScreen() {
       title: 'Campaigns',
       oneLiner: 'Work we are delivering, and how it is going.',
       count: campaigns.data?.total_campaigns,
+      // count: 300,
       noun: 'campaigns',
     },
     {
@@ -71,6 +74,7 @@ export function HomeScreen() {
       title: 'Pitches',
       oneLiner: 'Proposals we sent, and which ones we won.',
       count: pitches.data?.total_pitches,
+      // count: 700,
       noun: 'pitches',
     },
   ];

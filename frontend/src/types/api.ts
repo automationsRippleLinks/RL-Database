@@ -208,6 +208,8 @@ export interface CreatorRow {
   followers: number | null;
   avg_views: number | null;
   city: string | null;
+  state: string | null;
+  region: string | null;
   gender: string | null;
   /**
    * Resolved through the category / language tables, and identical on the list
@@ -218,8 +220,8 @@ export interface CreatorRow {
    */
   categories: string[];
   languages: string[];
-  email: string | null;
-  phone: string | null;
+  emails: string[];
+  phones: string[];
   /**
    * How many campaigns this creator has actually run for us — the redesign's
    * "Worked with us" column, and the `campaigns_desc` sort.
@@ -247,25 +249,6 @@ export interface CreatorPitchSummary {
   platform: Platform[];
   final_cost: number | null;
   brand_cost: number | null;
-  /**
-   * Per-deliverable costs, for the drawer's "Commercial package" breakdown.
-   *
-   * These columns already exist on PitchCreatorLink (backend/app/models/
-   * link_models.py) and are already exposed on PitchCreatorRow; they are simply
-   * not on CreatorPitchSummary yet, so widening that schema is all this needs.
-   * Every field is optional and the drawer omits any deliverable that is absent
-   * or zero — which is also what makes it correct for a real quote, where a
-   * creator prices reels and stories but never a YouTube integration.
-   */
-  reel_cost?: number | null;
-  reel_story_cost?: number | null;
-  video_story_cost?: number | null;
-  static_carousel_cost?: number | null;
-  short_form_videos_cost?: number | null;
-  reshare_short_form_videos_cost?: number | null;
-  dedicated_video_cost?: number | null;
-  integrated_video_cost?: number | null;
-  package_cost?: number | null;
 }
 
 export interface CreatorCampaignSummary {
@@ -285,9 +268,22 @@ export interface CreatorCampaignSummary {
   cpv: string | null;
 }
 
+export interface CreatorPackageItem {
+  deliverable_type: string;
+  quantity: number;
+  price: number;
+}
+
+export interface CreatorPackage {
+  id: string;
+  name: string;
+  cost: number;
+  valid_from: string;
+  items: CreatorPackageItem[];
+}
+
 export interface CreatorDetail extends CreatorRow {
-  additional_emails: string[];
-  additional_phones: string[];
+  package: CreatorPackage | null;
   pitches: CreatorPitchSummary[];
   campaigns: CreatorCampaignSummary[];
 }

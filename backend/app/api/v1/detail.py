@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select, col, func
+from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 from app.api.deps import SessionDep, CurrentUser
@@ -20,6 +21,8 @@ from app.schemas.search import (
     PitchSearchRequest,
 )
 from app.schemas.detail import (
+    CreatorPackage,
+    CreatorPackageItem,
     CreatorDetail,
     CreatorPitchSummary,
     CreatorCampaignSummary,
@@ -54,9 +57,54 @@ def _sum(values) -> Optional[int]:
     return sum(vals) if vals else None
 
 
+STANDARD_PACKAGE = "standard"
+
+
+def _package_for(creator: Creator) -> Optional[CreatorPackage]:
+    live = sorted(
+        (
+            p
+            for p in creator.commercial_packages
+            if p.valid_to is None and p.name.strip().lower() == STANDARD_PACKAGE
+        ),
+        key=lambda p: p.valid_from,
+        reverse=True,
+    )
+    if not live:
+        return None
+
+    p = live[0]
+    return CreatorPackage(
+        id=p.id,
+        name=p.name,
+        cost=p.cost,
+        valid_from=p.valid_from,
+        items=[
+            CreatorPackageItem(
+                deliverable_type=d.deliverable_type,
+                quantity=d.quantity,
+                price=d.price,
+            )
+            for d in sorted(p.deliverables, key=lambda d: d.deliverable_type)
+        ],
+    )
+
+
 @router.get("/creators/{creator_id}", response_model=CreatorDetail)
 async def creator_detail(creator_id: UUID, session: SessionDep, user: CurrentUser):
-    creator = await session.get(Creator, creator_id)
+    # creator = await session.get(Creator, creator_id)
+    creator = (
+        await session.exec(
+            select(Creator)
+            .where(Creator.id == creator_id)
+            .options(
+                selectinload(Creator.commercial_packages).selectinload(
+                    CommercialPackage.deliverables
+                )
+            )
+        )
+    ).first()
+
     if creator is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Creator not found"
@@ -116,8 +164,7 @@ async def creator_detail(creator_id: UUID, session: SessionDep, user: CurrentUse
         **CreatorRow.from_creator(
             creator, categories=list(categories), languages=list(languages)
         ).model_dump(),
-        additional_emails=creator.additional_emails or [],
-        additional_phones=[str(p) for p in (creator.additional_phones or [])],
+        package=_package_for(creator),
         pitches=[
             CreatorPitchSummary(
                 pitch_id=p.id,

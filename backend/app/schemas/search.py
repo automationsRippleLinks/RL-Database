@@ -12,14 +12,14 @@ from app.models.enums import (
     MonthChoices,
     PitchRequirementChoices,
 )
-from app.core.config import MAX_PAGE_SIZE
+from app.core.config import settings
 
 RowT = TypeVar("RowT")
 
 
 class Paging(BaseModel):
     page: int = Field(default=1, ge=1)
-    page_size: int = Field(default=50, ge=1, le=MAX_PAGE_SIZE)
+    page_size: int = Field(default=50, ge=1, le=settings.MAX_PAGE_SIZE)
 
 
 class SearchResponse(BaseModel, Generic[RowT]):
@@ -94,15 +94,13 @@ class CreatorRow(BaseModel):
     followers: Optional[int] = None
     avg_views: Optional[int] = None
     city: Optional[str] = None
+    state: Optional[str] = None
+    region: Optional[str] = None
     gender: Optional[str] = None
-    #: Resolved through the category / language tables. The creator row still
-    #: carries the sheet's raw text, but it is an audit trail, not a display
-    #: value: it is written once at insert and never revised, so it drifts from
-    #: the links as soon as a creator turns up on a second sheet.
     categories: list[str] = []
     languages: list[str] = []
-    email: Optional[str] = None
-    phone: Optional[str] = None
+    emails: list[str] = []
+    phones: list[str] = []
 
     @computed_field
     @property
@@ -122,9 +120,16 @@ class CreatorRow(BaseModel):
         data = {
             name: getattr(creator, name)
             for name in cls.model_fields
-            if name not in _TAG_FIELDS
+            if name not in _TAG_FIELDS and name not in ("emails", "phones")
         }
-        return cls(**data, categories=list(categories), languages=list(languages))
+        emails = getattr(creator, "emails")
+        phones = getattr(creator, "phones")
+        merged = {
+            **data,
+            "emails": emails if emails else [],
+            "phones": phones if phones else [],
+        }
+        return cls(**merged, categories=list(categories), languages=list(languages))
 
 
 # --- Brands ---
