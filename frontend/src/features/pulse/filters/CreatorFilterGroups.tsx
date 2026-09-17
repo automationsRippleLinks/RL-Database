@@ -12,7 +12,7 @@ type FilterModel = ReturnType<typeof useCreatorFilterModel>;
 const GROUPS: { key: FilterGroupKey; label: string; icon: LucideIcon }[] = [
   { key: 'platform', label: 'Platform', icon: Globe },
   { key: 'brand', label: 'Brand', icon: Building2 },
-  { key: 'content', label: 'Content & Language', icon: Tag },
+  { key: 'content', label: 'Attributes', icon: Tag },
   { key: 'location', label: 'Location', icon: MapPin },
   { key: 'reach', label: 'Reach', icon: Users },
 ];
@@ -192,12 +192,12 @@ export function CreatorFilterGroups({
                       max={model.values.folMax}
                       onChange={model.actions.setFollowers}
                     />
-                    <RangeControl
+                    {/* <RangeControl
                       label="Avg views"
                       min={model.values.viewMin}
                       max={model.values.viewMax}
                       onChange={model.actions.setViews}
-                    />
+                    /> */}
                   </>
                 )}
               </div>

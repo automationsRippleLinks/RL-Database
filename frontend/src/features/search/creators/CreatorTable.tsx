@@ -1,23 +1,23 @@
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 import {
-  Check,
-  CircleDashed,
-  CircleUserRound,
-  Mail,
-  Mars,
-  NonBinary,
-  Smartphone,
-  Venus,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { PlatformMark } from '@/components/PlatformMark';
-import { Skeleton } from '@/components/ui/skeleton';
-import { compact, formatNumber, initials, profileUrlFor } from '@/lib/format';
-import { cn } from '@/lib/utils';
-import type { CreatorRow } from '@/types/api';
+  ManIcon,
+  WomanIcon,
+  NonBinaryIcon,
+  UserGroup02Icon,
+  SmartPhone01Icon,
+  Mail02Icon,
+  CheckIcon,
+} from "@hugeicons/core-free-icons";
+import { PlatformMark } from "@/components/PlatformMark";
+import { useToast } from "@/components/Toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { compact, formatNumber, initials, profileUrlFor } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import type { CreatorRow } from "@/types/api";
 
 const TH =
-  'sticky top-0 z-[3] bg-rp-head px-[13px] py-2.5 text-[10.5px] font-bold tracking-[0.05em] whitespace-nowrap text-rp-muted uppercase shadow-[inset_0_-1px_0_var(--rp-border)]';
-const TD = 'px-[13px] py-2.5 align-middle';
+  "sticky top-0 z-[3] bg-rp-head px-[13px] py-2.5 text-[10.5px] font-bold tracking-[0.05em] whitespace-nowrap text-rp-muted uppercase shadow-[inset_0_-1px_0_var(--rp-border)]";
+const TD = "px-[13px] py-2.5 align-middle";
 
 interface CreatorTableProps {
   rows: CreatorRow[];
@@ -70,36 +70,31 @@ export function CreatorTable({
     <table className="w-full table-fixed border-collapse text-[11px]">
       <thead>
         <tr>
-          <th className={cn(TH, 'text-left w-10')}>
+          <th className={cn(TH, "text-left w-10")}>
             <TickBox
               checked={allPicked}
               onClick={onTogglePage}
               label="Select everyone on this page"
             />
           </th>
-          {/* <th className={cn(TH, 'text-left')}>Creator</th>
-          <th className={cn(TH, 'text-center')}>Platform</th> */}
-          <th className={cn(TH, 'text-left w-46 text-[12px]')}>Creator</th>
-          <th className={cn(TH, 'text-center w-20 text-[12px] ')}>Platform</th>
-          <th className={cn(TH, 'text-center w-20 text-[12px]')}>Followers</th>
-          <th className={cn(TH, 'text-center w-23 text-[12px]')}>Avg views</th>
-          <th className={cn(TH, 'text-left w-20 text-[12px]')}>Location</th>
-          <th className={cn(TH, 'text-center w-30 text-[12px]')}>Gender</th>
-          <th className={cn(TH, 'text-left w-25 text-[12px]')}>Languages</th>
-          <th className={cn(TH, 'text-left w-38 text-[12px]')}>Categories</th>
-          {/* <th className={cn(TH, 'text-center')}>Email</th> */}
-          <th className={cn(TH, 'text-center w-25 text-[12px]')}>Contact</th>
-          {/* <th className={cn(TH, 'text-left w-30 text-[10px]')}>Worked with us</th> */}
-          {/* <th className={cn(TH, 'text-center')}>Profile</th> */}
+          <th className={cn(TH, "text-left w-46 text-[12px]")}>Creator</th>
+          <th className={cn(TH, "text-center w-20 text-[12px] ")}>Platform</th>
+          <th className={cn(TH, "text-center w-20 text-[12px]")}>Followers</th>
+          <th className={cn(TH, "text-center w-23 text-[12px]")}>Avg views</th>
+          <th className={cn(TH, "text-left w-20 text-[12px]")}>Location</th>
+          <th className={cn(TH, "text-center w-30 text-[12px]")}>Gender</th>
+          <th className={cn(TH, "text-left w-25 text-[12px]")}>Languages</th>
+          <th className={cn(TH, "text-left w-38 text-[12px]")}>Categories</th>
+          <th className={cn(TH, "text-center w-25 text-[12px]")}>Contact</th>
         </tr>
       </thead>
 
-      <tbody className={cn('transition-opacity', isFetching && 'opacity-50')}>
+      <tbody className={cn("transition-opacity", isFetching && "opacity-50")}>
         {rows.map((row) => {
           const isActive = row.id === activeId;
           const isPicked = Boolean(picked[row.id]);
           // const state = stateOf(row.city);
-          const city = row.city?.trim() || '—';
+          const city = row.city?.trim() || "—";
           const state = row.state?.trim() || "—";
           const region = row.region?.trim() || "—";
 
@@ -110,15 +105,15 @@ export function CreatorTable({
               key={row.id}
               onClick={() => onOpen(row)}
               className={cn(
-                'cursor-pointer border-t border-rp-border transition-colors',
+                "cursor-pointer border-t border-rp-border transition-colors",
                 isActive
-                  ? 'bg-rp-primary-soft shadow-[inset_3px_0_0_var(--rp-primary)]'
+                  ? "bg-rp-primary-soft shadow-[inset_3px_0_0_var(--rp-primary)]"
                   : isPicked
-                    ? 'bg-rp-surface2'
-                    : 'hover:bg-rp-surface2',
+                    ? "bg-rp-surface2"
+                    : "hover:bg-rp-surface2",
               )}
             >
-              <td className={cn(TD, 'text-left')}>
+              <td className={cn(TD, "text-left")}>
                 <TickBox
                   checked={isPicked}
                   label={`Select ${row.name}`}
@@ -130,13 +125,15 @@ export function CreatorTable({
               </td>
 
               {/* <td className={TD}> */}
-              <td className={cn(TD, 'w-180')}>
+              <td className={cn(TD, "w-180")}>
                 <span className="flex items-center gap-2.25">
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-rp-border bg-rp-surface2 text-[10.5px] font-bold">
                     {initials(row.name)}
                   </span>
                   <span className="min-w-0">
-                    <span className="block font-semibold whitespace-nowrap">{row.name}</span>
+                    <span className="block font-semibold whitespace-nowrap">
+                      {row.name}
+                    </span>
                     {profileUrl ? (
                       <a
                         href={profileUrl}
@@ -157,111 +154,99 @@ export function CreatorTable({
               </td>
 
               {/* <td className={cn(TD, 'text-center')}> */}
-              <td className={cn(TD, 'w-20 text-center')}>
+              <td className={cn(TD, "w-20 text-center")}>
                 <span className="inline-flex">
                   <PlatformMark platform={row.platform} />
                 </span>
               </td>
 
               <td
-                className={cn(TD, 'text-center tabular-nums')}
-                title={row.followers !== null ? `${formatNumber(row.followers)} followers` : undefined}
+                className={cn(TD, "text-center tabular-nums")}
+                title={
+                  row.followers !== null
+                    ? `${formatNumber(row.followers)} followers`
+                    : undefined
+                }
               >
                 {compact(row.followers)}
               </td>
               <td
-                className={cn(TD, 'text-center tabular-nums')}
-                title={row.avg_views !== null ? `${formatNumber(row.avg_views)} views per post` : undefined}
+                className={cn(TD, "text-center tabular-nums")}
+                title={
+                  row.avg_views !== null
+                    ? `${formatNumber(row.avg_views)} views per post`
+                    : undefined
+                }
               >
                 {compact(row.avg_views)}
               </td>
 
-              {/* <td className={TD}>
-                <span className="block whitespace-nowrap">{row.city ?? '—'}</span>
-                {state && (
-                  <span className="block text-[11px] whitespace-nowrap text-rp-muted">{state}</span>
-                )}
-              </td> */}
-              {/* <td className={TD}>
-                <span className="block text-[13px] font-medium leading[16px] whitespace-nowrap">
-                  {row.city ?? '—'}
-                </span>
-                {state && (
-                  <span className="block text-[8px] font-medium leading-3 whitespace-nowrap text-rp-muted">
-                    {state}
-                  </span>
-                )}
-              </td> */}
               <td className={TD}>
-                <span className="block text-[12px] font-medium leading-5 whitespace-nowrap">
-                  {city}
-                </span>
-
-                {state && (
-                  <span className="block text-[10px] leading-4 text-rp-muted whitespace-nowrap">
-                    {state}
+                {city !== "—" ? (
+                  <>
+                    <span className="block text-[12px] font-medium leading-5 whitespace-nowrap">
+                      {city}
+                    </span>
+                    <span className="block text-[10px] leading-4 text-rp-muted whitespace-nowrap">
+                      {state}
+                    </span>
+                  </>
+                ) : state !== "—" ? (
+                  <>
+                    <span className="block text-[12px] font-medium leading-5 whitespace-nowrap">
+                      {state}
+                    </span>
+                    <span className="block text-[10px] leading-4 text-rp-muted whitespace-nowrap">
+                      {region}
+                    </span>
+                  </>
+                ) : (
+                  <span className="block text-[12px] font-medium leading-5 whitespace-nowrap">
+                    {region}
                   </span>
                 )}
               </td>
 
-
-
-
-              <td className={cn(TD, 'text-center')}>
+              <td className={cn(TD, "text-center")}>
                 <GenderGlyph gender={row.gender} />
               </td>
 
               <td className={TD}>
-                <TruncatedList items={row.languages} overflowTitle="Also speaks" chipFirst />
+                <TruncatedList
+                  items={row.languages}
+                  overflowTitle="Also speaks"
+                  chipFirst
+                />
               </td>
 
               <td className={TD}>
-
-                <TruncatedList items={row.categories} overflowTitle="Also" chipFirst />
+                <TruncatedList
+                  items={row.categories}
+                  overflowTitle="Also"
+                  chipFirst
+                />
               </td>
 
-              <td className={cn(TD, 'text-center w-50')}>
+              <td className={cn(TD, "text-center w-50")}>
                 <span className="inline-flex items-center justify-center gap-2">
                   <ContactGlyph
-                    href={row.emails.length ? `mailto:${row.emails[0]}` : null}
-                    title={row.emails.length ? 'Email this creator' : 'No email on file'}
-                    icon={<Mail className="size-4.25" />}
+                    value={row.emails.length ? row.emails[0] : null}
+                    title={
+                      row.emails.length ? "Copy Email" : "No email on file"
+                    }
+                    icon={Mail02Icon}
                   />
 
                   <ContactGlyph
-                    href={row.phones.length ? `tel:${row.phones[0].replace(/\s/g, '')}` : null}
-                    title={row.phones.length ? 'Call this creator' : 'No phone on file'}
-                    icon={<Smartphone className="size-4.25" />}
+                    value={row.phones.length ? row.phones[0] : null}
+                    title={
+                      row.phones.length ? "Copy number" : "No phone on file"
+                    }
+                    // icon={<Smartphone className="size-4.25" />}
+                    icon={SmartPhone01Icon}
                   />
                 </span>
               </td>
-              {/* <td className={cn(TD, 'text-center')}>
-                <WorkedWithUs count={row.campaign_count} />
-              </td> */}
-
-              {/* <td className={cn(TD, 'text-center')}>
-                <ContactGlyph
-                  href={row.email ? `mailto:${row.email}` : null}
-                  title={row.email ? 'Email this creator' : 'No email on file'}
-                  icon={<Mail className="size-[17px]" />}
-                />
-              </td>
-              <td className={cn(TD, 'text-center')}>
-                <ContactGlyph
-                  href={row.phone ? `tel:${row.phone.replace(/\s/g, '')}` : null}
-                  title={row.phone ? 'Call this creator' : 'No phone on file'}
-                  icon={<Smartphone className="size-[17px]" />}
-                />
-              </td> */}
-
-              {/* <td className={cn(TD, 'text-center')}>
-                <ContactGlyph
-                  href={profileUrl}
-                  title={profileUrl ? 'Open their profile' : 'No profile link'}
-                  icon={<ExternalLink className="size-4" />}
-                  external
-                />
-              </td> */}
             </tr>
           );
         })}
@@ -288,11 +273,17 @@ function TickBox({
       title={label}
       onClick={onClick}
       className={cn(
-        'inline-flex size-3.75 cursor-pointer items-center justify-center rounded border-[1.5px] align-middle transition-colors',
-        checked ? 'border-rp-primary bg-rp-primary text-rp-primary-fg' : 'border-rp-box',
+        "inline-flex size-3.75 cursor-pointer items-center justify-center rounded border-[1.5px] align-middle transition-colors",
+        checked
+          ? "border-rp-primary bg-rp-primary text-rp-primary-fg"
+          : "border-rp-box",
       )}
     >
-      <Check className={cn('size-2.75', !checked && 'opacity-0')} strokeWidth={3.4} />
+      <HugeiconsIcon
+        icon={CheckIcon}
+        className={cn("size-2.75", !checked && "opacity-0")}
+        strokeWidth={3.4}
+      />
     </button>
   );
 }
@@ -303,18 +294,26 @@ function TickBox({
  * glyph for anything else rather than guessing. The raw value is always the
  * accessible name and the tooltip — the glyph is the shorthand, not the claim.
  */
-const GENDER_GLYPH: { test: RegExp; icon: LucideIcon }[] = [
-  { test: /^\s*(f|female|woman|women)\s*$/i, icon: Venus },
-  { test: /^\s*(m|male|man|men)\s*$/i, icon: Mars },
-  { test: /^\s*(nb|non[-\s]?binary|other|transgender|trans)\s*$/i, icon: NonBinary },
+const GENDER_GLYPH: { test: RegExp; icon: IconSvgElement }[] = [
+  { test: /^\s*(f|female|woman|women)\s*$/i, icon: WomanIcon },
+  { test: /^\s*(m|male|man|men)\s*$/i, icon: ManIcon },
+  {
+    test: /^\s*(nb|non[-\s]?binary|other|transgender|trans)\s*$/i,
+    icon: NonBinaryIcon,
+  },
 ];
 
 function GenderGlyph({ gender }: { gender: string | null }) {
   if (!gender?.trim()) return <span className="text-rp-muted">—</span>;
-  const Icon = GENDER_GLYPH.find(({ test }) => test.test(gender))?.icon ?? CircleUserRound;
+  const icon =
+    GENDER_GLYPH.find(({ test }) => test.test(gender))?.icon ?? UserGroup02Icon;
   return (
-    <span title={gender} aria-label={gender} className="inline-flex text-rp-muted">
-      <Icon className="size-4.25" />
+    <span
+      title={gender}
+      aria-label={gender}
+      className="inline-flex text-rp-muted"
+    >
+      <HugeiconsIcon icon={icon} className="size-4.25" />
     </span>
   );
 }
@@ -336,15 +335,15 @@ function TruncatedList({
     <span className="flex items-center gap-1.25 whitespace-nowrap">
       <span
         className={cn(
-          'rounded-md bg-rp-surface2 px-1.75 py-0.5 text-[11px]',
-          chipFirst && 'border border-rp-border',
+          "rounded-md bg-rp-surface2 px-1.75 py-0.5 text-[11px]",
+          chipFirst && "border border-rp-border",
         )}
       >
         {items[0]}
       </span>
       {rest > 0 && (
         <span
-          title={`${overflowTitle}: ${items.slice(1).join(', ')}`}
+          title={`${overflowTitle}: ${items.slice(1).join(", ")}`}
           className="cursor-help rounded-md border border-dashed border-rp-box px-1.25   py-0.5 text-[10.5px] text-rp-muted"
         >
           +{rest}
@@ -354,31 +353,31 @@ function TruncatedList({
   );
 }
 
-function WorkedWithUs({ count }: { count: number | null | undefined }) {
-  // Absent is not zero. The backend does not send this yet (see CreatorRow),
-  // and "Not yet" would be an assertion we cannot make.
-  if (count === null || count === undefined) {
-    return (
-      <span title="Not available from the API yet" className="text-rp-muted">
-        —
-      </span>
-    );
-  }
-  if (count === 0) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap text-rp-muted">
-        <CircleDashed className="size-4" />
-        Not yet
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap text-rp-success">
-      <Check className="size-4" strokeWidth={3} />
-      {count} {count === 1 ? 'campaign' : 'campaigns'}
-    </span>
-  );
-}
+// function WorkedWithUs({ count }: { count: number | null | undefined }) {
+//   // Absent is not zero. The backend does not send this yet (see CreatorRow),
+//   // and "Not yet" would be an assertion we cannot make.
+//   if (count === null || count === undefined) {
+//     return (
+//       <span title="Not available from the API yet" className="text-rp-muted">
+//         —
+//       </span>
+//     );
+//   }
+//   if (count === 0) {
+//     return (
+//       <span className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap text-rp-muted">
+//         <CircleDashed className="size-4" />
+//         Not yet
+//       </span>
+//     );
+//   }
+//   return (
+//     <span className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap text-rp-success">
+//       <Check className="size-4" strokeWidth={3} />
+//       {count} {count === 1 ? "campaign" : "campaigns"}
+//     </span>
+//   );
+// }
 
 /**
  * mailto / tel / profile. Faint and inert when there is nothing on file, rather
@@ -386,33 +385,39 @@ function WorkedWithUs({ count }: { count: number | null | undefined }) {
  * "we don't have this".
  */
 function ContactGlyph({
-  href,
+  value,
   title,
   icon,
-  external,
 }: {
-  href: string | null;
+  value: string | null;
   title: string;
-  icon: React.ReactNode;
-  external?: boolean;
+  icon: IconSvgElement;
 }) {
-  if (!href) {
+  const { copy } = useToast();
+
+  if (!value) {
     return (
-      <span title={title} aria-label={title} className="inline-flex text-rp-faint">
-        {icon}
+      <span
+        title={title}
+        aria-label={title}
+        className="inline-flex text-rp-faint"
+      >
+        <HugeiconsIcon icon={icon} className="size-4.25" />
       </span>
     );
   }
   return (
-    <a
-      href={href}
+    <button
+      type="button"
       title={title}
       aria-label={title}
-      onClick={(event) => event.stopPropagation()}
-      {...(external ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
-      className="inline-flex text-rp-primary"
+      onClick={(event) => {
+        event.stopPropagation();
+        copy(value, "Copied!");
+      }}
+      className="inline-flex text-rp-primary cursor-pointer hover:text-rp-text"
     >
-      {icon}
-    </a>
+      <HugeiconsIcon icon={icon} className="size-4.25" />
+    </button>
   );
 }

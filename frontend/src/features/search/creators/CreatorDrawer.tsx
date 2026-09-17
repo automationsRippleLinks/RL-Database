@@ -263,7 +263,7 @@ function DrawerBody({
 
       <div
         className={cn(
-          "flex min-h-0 flex-1",
+          "flex min-h-0 flex-1 scrollbar-thin",
           campaignsOpen ? "flex-row" : "flex-col",
         )}
       >
