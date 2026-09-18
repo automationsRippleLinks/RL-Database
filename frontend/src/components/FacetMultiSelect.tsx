@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Button } from './UI/button';
+import { Input } from './UI/input';
+import { Popover, PopoverContent, PopoverTrigger } from './UI/popover';
 import { cn } from '@/lib/utils';
 
 export interface FacetOption {

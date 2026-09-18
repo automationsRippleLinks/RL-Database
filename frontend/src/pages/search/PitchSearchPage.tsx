@@ -6,15 +6,20 @@ import { DateRangeFilter } from '@/components/DateRangeFilter';
 import { FacetMultiSelect } from '@/components/FacetMultiSelect';
 import { Pagination } from '@/components/Pagination';
 import { EmptyState, ErrorState } from '@/components/states';
-import { Select } from '@/components/ui/select';
+import { Select } from '@/components/UI/select';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { ORG_TYPE_LABELS, PITCH_REQUIREMENT_LABELS, PLATFORM_LABELS } from '@/lib/enums';
 import { formatNumber } from '@/lib/format';
-import { FilterPanel, brandOptions, toOptions } from '../FilterPanel';
-import { ResultsHeader } from '../ResultsHeader';
-import { PITCH_SORTS, SCOPE_FILTER_KEYS, countActiveFilters, usePitchRequest } from '../request-state';
-import { usePitchFacets, usePitchSearch } from '../queries';
-import { pitchColumns } from './columns';
+import { FilterPanel, brandOptions, toOptions } from '@/features/search/FilterPanel';
+import { ResultsHeader } from "@/features/search/ResultsHeader";
+import {
+  PITCH_SORTS,
+  SCOPE_FILTER_KEYS,
+  countActiveFilters,
+  usePitchRequest,
+} from "@/features/search/request-state";
+import { usePitchFacets, usePitchSearch } from "@/features/search/queries";
+import { pitchColumns } from "@/features/search/pitches/columns";
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
 
 export function PitchSearchPage() {

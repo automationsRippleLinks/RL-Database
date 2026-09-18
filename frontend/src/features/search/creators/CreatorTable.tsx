@@ -10,7 +10,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { PlatformMark } from "@/components/PlatformMark";
 import { useToast } from "@/components/Toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/UI/skeleton";
 import { compact, formatNumber, initials, profileUrlFor } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { CreatorRow } from "@/types/api";

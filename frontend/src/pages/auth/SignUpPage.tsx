@@ -2,16 +2,16 @@ import { useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, Loader2, MailCheck, UserPlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/UI/button';
+import { Input } from '@/components/UI/input';
+import { Label } from '@/components/UI/label';
 import { ApiError } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
-import { AuthShell } from './AuthShell';
-import { PasswordFields, passwordsReady, type PasswordState } from './PasswordFields';
-import { ResendVerificationForm } from './ResendVerificationForm';
-import { ALLOWED_EMAIL_DOMAINS, validateWorkEmail } from './domain';
-import { useAuth } from './useAuth';
+import { AuthShell } from "@/features/auth/AuthShell";
+import { PasswordFields, passwordsReady, type PasswordState } from '@/features/auth/PasswordFields';
+import { ResendVerificationForm } from '@/features/auth/ResendVerificationForm';
+import { ALLOWED_EMAIL_DOMAINS, validateWorkEmail } from '@/features/auth/domain';
+import { useAuth } from '@/features/auth/useAuth';
 
 /**
  * Password sign-up. The backend returns 201 + SessionUser but deliberately sets no

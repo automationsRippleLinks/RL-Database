@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableWrapper } from './ui/table';
-import { Skeleton } from './ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableWrapper } from './UI/table';
+import { Skeleton } from './UI/skeleton';
 
 export interface Column<Row> {
   /** Stable key, also used as the React key for cells. */

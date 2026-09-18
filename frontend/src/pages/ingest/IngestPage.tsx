@@ -3,15 +3,15 @@ import { History } from 'lucide-react';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ErrorState, LoadingState } from '@/components/states';
 import { SectionTitle } from '@/components/bits';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/UI/badge';
 import { ingestApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';
 import { INGEST_SOURCE_LABELS } from '@/lib/enums';
 import { formatDateTime, formatNumber } from '@/lib/format';
 import type { IngestJob } from '@/types/api';
-import { AppsScriptPanel } from './AppsScriptPanel';
-import { JsonUploadPanel } from './JsonUploadPanel';
-import { JobStatusBadge } from './JobResult';
+import { AppsScriptPanel } from '@/features/ingest/AppsScriptPanel';
+import { JsonUploadPanel } from "@/features/ingest/JsonUploadPanel";
+import { JobStatusBadge } from "@/features/ingest/JobResult";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 export function IngestPage() {

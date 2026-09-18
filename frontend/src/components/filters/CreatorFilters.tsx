@@ -2,10 +2,10 @@ import { Building2, ChevronDown, Globe, MapPin, Tag, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CreatorFacets } from '@/types/api';
-import { FilterDropdown } from './FilterDropdown';
-import { RangeControl } from './RangeControl';
-import { TagsControl } from './TagsControl';
-import type { FilterGroupKey, useCreatorFilterModel } from './useCreatorFilterModel';
+import { FilterDropdown } from '../FilterDropdown';
+import { RangeControl } from '../RangeControl';
+import { TagsControl } from '../TagsControl';
+import type { FilterGroupKey, useCreatorFilterModel } from '../../hooks/filterModels/useCreatorFilterModel';
 
 type FilterModel = ReturnType<typeof useCreatorFilterModel>;
 
@@ -35,7 +35,7 @@ interface CreatorFilterGroupsProps {
  * each holding up to three controls do not fit in a 214px column at once, and an
  * accordion means the open one is always the one being worked on.
  */
-export function CreatorFilterGroups({
+export default function CreatorFilters({
   model,
   facets,
   railOpen,
@@ -74,24 +74,24 @@ export function CreatorFilterGroups({
                 onOpenMenu(null);
               }}
               className={cn(
-                'relative flex w-full cursor-pointer items-center gap-[9px] rounded-[9px] py-[9px] text-[12.5px] font-semibold transition-colors',
-                railOpen ? 'px-[9px]' : 'justify-center overflow-visible px-0',
+                'relative flex w-full cursor-pointer items-center gap-2.25 rounded-[9px] py-2.25 text-[12.5px] font-semibold transition-colors',
+                railOpen ? 'px-2.25' : 'justify-center overflow-visible px-0',
                 open ? 'bg-rp-surface2' : 'hover:bg-rp-surface2/60',
                 count ? 'text-rp-primary' : 'text-rp-text',
               )}
             >
-              <Icon className="size-[17px] shrink-0" />
+              <Icon className="size-4.25 shrink-0" />
               <RailLabel open={railOpen}>{label}</RailLabel>
 
               {count > 0 &&
                 (railOpen ? (
-                  <span className="shrink-0 rounded-full bg-rp-primary-soft px-[5px] py-px text-center text-[10px] font-bold tabular-nums text-rp-primary">
+                  <span className="shrink-0 rounded-full bg-rp-primary-soft px-1.25 py-px text-center text-[10px] font-bold tabular-nums text-rp-primary">
                     {count}
                   </span>
                 ) : (
                   // Pinned to the glyph's corner with a ring in the rail's own
                   // background, so it reads as a badge and not as part of the icon.
-                  <span className="absolute top-px right-px min-w-[14px] rounded-full border-[1.5px] border-rp-bg bg-rp-primary px-[3px] text-center text-[8.5px] leading-[13px] font-bold text-rp-primary-fg">
+                  <span className="absolute top-px right-px min-w-3.5 rounded-full border-[1.5px] border-rp-bg bg-rp-primary px-0.75 text-center text-[8.5px] leading-3.25 font-bold text-rp-primary-fg">
                     {count}
                   </span>
                 ))}
@@ -99,7 +99,7 @@ export function CreatorFilterGroups({
               {railOpen && (
                 <ChevronDown
                   className={cn(
-                    'size-[13px] shrink-0 opacity-70 transition-transform',
+                    'size-3.25 shrink-0 opacity-70 transition-transform',
                     open && 'rotate-180',
                   )}
                   strokeWidth={2.2}
@@ -108,7 +108,7 @@ export function CreatorFilterGroups({
             </button>
 
             {open && (
-              <div data-rp-pop="menu" className="flex flex-col gap-[11px] px-[9px] pt-1 pb-3">
+              <div data-rp-pop="menu" className="flex flex-col gap-2.75 px-2.25 pt-1 pb-3">
                 {key === 'platform' && (
                   <FilterDropdown
                     label="Platform"
@@ -219,7 +219,7 @@ export function RailLabel({ open, children }: { open: boolean; children: React.R
       className={cn(
         'min-w-0 overflow-hidden text-left whitespace-nowrap',
         open
-          ? 'max-w-[200px] flex-1 opacity-100 transition-[opacity,max-width] delay-[50ms] duration-200 ease-out'
+          ? 'max-w-50 flex-1 opacity-100 transition-[opacity,max-width] delay-50 duration-200 ease-out'
           : 'max-w-0 flex-[0_0_0] opacity-0 transition-[opacity,max-width] duration-200 ease-out',
       )}
     >

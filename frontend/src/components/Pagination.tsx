@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from './ui/button';
-import { Select } from './ui/select';
+import { Button } from './UI/button';
+import { Select } from './UI/select';
 import { formatNumber } from '@/lib/format';
 
 const PAGE_SIZES = [25, 50, 100, 250, 500];

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ArrowUpDown, Check, ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
-import { useCreatorFacets, useCreatorSearch } from '../queries';
-import { CREATOR_PAGE_SIZES, CREATOR_SORTS, DEFAULT_CREATOR_SORT, useCreatorRequest } from '../request-state';
+import { useCreatorFacets, useCreatorSearch } from '../../features/search/queries';
+import { CREATOR_PAGE_SIZES, CREATOR_SORTS, DEFAULT_CREATOR_SORT, useCreatorRequest } from '../../features/search/request-state';
 import { ErrorState } from '@/components/states';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { downloadCsv, toCsv } from '@/lib/csv';
@@ -10,11 +10,11 @@ import { rememberRecent } from '@/lib/recents';
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
 import { cn } from '@/lib/utils';
 import type { CreatorRow } from '@/types/api';
-import { useCreatorFilterModel } from '@/features/pulse/filters/useCreatorFilterModel';
-import { useCampaignFacets } from '../queries';
-import { useReportSectionCount, useShellState } from '@/features/pulse/shell-state';
-import { CreatorDrawer } from './CreatorDrawer';
-import { CreatorTable } from './CreatorTable';
+import { useCreatorFilterModel } from '@/hooks/filterModels/useCreatorFilterModel';
+import { useCampaignFacets } from '../../features/search/queries';
+import { useReportSectionCount, useShellState } from '@/store/shell-state';
+import { CreatorDrawer } from '../../features/search/creators/CreatorDrawer';
+import { CreatorTable } from '../../features/search/creators/CreatorTable';
 
 const CSV_COLUMNS = [
   { key: 'name' as const, header: 'Name' },
@@ -28,8 +28,8 @@ const CSV_COLUMNS = [
   // toCsv joins array cells with "; " (lib/csv.ts).
   { key: 'categories' as const, header: 'Categories' },
   { key: 'languages' as const, header: 'Languages' },
-  { key: 'email' as const, header: 'Email' },
-  { key: 'phone' as const, header: 'Phone' },
+  { key: 'emails' as const, header: 'Email' },
+  { key: 'phones' as const, header: 'Phone' },
 ];
 
 export function CreatorSearchPage() {

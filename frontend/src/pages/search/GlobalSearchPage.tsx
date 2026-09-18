@@ -1,19 +1,22 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Building2, FileText, Link2, Link2Off, Megaphone, Search, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/UI/button';
 import { DataTable, type Column } from '@/components/DataTable';
 import { EmptyState, ErrorState } from '@/components/states';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/UI/skeleton';
 import { SectionTitle } from '@/components/bits';
 import { formatNumber, pluralise } from '@/lib/format';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import type { ProfileLinkMatch, SearchGroup, SearchScope } from '@/types/api';
-import { MIN_GLOBAL_QUERY_LENGTH, useGlobalSearch } from './queries';
-import { creatorColumns } from './creators/columns';
-import { brandColumns } from './brands/columns';
-import { campaignColumns } from './campaigns/columns';
-import { pitchColumns } from './pitches/columns';
+import {
+  MIN_GLOBAL_QUERY_LENGTH,
+  useGlobalSearch,
+} from "@/features/search/queries";
+import { creatorColumns } from "@/features/search/creators/columns";
+import { brandColumns } from "@/features/search/brands/columns";
+import { campaignColumns } from "@/features/search/campaigns/columns";
+import { pitchColumns } from "@/features/search/pitches/columns";
 import { SEARCH_SHORTCUT } from '@/lib/platform';
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
 

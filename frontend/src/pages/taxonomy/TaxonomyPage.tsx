@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/UI/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/UI/card';
+import { Input } from '@/components/UI/input';
+import { Badge } from '@/components/UI/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/UI/tabs';
 import { ErrorState, LoadingState } from '@/components/states';
 import { taxonomyApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';

@@ -9,11 +9,15 @@ import { EmptyState, ErrorState } from '@/components/states';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { ORG_TYPE_LABELS, PLATFORM_LABELS } from '@/lib/enums';
 import { formatNumber } from '@/lib/format';
-import { FilterCheckbox, FilterPanel, toOptions } from '../FilterPanel';
-import { ResultsHeader } from '../ResultsHeader';
-import { BRAND_SORTS, SCOPE_FILTER_KEYS, countActiveFilters, useBrandRequest } from '../request-state';
-import { useBrandFacets, useBrandSearch } from '../queries';
-import { brandColumns } from './columns';
+import {
+  FilterCheckbox,
+  FilterPanel,
+  toOptions,
+} from "@/features/search//FilterPanel";
+import { ResultsHeader } from '@/features/search//ResultsHeader';
+import { BRAND_SORTS, SCOPE_FILTER_KEYS, countActiveFilters, useBrandRequest } from '@/features/search//request-state';
+import { useBrandFacets, useBrandSearch } from '@/features/search//queries';
+import { brandColumns } from "@/features/search/brands/columns";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 export function BrandSearchPage() {

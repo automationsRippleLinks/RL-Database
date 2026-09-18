@@ -2,14 +2,17 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, KeyRound, Loader2, MailCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/UI/button';
+import { Input } from '@/components/UI/input';
+import { Label } from '@/components/UI/label';
 import { ApiError } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
 import { useCooldown } from '@/hooks/useCooldown';
-import { AuthShell } from './AuthShell';
-import { ALLOWED_EMAIL_DOMAINS, validateWorkEmail } from './domain';
+import { AuthShell } from "@/features/auth/AuthShell";
+import {
+  ALLOWED_EMAIL_DOMAINS,
+  validateWorkEmail,
+} from "@/features/auth/domain";
 
 /**
  * Requests a password-reset link.

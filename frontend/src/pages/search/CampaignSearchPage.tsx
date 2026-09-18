@@ -9,11 +9,23 @@ import { EmptyState, ErrorState } from '@/components/states';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { CAMPAIGN_STATUS_LABELS, MONTH_LABELS } from '@/lib/enums';
 import { formatNumber } from '@/lib/format';
-import { FilterPanel, brandOptions, toOptions } from '../FilterPanel';
-import { ResultsHeader } from '../ResultsHeader';
-import { CAMPAIGN_SORTS, SCOPE_FILTER_KEYS, countActiveFilters, useCampaignRequest } from '../request-state';
-import { useCampaignFacets, useCampaignSearch } from '../queries';
-import { campaignColumns } from './columns';
+import {
+  FilterPanel,
+  brandOptions,
+  toOptions,
+} from "@/features/search/FilterPanel";
+import { ResultsHeader } from "@/features/search/ResultsHeader";
+import {
+  CAMPAIGN_SORTS,
+  SCOPE_FILTER_KEYS,
+  countActiveFilters,
+  useCampaignRequest,
+} from "@/features/search/request-state";
+import {
+  useCampaignFacets,
+  useCampaignSearch,
+} from "@/features/search/queries";
+import { campaignColumns } from "@/features/search/campaigns/columns";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 export function CampaignSearchPage() {

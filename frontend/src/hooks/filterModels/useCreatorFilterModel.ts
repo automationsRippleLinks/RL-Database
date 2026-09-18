@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { PLATFORM_LABELS } from '@/lib/enums';
 import { citiesIn, regionsIn, statesIn } from '@/lib/geo';
-import type { BrandRef, CreatorFacets, Platform } from '@/types/api';
-import type { DropdownOption } from './FilterDropdown';
+import type { CreatorFacets, Platform } from '@/types/api';
+import type { DropdownOption } from '../../components/FilterDropdown';
 
 export type FilterGroupKey = 'platform' | 'brand' | 'content' | 'location' | 'reach';
 
@@ -24,7 +24,6 @@ export interface FilterPill {
  */
 export function useCreatorFilterModel(
   facets: CreatorFacets | undefined,
-  brands: BrandRef[] | undefined,
 ) {
   const url = useUrlSearchState();
 
@@ -57,7 +56,7 @@ export function useCreatorFilterModel(
         label: PLATFORM_LABELS[platform] ?? platform,
         platform: platform as Platform,
       })),
-      brand: (brands ?? [])
+      brand: (facets?.brands ?? [])
         .map((brand) => ({ value: String(brand.id), label: brand.name }))
         .sort((a, b) => a.label.localeCompare(b.label)),
       category: asOptions([...(facets?.categories ?? [])].sort((a, b) => a.localeCompare(b))),
@@ -68,7 +67,7 @@ export function useCreatorFilterModel(
       state: asOptions(statesIn(facetCities, regions)),
       city: asOptions(citiesIn(facetCities, regions, states)),
     };
-  }, [facets, brands, facetCities, regions, states]);
+  }, [facets, facetCities, regions, states]);
 
   /** Applied-filter counts, per group, for the badge on each group header. */
   const counts: Record<FilterGroupKey, number> = {
@@ -130,7 +129,8 @@ export function useCreatorFilterModel(
 
   const pills: FilterPill[] = useMemo(() => {
     const list: FilterPill[] = [];
-    const drop = (values: string[], value: string) => values.filter((item) => item !== value);
+    const drop = (values: string[], value: string) =>
+      values.filter((item) => item !== value);
 
     for (const value of platforms) {
       list.push({
@@ -140,7 +140,9 @@ export function useCreatorFilterModel(
       });
     }
     for (const value of brandIds) {
-      const name = brands?.find((brand) => String(brand.id) === value)?.name ?? `Brand ${value}`;
+      const name =
+        facets?.brands?.find((brand) => String(brand.id) === value)?.name ??
+        `Brand ${value}`;
       list.push({
         key: `brand:${value}`,
         label: `Worked with ${name}`,
@@ -162,14 +164,19 @@ export function useCreatorFilterModel(
       });
     }
     for (const value of tags) {
-      list.push({ key: `tag:${value}`, label: value, remove: () => set({ tag: drop(tags, value) }) });
+      list.push({
+        key: `tag:${value}`,
+        label: value,
+        remove: () => set({ tag: drop(tags, value) }),
+      });
     }
     for (const value of regions) {
       list.push({
         key: `region:${value}`,
         label: `${value} India`,
         // Same cascade as the control: dropping a region drops what it narrowed.
-        remove: () => set({ region: drop(regions, value), state: null, city: null }),
+        remove: () =>
+          set({ region: drop(regions, value), state: null, city: null }),
       });
     }
     for (const value of states) {
@@ -188,21 +195,36 @@ export function useCreatorFilterModel(
     }
     if (folMin || folMax) {
       list.push({
-        key: 'followers',
-        label: `Followers ${folMin || 'any'}–${folMax || 'any'}`,
+        key: "followers",
+        label: `Followers ${folMin || "any"}–${folMax || "any"}`,
         remove: () => set({ min_followers: null, max_followers: null }),
       });
     }
     if (viewMin || viewMax) {
       list.push({
-        key: 'views',
-        label: `Views ${viewMin || 'any'}–${viewMax || 'any'}`,
+        key: "views",
+        label: `Views ${viewMin || "any"}–${viewMax || "any"}`,
         remove: () => set({ min_views: null, max_views: null }),
       });
     }
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [platforms, brandIds, categories, languages, tags, regions, states, cities, folMin, folMax, viewMin, viewMax, brands, url]);
+  }, [
+    facets,
+    platforms,
+    brandIds,
+    categories,
+    languages,
+    tags,
+    regions,
+    states,
+    cities,
+    folMin,
+    folMax,
+    viewMin,
+    viewMax,
+    url,
+  ]);
 
   return { options, counts, totalApplied, values, actions, pills };
 }

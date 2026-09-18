@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LoadingState } from '@/components/states';
-import { useAuth } from './useAuth';
+import { useAuth } from "@/features/auth/useAuth";
 
 /**
  * Where the backend's Google callback sends the browser once it has set the

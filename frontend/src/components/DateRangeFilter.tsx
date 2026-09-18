@@ -1,4 +1,4 @@
-import { Input } from './ui/input';
+import { Input } from './UI/input';
 
 interface DateRangeFilterProps {
   label: string;

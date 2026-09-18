@@ -1,23 +1,29 @@
-import { lazy, type ReactNode } from 'react';
-import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom';
-import { Building2, FileText, Megaphone } from 'lucide-react';
-import { App } from './App';
-import { EmptyState } from './components/states';
-import { AuthCallbackPage } from './features/auth/AuthCallbackPage';
-import { LoginPage } from './features/auth/LoginPage';
-import { SignUpPage } from './features/auth/SignUpPage';
-import { VerifyEmailPage } from './features/auth/VerifyEmailPage';
-import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage';
-import { ResetPasswordPage } from './features/auth/ResetPasswordPage';
-import { RequireAuth, RequireIngestPermission } from './features/auth/guards';
-import { ComingSoon } from './features/pulse/ComingSoon';
-import { HomeScreen } from './features/pulse/HomeScreen';
-import { GlobalSearchPage } from './features/search/GlobalSearchPage';
-import { CreatorSearchPage } from './features/search/creators/CreatorSearchPage';
-import { BrandSearchPage } from './features/search/brands/BrandSearchPage';
-import { CampaignSearchPage } from './features/search/campaigns/CampaignSearchPage';
-import { PitchSearchPage } from './features/search/pitches/PitchSearchPage';
-import type { SearchScope } from './types/api';
+import { lazy, type ReactNode } from "react";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { Building2, FileText, Megaphone } from "lucide-react";
+import { App } from "./App";
+import { EmptyState } from "./components/states";
+import { AuthCallbackPage } from "./pages/auth/AuthCallbackPage";
+import { LoginPage } from "./pages/auth/LoginPage";
+import { SignUpPage } from "./pages/auth/SignUpPage";
+import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
+import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
+import { RequireAuth, RequireIngestPermission } from "./features/auth/guards";
+import { ComingSoon } from "./pages/fallback/ComingSoon";
+import { HomeScreen } from "./features/pulse/HomeScreen";
+import { GlobalSearchPage } from "./pages/search/GlobalSearchPage";
+import { CreatorSearchPage } from "./pages/search/CreatorSearchPage";
+import { BrandSearchPage } from "./pages/search/BrandSearchPage";
+import { CampaignSearchPage } from "./pages/search/CampaignSearchPage";
+import { PitchSearchPage } from "./pages/search/PitchSearchPage";
+import type { SearchScope } from "./types/api";
 
 /**
  * Sections to hide behind the "Coming soon" placeholder. Empty on purpose.
@@ -33,30 +39,34 @@ import type { SearchScope } from './types/api';
 const PLACEHOLDER_SCOPES = new Set<SearchScope>();
 
 const SECTION_META = {
-  brands: { title: 'Brands', icon: Building2 },
-  campaigns: { title: 'Campaigns', icon: Megaphone },
-  pitches: { title: 'Pitches', icon: FileText },
+  brands: { title: "Brands", icon: Building2 },
+  campaigns: { title: "Campaigns", icon: Megaphone },
+  pitches: { title: "Pitches", icon: FileText },
 } as const;
 
-/**
- * Detail pages and the ingest screen are split out — the detail pages carry wide
- * column definitions nobody needs until they click through, and ingest is
- * visible to only a handful of accounts.
- */
+// lazy load detail pages
 const BrandDetailPage = lazy(() =>
-  import('./features/search/brands/BrandDetailPage').then((m) => ({ default: m.BrandDetailPage })),
+  import("./pages/detail/BrandDetailPage").then((m) => ({
+    default: m.BrandDetailPage,
+  })),
 );
 const CampaignDetailPage = lazy(() =>
-  import('./features/search/campaigns/CampaignDetailPage').then((m) => ({ default: m.CampaignDetailPage })),
+  import("./pages/detail/CampaignDetailPage").then((m) => ({
+    default: m.CampaignDetailPage,
+  })),
 );
 const PitchDetailPage = lazy(() =>
-  import('./features/search/pitches/PitchDetailPage').then((m) => ({ default: m.PitchDetailPage })),
+  import("./pages/detail/PitchDetailPage").then((m) => ({
+    default: m.PitchDetailPage,
+  })),
 );
 const IngestPage = lazy(() =>
-  import('./features/ingest/IngestPage').then((m) => ({ default: m.IngestPage })),
+  import("./pages/ingest/IngestPage").then((m) => ({ default: m.IngestPage })),
 );
 const TaxonomyPage = lazy(() =>
-  import('./features/taxonomy/TaxonomyPage').then((m) => ({ default: m.TaxonomyPage })),
+  import("./pages/taxonomy/TaxonomyPage").then((m) => ({
+    default: m.TaxonomyPage,
+  })),
 );
 
 export function AppRoutes() {
@@ -86,12 +96,30 @@ export function AppRoutes() {
           <Route path="search">
             <Route index element={<SearchHome />} />
             <Route path="creators" element={<CreatorSearchPage />} />
-            <Route path="brands" element={<Scoped scope="brands"><BrandSearchPage /></Scoped>} />
+            <Route
+              path="brands"
+              element={
+                <Scoped scope="brands">
+                  <BrandSearchPage />
+                </Scoped>
+              }
+            />
             <Route
               path="campaigns"
-              element={<Scoped scope="campaigns"><CampaignSearchPage /></Scoped>}
+              element={
+                <Scoped scope="campaigns">
+                  <CampaignSearchPage />
+                </Scoped>
+              }
             />
-            <Route path="pitches" element={<Scoped scope="pitches"><PitchSearchPage /></Scoped>} />
+            <Route
+              path="pitches"
+              element={
+                <Scoped scope="pitches">
+                  <PitchSearchPage />
+                </Scoped>
+              }
+            />
           </Route>
 
           {/*
@@ -104,9 +132,30 @@ export function AppRoutes() {
 
           {/* The other detail pages sit outside the search views — they're
               destinations, not a filtered list. */}
-          <Route path="brands/:brandId" element={<Page><BrandDetailPage /></Page>} />
-          <Route path="campaigns/:campaignId" element={<Page><CampaignDetailPage /></Page>} />
-          <Route path="pitches/:pitchId" element={<Page><PitchDetailPage /></Page>} />
+          <Route
+            path="brands/:brandId"
+            element={
+              <Page>
+                <BrandDetailPage />
+              </Page>
+            }
+          />
+          <Route
+            path="campaigns/:campaignId"
+            element={
+              <Page>
+                <CampaignDetailPage />
+              </Page>
+            }
+          />
+          <Route
+            path="pitches/:pitchId"
+            element={
+              <Page>
+                <PitchDetailPage />
+              </Page>
+            }
+          />
 
           {/* Editing the taxonomy decides which uploads are accepted at all, so
               it sits behind the same permission as ingest itself. */}
@@ -140,7 +189,7 @@ export function AppRoutes() {
  */
 function SearchHome() {
   const [params] = useSearchParams();
-  const query = (params.get('q') ?? '').trim();
+  const query = (params.get("q") ?? "").trim();
   return query ? (
     <Page>
       <GlobalSearchPage />
@@ -181,6 +230,9 @@ function Scoped({
 function CreatorRedirect() {
   const { creatorId } = useParams<{ creatorId: string }>();
   return (
-    <Navigate to={`/search/creators?creator=${encodeURIComponent(creatorId ?? '')}`} replace />
+    <Navigate
+      to={`/search/creators?creator=${encodeURIComponent(creatorId ?? "")}`}
+      replace
+    />
   );
 }

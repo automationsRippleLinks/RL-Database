@@ -17,7 +17,7 @@ import type { LucideIcon } from 'lucide-react';
 import { PlatformMark } from '@/components/PlatformMark';
 import { useToast } from '@/components/Toast';
 import { ErrorState } from '@/components/states';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/UI/skeleton';
 import { useDismissable } from '@/hooks/useDismissable';
 import { MONTH_LABELS, PLATFORM_LABELS } from '@/lib/enums';
 import { compact, formatDate, formatNumber, initials, profileUrlFor } from '@/lib/format';

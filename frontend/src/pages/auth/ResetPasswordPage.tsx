@@ -2,13 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, CheckCircle2, KeyRound, Loader2, LinkIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/UI/button';
 import { ApiError } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
 import { useCooldown } from '@/hooks/useCooldown';
-import { AuthShell } from './AuthShell';
-import { PasswordFields, passwordsReady, type PasswordState } from './PasswordFields';
-import { useAuth } from './useAuth';
+import { AuthShell } from "@/features/auth/AuthShell";
+import {
+  PasswordFields,
+  passwordsReady,
+  type PasswordState,
+} from "@/features/auth/PasswordFields";
+import { useAuth } from "@/features/auth/useAuth";
 
 /**
  * Landing page for the reset link ({FRONTEND_URL}/reset-password?token=…).

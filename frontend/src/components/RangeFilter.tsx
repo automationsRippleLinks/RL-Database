@@ -1,4 +1,4 @@
-import { Input } from './ui/input';
+import { Input } from './UI/input';
 import { humaniseCount } from '@/lib/format';
 
 interface RangeFilterProps {

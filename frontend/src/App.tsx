@@ -3,11 +3,10 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { ToastProvider } from '@/components/Toast';
 import { LoadingState } from '@/components/states';
 import { cn } from '@/lib/utils';
-import { AppRail } from '@/features/pulse/AppRail';
-import { DataRail } from '@/features/pulse/DataRail';
+import { AppRail } from '@/components/AppRail';
+import { DataRail } from '@/components/DataRail';
 import { PulseHeader } from '@/features/pulse/PulseHeader';
-import { ShellStateProvider } from '@/features/pulse/shell-state';
-import { useCreatorFacets } from '@/features/search/queries';
+import { ShellStateProvider } from '@/store/shell-state';
 
 /**
  * The Ripple Pulse shell: a fixed header over App rail | Data rail | content.
@@ -31,19 +30,16 @@ export function App() {
             <AppRail />
             {/* The data rail belongs to search. Ingest and Taxonomy are their
                 own destinations and take the full width. */}
-            {isSearch && <SearchRail />}
+            {isSearch && <DataRail />}
 
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
               <Suspense fallback={<LoadingState />}>
                 {isSearch ? (
-                  <Outlet />
+                  <Outlet /> // load search page
                 ) : (
-                  // Ingest and Taxonomy were written as ordinary scrolling pages,
-                  // so they get the page padding and scroll container the old
-                  // <main> used to give them.
                   <div className={cn('min-h-0 flex-1 overflow-y-auto px-4 py-5')}>
                     <div className="mx-auto max-w-[1600px]">
-                      <Outlet />
+                      <Outlet /> {/*load ingest or taxonomy page */}
                     </div>
                   </div>
                 )}
@@ -54,18 +50,4 @@ export function App() {
       </ToastProvider>
     </ShellStateProvider>
   );
-}
-
-/**
- * Split out so the two facet queries are only mounted on search routes.
- *
- * Both are cached hard (10 minutes; filter vocabularies only change on ingest),
- * and the creator facets are the same query the results page runs — so this
- * shares one subscription with it rather than adding a request. The campaign
- * facets are here for the brand list the "Worked with" filter offers.
- */
-function SearchRail() {
-  const creatorFacets = useCreatorFacets();
-
-  return <DataRail facets={creatorFacets.data} brands={creatorFacets.data?.brands} />;
 }

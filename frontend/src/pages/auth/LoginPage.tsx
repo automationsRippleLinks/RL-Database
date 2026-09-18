@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Database, Loader2, LogIn, MailWarning } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/UI/button';
+import { Input } from '@/components/UI/input';
+import { Label } from '@/components/UI/label';
 import { ApiError, googleLoginUrl } from '@/lib/api-client';
-import { useAuth } from './useAuth'; 
-import { describeAuthError } from './AuthProvider';
-import { ResendVerificationForm } from './ResendVerificationForm';
-import { ALLOWED_EMAIL_DOMAINS, validateWorkEmail } from './domain';
+import { useAuth } from '@/features/auth/useAuth'; 
+import { describeAuthError } from '@/features/auth/AuthProvider';
+import { ResendVerificationForm } from '@/features/auth/ResendVerificationForm';
+import { ALLOWED_EMAIL_DOMAINS, validateWorkEmail } from '@/features/auth/domain';
 import type { AuthErrorCode } from '@/types/api';
 
 /** Messages for the ?auth_error= the backend appends when the Google flow fails. */
