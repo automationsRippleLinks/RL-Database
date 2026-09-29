@@ -64,7 +64,7 @@ export function ResetPasswordPage() {
         }
       >
         <div className="flex flex-col items-center gap-3">
-          <LinkIcon className="size-8 text-[var(--warning)]" />
+          <LinkIcon className="size-8 text-warning" />
           <Button asChild size="sm" className="w-full">
             <Link to="/forgot-password">Request a new link</Link>
           </Button>
@@ -81,7 +81,7 @@ export function ResetPasswordPage() {
         subtitle="You're signed in on this device. Taking you to the database…"
       >
         <div className="flex flex-col items-center gap-3 py-2">
-          <CheckCircle2 className="size-8 text-[var(--success)]" />
+          <CheckCircle2 className="size-8 text-var-success" />
           <p className="text-center text-[11px] text-muted-foreground">
             For safety, any other sessions you had open were signed out.
           </p>
@@ -120,7 +120,7 @@ export function ResetPasswordPage() {
         />
 
         {error?.isRateLimited && (
-          <div className="flex gap-2 rounded-md border border-[var(--warning)]/40 bg-[var(--warning)]/10 p-2.5 text-xs text-[var(--warning)]">
+          <div className="flex gap-2 rounded-md border border(-warning)/40 bg-(--warning)/10 p-2.5 text-xs text-warning">
             <AlertCircle className="mt-px size-3.5 shrink-0" />
             <span>
               Too many attempts.{' '}

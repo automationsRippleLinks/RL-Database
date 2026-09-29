@@ -98,7 +98,7 @@ export function VerifyEmailPage() {
         subtitle="You're signed in. Taking you to the database…"
       >
         <div className="flex flex-col items-center gap-3 py-2">
-          <CheckCircle2 className="size-8 text-[var(--success)]" />
+          <CheckCircle2 className="size-8 text-success" />
           <Button asChild size="sm" className="w-full">
             <Link to="/search">Continue</Link>
           </Button>
@@ -118,7 +118,7 @@ export function VerifyEmailPage() {
       }
     >
       <div className="mb-4 flex justify-center">
-        <MailWarning className="size-8 text-[var(--warning)]" />
+        <MailWarning className="size-8 text-var(--warning)" />
       </div>
       <ResendVerificationForm />
       <BackToLogin />

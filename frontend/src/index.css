@@ -140,12 +140,14 @@
   * {
     border-color: var(--border);
   }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-feature-settings: 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
   }
+
   /* Tabular figures everywhere numbers are compared down a column. */
   .tnum {
     font-variant-numeric: tabular-nums;
@@ -158,16 +160,19 @@
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: var(--border);
     border-radius: 9999px;
   }
+
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent; 
+    background: transparent;
   }
 }
 
@@ -183,25 +188,30 @@
     from {
       transform: translateX(100%);
     }
+
     to {
       transform: translateX(0);
     }
   }
+
   @keyframes rpDrawerOut {
     from {
       transform: translateX(0);
       opacity: 1;
     }
+
     to {
       transform: translateX(102%);
       opacity: 0.4;
     }
   }
+
   @keyframes rpMenu {
     from {
       opacity: 0;
       transform: translateY(-4px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -211,9 +221,11 @@
   .animate-rp-drawer {
     animation: rpDrawer 0.2s cubic-bezier(0, 0, 0.2, 1);
   }
+
   .animate-rp-drawer-out {
     animation: rpDrawerOut 0.19s cubic-bezier(0.4, 0, 1, 1) forwards;
   }
+
   .animate-rp-menu {
     animation: rpMenu 0.14s ease-out;
   }
@@ -224,20 +236,24 @@
     scrollbar-width: thin;
     scrollbar-color: var(--rp-faint) transparent;
   }
+
   .rp-scroll::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
+
   .rp-scroll::-webkit-scrollbar-thumb {
     background: var(--rp-faint);
     border-radius: 9999px;
   }
+
   .rp-scroll::-webkit-scrollbar-track {
     background: transparent;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .animate-rp-drawer,
   .animate-rp-drawer-out,
   .animate-rp-menu {
@@ -246,7 +262,46 @@
 }
 
 /* index.css */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
+}
+
+/* Compact two-month date range calendar */
+.rp-compact-date-range {
+  --rs-primary-500: var(--rp-muted);
+  --rs-input-focus-border: var(--rp-muted);
+  border-radius: 12px;
+  z-index: 9999;
+}
+
+.rp-compact-date-range .rs-picker-daterange-panel {
+  zoom: 0.80;
+}
+
+.rp-compact-date-range .rs-calendar {
+  width: 232px !important;
+  height: auto !important;
+}
+
+/* Reduce spacing around the dates */
+.rp-compact-date-range .rs-calendar-body {
+  padding: 6px !important;
+}
+
+.rp-compact-date-range {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.rp-compact-date-range .rs-calendar-table-cell {
+  padding: 1px 0 !important;
+}
+
+.rp-compact-date-range .rs-calendar-table-cell-content {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
 }

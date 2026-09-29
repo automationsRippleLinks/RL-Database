@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useUrlSearchState } from "@/hooks/useUrlSearchState";
-import { PLATFORM_LABELS } from "@/lib/enums";
+import { PLATFORMS, PLATFORM_LABELS } from '@/lib/enums';
 import type { BrandFacets, Platform } from "@/types/api";
 import type { DropdownOption } from "../../components/FilterDropdown";
 
@@ -8,7 +8,8 @@ export type FilterGroupKey =
   | "org_type"
   | "platform"
   | "campCount"
-  | "pitchCount";
+  | "pitchCount"
+  | "billing";
 
 /** One removable pill above the results, and the state it removes. */
 export interface FilterPill {
@@ -17,15 +18,26 @@ export interface FilterPill {
   remove: () => void;
 }
 
+/**
+ * The brand rail's whole filter model, derived from the URL and the facets —
+ * same shape as useCreatorFilterModel, so the rail and the results header can
+ * treat every scope identically.
+ *
+ * Campaign/pitch count only ever sends a lower bound: BrandSearchRequest
+ * (frontend and backend both) has no max_campaigns/max_pitches field, so
+ * there is nothing here for an upper bound to do. Earlier versions of this
+ * hook tracked one anyway — it rendered a "5–20" pill while the API silently
+ * ignored the 20, which is worse than not offering it.
+ */
 export function useBrandFilterModel(facets: BrandFacets | undefined) {
   const url = useUrlSearchState();
 
   const orgTypes = url.getList("b_org");
   const platforms = url.getList("b_platform");
   const campMin = url.getString("min_campaigns");
-  const campMax = url.getString("max_campaigns");
   const pitchMin = url.getString("min_pitches");
-  const pitchMax = url.getString("max_pitches");
+  const hasCompany = url.getBool("has_company");
+  const hasGstin = url.getBool("has_gstin");
 
   // at filter change, reset page number to first page of results
   const set = (updates: Parameters<typeof url.setParams>[0]) =>
@@ -36,10 +48,10 @@ export function useBrandFilterModel(facets: BrandFacets | undefined) {
       values.map((value) => ({ value, label: value }));
 
     return {
-      platform: (facets?.platforms ?? []).map((platform) => ({
+      platform: PLATFORMS.map((platform) => ({
         value: platform,
         label: PLATFORM_LABELS[platform] ?? platform,
-        platform: platform as Platform,
+        platform,
       })),
       orgType: asOptions(
         [...(facets?.org_types ?? [])].sort((a, b) => a.localeCompare(b)),
@@ -51,8 +63,9 @@ export function useBrandFilterModel(facets: BrandFacets | undefined) {
   const counts: Record<FilterGroupKey, number> = {
     platform: platforms.length,
     org_type: orgTypes.length,
-    campCount: campMin || campMax ? 1 : 0,
-    pitchCount: pitchMin || pitchMax ? 1 : 0,
+    campCount: campMin ? 1 : 0,
+    pitchCount: pitchMin ? 1 : 0,
+    billing: (hasCompany ? 1 : 0) + (hasGstin ? 1 : 0),
   };
 
   const totalApplied = Object.values(counts).reduce(
@@ -64,26 +77,26 @@ export function useBrandFilterModel(facets: BrandFacets | undefined) {
     platforms,
     orgTypes,
     campMin,
-    campMax,
     pitchMin,
-    pitchMax,
+    hasCompany,
+    hasGstin,
   };
 
   const actions = {
-    setPlatforms: (next: string[]) => set({ b_platform: next }),
-    setOrgTypes: (next: string[]) => set({ b_org: next }),
-    setCampaignCounts: (min: string, max: string) =>
-      set({ min_campaigns: min, max_campaigns: max }),
-    setPitchCounts: (min: string, max: string) =>
-      set({ min_pitches: min, max_pitches: max }),
+    // setPlatforms: (next: string[]) => set({ b_platform: next }),
+    // setOrgTypes: (next: string[]) => set({ b_org: next }),
+    setMinCampaigns: (min: string) => set({ min_campaigns: min || null }),
+    setMinPitches: (min: string) => set({ min_pitches: min || null }),
+    setHasCompany: (checked: boolean) => set({ has_company: checked || null }),
+    setHasGstin: (checked: boolean) => set({ has_gstin: checked || null }),
     clearAll: (clearQuery: boolean = false) =>
       set({
-        b_platform: null,
-        b_org: null,
+        // b_platform: null,
+        // b_org: null,
         min_campaigns: null,
-        max_campaigns: null,
         min_pitches: null,
-        max_pitches: null,
+        has_company: null,
+        has_gstin: null,
         ...(clearQuery && { q: null }),
       }),
   };
@@ -107,23 +120,37 @@ export function useBrandFilterModel(facets: BrandFacets | undefined) {
         remove: () => set({ b_org: drop(orgTypes, value) }),
       });
     }
-    if (campMin || campMax) {
+    if (campMin) {
       list.push({
-        key: "campaignRange",
-        label: `Campaigns ${campMin || "any"}–${campMax || "any"}`,
-        remove: () => set({ min_campaigns: null, max_campaigns: null }),
+        key: "campaignMin",
+        label: `${campMin}+ campaigns`,
+        remove: () => set({ min_campaigns: null }),
       });
     }
-    if (pitchMin || pitchMax) {
+    if (pitchMin) {
       list.push({
-        key: "pitchRange",
-        label: `Pitches ${pitchMin || "any"}–${pitchMax || "any"}`,
-        remove: () => set({ min_pitches: null, max_pitches: null }),
+        key: "pitchMin",
+        label: `${pitchMin}+ pitches`,
+        remove: () => set({ min_pitches: null }),
+      });
+    }
+    if (hasCompany) {
+      list.push({
+        key: "hasCompany",
+        label: "Has billing company",
+        remove: () => set({ has_company: null }),
+      });
+    }
+    if (hasGstin) {
+      list.push({
+        key: "hasGstin",
+        label: "Has GSTIN",
+        remove: () => set({ has_gstin: null }),
       });
     }
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [platforms, orgTypes, campMin, campMax, pitchMin, pitchMax, url]);
+  }, [platforms, orgTypes, campMin, pitchMin, hasCompany, hasGstin, url]);
 
   return { options, counts, totalApplied, values, actions, pills };
 }

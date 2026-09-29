@@ -17,6 +17,7 @@ import type {
   Tier,
 } from '@/types/api';
 
+
 /**
  * TierChoices.NA is the empty string, which cannot round-trip through a select
  * option value or a URL search param. The UI uses this sentinel and translates
@@ -30,8 +31,9 @@ export const PLATFORMS: Platform[] = [
   'linkedin',
   'facebook',
   'others',
-  'NA',
+  // 'NA',
 ];
+
 
 export const PLATFORM_LABELS: Record<Platform, string> = {
   instagram: 'Instagram',

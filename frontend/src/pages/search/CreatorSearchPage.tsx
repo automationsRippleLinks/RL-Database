@@ -4,17 +4,18 @@ import { useCreatorFacets, useCreatorSearch } from '../../features/search/querie
 import { CREATOR_PAGE_SIZES, CREATOR_SORTS, DEFAULT_CREATOR_SORT, useCreatorRequest } from '../../features/search/request-state';
 import { ErrorState } from '@/components/states';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
-import { downloadCsv, toCsv } from '@/lib/csv';
+import { downloadCsv, fetchAllSearchRows, toCsv } from '@/lib/csv';
 import { formatNumber } from '@/lib/format';
 import { rememberRecent } from '@/lib/recents';
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
 import { cn } from '@/lib/utils';
 import type { CreatorRow } from '@/types/api';
 import { useCreatorFilterModel } from '@/hooks/filterModels/useCreatorFilterModel';
-import { useCampaignFacets } from '../../features/search/queries';
 import { useReportSectionCount, useShellState } from '@/store/shell-state';
 import { CreatorDrawer } from '../../features/search/creators/CreatorDrawer';
 import { CreatorTable } from '../../features/search/creators/CreatorTable';
+import { searchApi } from '@/lib/endpoints';
+import { ExportDialog, type ExportScope } from '@/features/search/ExportDialog';
 
 const CSV_COLUMNS = [
   { key: 'name' as const, header: 'Name' },
@@ -39,10 +40,11 @@ export function CreatorSearchPage() {
   const shell = useShellState();
 
   const facetsQuery = useCreatorFacets();
-  const campaignFacets = useCampaignFacets();
   const request = useCreatorRequest(facetsQuery.data?.cities);
   const searchQuery = useCreatorSearch(request);
-  const model = useCreatorFilterModel(facetsQuery.data, campaignFacets.data?.brands);
+  // useCreatorFilterModel gets its brand list from facetsQuery itself
+  // (CreatorFacets.brands) — it never took a second argument.
+  const model = useCreatorFilterModel(facetsQuery.data);
 
   const result = searchQuery.data;
   const rows = useMemo(() => result?.rows ?? [], [result]);
@@ -55,12 +57,18 @@ export function CreatorSearchPage() {
    * survives paging and "Export 40 selected" has to work when 30 of them are on
    * pages you have left.
    */
-  const [picked, setPicked] = useState<Record<string, CreatorRow>>({});
+  // ── CREATOR SELECTION ACROSS PAGE NAVIGATION ───────────────────
+  const {
+    pickedCreators: picked,
+    setPickedCreators: setPicked,
+  } = shell;
   const pickedFlags = useMemo(
     () => Object.fromEntries(Object.keys(picked).map((id) => [id, true])),
     [picked],
   );
   const pickedCount = Object.keys(picked).length;
+  // ── EXPORT DIALOG STATE ────────────────────────────────────────
+  const [exportOpen, setExportOpen] = useState(false);
 
   const togglePick = (id: string) => {
     setPicked((current) => {
@@ -85,15 +93,46 @@ export function CreatorSearchPage() {
       return next;
     });
   };
+  // ── SHIFT-CLICK RANGE SELECTION AND DESELECTION ────────────────
+  const pickRange = (range: CreatorRow[], shouldSelect: boolean) => {
+    setPicked((current) => {
+      const next = { ...current };
 
-  const exportCsv = () => {
-    const selected = Object.values(picked);
-    const toExport = selected.length ? selected : rows;
-    if (!toExport.length) return;
-    const name = selected.length
-      ? `creators_selected_${selected.length}.csv`
-      : `creators_page_${result?.page ?? 1}.csv`;
-    downloadCsv(name, toCsv(toExport, CSV_COLUMNS));
+      for (const row of range) {
+        if (shouldSelect) {
+          next[row.id] = row;
+        } else {
+          delete next[row.id];
+        }
+      }
+
+      return next;
+    });
+  };
+  // ── CREATOR CSV EXPORT ─────────────────────────────────────────
+  const handleExport = async (scope: ExportScope) => {
+    const toExport =
+      scope === 'selected'
+        ? Object.values(picked)
+        : scope === 'current'
+          ? rows
+          : await fetchAllSearchRows(request, searchApi.creators);
+
+    if (!toExport.length) {
+      throw new Error('No creators to export.');
+    }
+
+    const suffix =
+      scope === 'selected'
+        ? `selected_${toExport.length}`
+        : scope === 'current'
+          ? `page_${result?.page ?? request.page}`
+          : `all_${toExport.length}`;
+
+    downloadCsv(
+      `creators_${suffix}.csv`,
+      toCsv(toExport, CSV_COLUMNS),
+    );
   };
 
   // The open creator lives in the URL, so a drawer is shareable, survives a
@@ -130,14 +169,25 @@ export function CreatorSearchPage() {
         />
         <button
           type="button"
-          onClick={exportCsv}
+          onClick={() => setExportOpen(true)}
           disabled={!rows.length && !pickedCount}
           className="inline-flex cursor-pointer items-center gap-1.75 rounded-[9px] border border-rp-border px-3 py-1.75 text-[12.5px] font-semibold hover:bg-rp-surface2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Download className="size-3.5" />
-          {pickedCount ? `Export ${pickedCount} selected` : 'Export page'}
+          Export
         </button>
       </div>
+      {/* ── EXPORT DIALOG ─────────────────────────────────────────── */}
+      {exportOpen && (
+        <ExportDialog
+          open={exportOpen}
+          onOpenChange={setExportOpen}
+          selectedCount={pickedCount}
+          currentCount={rows.length}
+          matchingCount={result?.total ?? 0}
+          onExport={handleExport}
+        />
+      )}
 
       {/* ── results ──────────────────────────────────────────────────────── */}
       <div className="flex min-h-0 flex-1 flex-col px-4.5">
@@ -217,6 +267,7 @@ export function CreatorSearchPage() {
               onOpen={openCreator}
               isLoading={searchQuery.isPending}
               isFetching={searchQuery.isFetching && !searchQuery.isPending}
+              onSelectRange={pickRange}
             />
           )}
         </div>

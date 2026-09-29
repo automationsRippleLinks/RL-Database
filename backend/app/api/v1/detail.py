@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 from app.api.deps import SessionDep, CurrentUser
-from app.api.v1.search import search_campaigns, search_pitches, _tags_for_creators
+from app.api.v1.search import search_campaigns, search_pitches, _tags_for_creators, _convert_to_link
 from app.models import *
 from app.models.enums import PlatformChoices
 from app.schemas.search import (
@@ -279,8 +279,8 @@ async def campaign_detail(campaign_id: UUID, session: SessionDep, user: CurrentU
             end_date=campaign.end_date,
             report_completion_date=campaign.report_completion_date,
             creator_count=len(links),
-            spreadsheet_link=campaign.spreadsheet_link,
-            report_link=campaign.report_link,
+            spreadsheet_link=_convert_to_link(campaign.spreadsheet_id),
+            report_link=_convert_to_link(campaign.report_id),
         ).model_dump(),
         pitch=pitch_ref,
         creators=creators,
@@ -353,7 +353,7 @@ async def pitch_detail(pitch_id: UUID, session: SessionDep, user: CurrentUser):
             list_lead=pitch.list_lead,
             creator_count=len(links),
             converted=campaign is not None,
-            spreadsheet_link=pitch.spreadsheet_link,
+            spreadsheet_link=_convert_to_link(pitch.spreadsheet_id),
             created_at=pitch.created_at,
             updated_at=pitch.updated_at,
         ).model_dump(),

@@ -55,7 +55,7 @@ def _set_session_cookies(response: Response, sid: str, csrf_token: str) -> None:
         secure=IS_PROD,
         samesite="lax",
         path="/",
-        max_age=settings.SESSION_TTL,
+        max_age=settings.SESSION_CACHE_TTL,
     )
     response.set_cookie(
         "csrf_token",
@@ -64,7 +64,7 @@ def _set_session_cookies(response: Response, sid: str, csrf_token: str) -> None:
         secure=IS_PROD,
         samesite="lax",
         path="/",
-        max_age=settings.SESSION_TTL,
+        max_age=settings.SESSION_CACHE_TTL,
     )
 
 
@@ -145,7 +145,7 @@ async def google_login(request: Request, redis: RedisDep, next: str | None = Non
 
     state = new_token()
     await redis.setex(
-        f"{settings.OAUTH_STATE_PREFIX}{state}", settings.OAUTH_STATE_TTL, safe_next
+        f"{settings.OAUTH_STATE_CACHE_PREFIX}{state}", settings.OAUTH_STATE_CACHE_TTL, safe_next
     )
 
     params = {
@@ -180,7 +180,7 @@ async def google_callback(
         return _error_redirect("unknown")
 
     # State must match what we stored, and is single-use.
-    state_key = f"{settings.OAUTH_STATE_PREFIX}{state}"
+    state_key = f"{settings.OAUTH_STATE_CACHE_PREFIX}{state}"
     safe_next = await redis.get(state_key)
     if safe_next is None:
         return _error_redirect("state_mismatch")

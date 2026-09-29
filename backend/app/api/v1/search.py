@@ -725,12 +725,16 @@ async def search_pitches(
 
 
 # --- Facets ---
-
+TagModel = Category | Language | Tag
+LinkModel = CategoryCreatorLink | LanguageCreatorLink | TagCreatorLink
 
 @router.get("/facets/creators")
 async def facets_creators(session: SessionDep, redis: RedisDep, user: CurrentUser):
     async def produce():
-        async def _tag_facet(tag_model, link_model, fk) -> list[str]:
+
+        async def _tag_facet(
+            tag_model: TagModel, link_model: LinkModel, fk: Column
+        ) -> list[str]:
             usage = func.count(col(link_model.creator_id))
             return [
                 name
@@ -776,8 +780,8 @@ async def facets_creators(session: SessionDep, redis: RedisDep, user: CurrentUse
 
     return await cached(
         redis,
-        cache_key(f"{settings.FACETS_PREFIX}creators"),
-        settings.FACETS_TTL,
+        cache_key(f"{settings.FACETS_CACHE_PREFIX}creators"),
+        settings.FACETS_CACHE_TTL,
         produce,
     )
 
@@ -807,8 +811,8 @@ async def facets_campaigns(session: SessionDep, redis: RedisDep, user: CurrentUs
 
     return await cached(
         redis,
-        cache_key(f"{settings.FACETS_PREFIX}campaigns"),
-        settings.FACETS_TTL,
+        cache_key(f"{settings.FACETS_CACHE_PREFIX}campaigns"),
+        settings.FACETS_CACHE_TTL,
         produce,
     )
 
@@ -836,8 +840,8 @@ async def facets_brands(session: SessionDep, redis: RedisDep, user: CurrentUser)
 
     return await cached(
         redis,
-        cache_key(f"{settings.FACETS_PREFIX}brands"),
-        settings.FACETS_TTL,
+        cache_key(f"{settings.FACETS_CACHE_PREFIX}brands"),
+        settings.FACETS_CACHE_TTL,
         produce,
     )
 
@@ -870,8 +874,8 @@ async def facets_pitches(session: SessionDep, redis: RedisDep, user: CurrentUser
 
     return await cached(
         redis,
-        cache_key(f"{settings.FACETS_PREFIX}pitches"),
-        settings.FACETS_TTL,
+        cache_key(f"{settings.FACETS_CACHE_PREFIX}pitches"),
+        settings.FACETS_CACHE_TTL,
         produce,
     )
 
@@ -976,9 +980,9 @@ async def global_search(
     return await cached(
         redis,
         cache_key(
-            f"{settings.SEARCH_PREFIX}global", {"q": q.strip().lower(), "limit": limit}
+            f"{settings.SEARCH_CACHE_PREFIX}global", {"q": q.strip().lower(), "limit": limit}
         ),
-        settings.SEARCH_TTL,
+        settings.SESSION_CACHE_TTL,
         produce,
     )
 
@@ -1111,7 +1115,7 @@ async def suggest(
 
     return await cached(
         redis,
-        cache_key(settings.SUGGEST_PREFIX, {"q": q.strip().lower(), "limit": limit}),
-        settings.SUGGEST_TTL,
+        cache_key(settings.SUGGEST_CACHE_PREFIX, {"q": q.strip().lower(), "limit": limit}),
+        settings.SUGGEST_CACHE_TTL,
         produce,
     )

@@ -6,7 +6,7 @@ from pydantic import computed_field, PostgresDsn, RedisDsn, HttpUrl, field_valid
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file="../.env", env_ignore_empty=True, extra="ignore"
+        env_file="./.env", env_ignore_empty=True, extra="ignore"
     )
 
     # === FastApi settings ==================================================================================================================
@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
     ALLOWED_DOMAINS: Annotated[list[str], NoDecode] = ["ripplelinks.com"]
     FRONTEND_URL: HttpUrl = "http://localhost:5173"
+    PUBLIC_API_URL: HttpUrl
+
+    # === Worker settings=====================================================================================================================
+    WORKER_QUEUE_NAME: str = "rl_pulse"
+    STALE_QUEUE_MINUTES: int = 5
+    STALE_RUNNING_MINUTES: int = 30
 
     # === DB settings ========================================================================================================================
     DB_TYPE: str = "postgresql"
@@ -75,28 +81,31 @@ class Settings(BaseSettings):
 
     REDIS_CACHE_VERSION: str = "v1"
 
-    OAUTH_STATE_PREFIX: str = "oauth_state:"
-    OAUTH_STATE_TTL: int = 5 * 60
+    OAUTH_STATE_CACHE_PREFIX: str = "oauth_state:"
+    OAUTH_STATE_CACHE_TTL: int = 5 * 60
 
-    SESSION_PREFIX: str = "auth_session:"
-    SESSION_TTL: int = 12 * 60 * 60
+    SESSION_CACHE_PREFIX: str = "auth_session:"
+    SESSION_CACHE_TTL: int = 12 * 60 * 60
 
-    USER_SESSIONS_PREFIX: str = "user_sessions:"
+    USER_SESSIONS_CACHE_PREFIX: str = "user_sessions:"
 
-    EMAIL_VERIFY_PREFIX: str = "email_verify:"
-    EMAIL_VERIFICATION_TTL: int = 24 * 60 * 60
+    EMAIL_VERIFY_CACHE_PREFIX: str = "email_verify:"
+    EMAIL_VERIFICATION_CACHE_TTL: int = 24 * 60 * 60
 
-    PASSWORD_RESET_PREFIX: str = "password_reset:"
-    PASSWORD_RESET_TTL: int = 10 * 60
+    PASSWORD_RESET_CACHE_PREFIX: str = "password_reset:"
+    PASSWORD_RESET_CACHE_TTL: int = 10 * 60
 
-    FACETS_PREFIX: str = "facets:"
-    FACETS_TTL: int = 24 * 60 * 60
+    FACETS_CACHE_PREFIX: str = "facets:"
+    FACETS_CACHE_TTL: int = 24 * 60 * 60
 
-    SUGGEST_PREFIX: str = "suggest:"
-    SUGGEST_TTL: int = 5 * 60
+    SUGGEST_CACHE_PREFIX: str = "suggest:"
+    SUGGEST_CACHE_TTL: int = 5 * 60
 
-    SEARCH_PREFIX: str = "search:"
-    SEARCH_TTL: int = 60
+    SEARCH_CACHE_PREFIX: str = "search:"
+    SEARCH_CACHE_TTL: int = 60
+
+    AI_CACHE_PREFIX: str = "ai:"
+    AI_CACHE_TTL: int = 30 * 24 * 60 * 60
 
     RATE_LIMIT_PREFIX: str = "ratelimit:"
 
@@ -123,6 +132,22 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return [d.strip().lower() for d in v.split(",") if d.strip()]
         return v
+
+    # === Apify settings ============================================================================================
+    APIFY_API_TOKEN: str
+    APIFY_WEBHOOK_SECRET: str
+    APIFY_IG_PROFILE_ACTOR: str = "apify/instagram-profile-scraper"
+    APIFY_REFRESH_AFTER_DAYS: int = 30
+    APIFY_REFRESH_BACTH: int = 500
+    APIFY_RECONCILE_AFTER_MINUTES: int = 10
+
+    # === AI Parser settings ============================================================================================
+    AI_API_KEY: str
+    AI_MODEL: str = "claude-haiku-4-5"
+    AI_BATCH_SIZE: int = 25
+    AI_CONCURRENCY: int = 4
+    AI_TIMEOUT: int = 90
+    AI_MAX_ATTEMPTS: int = 2
 
     # === Apps Script endpoint settings ======================================================================================================
     APPS_SCRIPT_API_SECRET: str

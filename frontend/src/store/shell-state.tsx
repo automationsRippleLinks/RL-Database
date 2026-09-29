@@ -6,10 +6,26 @@ import {
   useMemo,
   useState,
   type ReactNode,
+  type Dispatch,
+  type SetStateAction,
 } from 'react';
 import { useDismissable } from '@/hooks/useDismissable';
-import type { FilterGroupKey } from '../hooks/filterModels/useCreatorFilterModel';
+import type { BrandRow, CreatorRow, CampaignRow, PitchRow } from '@/types/api';
 
+/**
+ * Each scope defines its own FilterGroupKey union (see the filter-model hooks
+ * under hooks/filterModels) because their groups genuinely differ — a brand
+ * has no "reach" group, a creator has no "org_type" group. The rail itself
+ * just needs *a* key to track which group is open, so this stays generic
+ * rather than importing one scope's union and rejecting every other scope's
+ * values.
+ */
+export type RailGroupKey = string;
+// ── BRAND SELECTION ────────────────────────────────────────────
+type PickedBrands = Record<string, BrandRow>;
+type PickedCreators = Record<string, CreatorRow>
+type PickedCampaigns = Record<string, CampaignRow>
+type PickedPitches = Record<string, PitchRow>
 
 export interface ShellState {
   railExpanded: boolean;
@@ -21,14 +37,29 @@ export interface ShellState {
   railOpen: boolean;
   expandRail: () => void;
 
-  openGroup: FilterGroupKey | null;
-  setOpenGroup: (key: FilterGroupKey | null) => void;
-  
+  openGroup: RailGroupKey | null;
+  setOpenGroup: (key: RailGroupKey | null) => void;
+
   openMenu: string | null;
   setOpenMenu: (key: string | null) => void;
 
   sectionCount: number | null;
   setSectionCount: (count: number | null) => void;
+
+  // ── BRAND SELECTION ACROSS PAGE NAVIGATION ───────────────────
+  pickedBrands: PickedBrands;
+  setPickedBrands: Dispatch<SetStateAction<PickedBrands>>;
+  // ── CREATORS SELECTION ACROSS PAGE NAVIGATION ───────────────────
+  pickedCreators: PickedCreators;
+  setPickedCreators: Dispatch<SetStateAction<PickedCreators>>;
+  // ── CAMPAIGNS SELECTION ACROSS PAGE NAVIGATION ───────────────────
+  pickedCampaigns: PickedCampaigns;
+  setPickedCampaigns: Dispatch<SetStateAction<PickedCampaigns>>;
+  // ── PITCHES SELECTION ACROSS PAGE NAVIGATION ───────────────────
+  pickedPitches: PickedPitches;
+  setPickedPitches: Dispatch<SetStateAction<PickedPitches>>;
+
+
 }
 
 const ShellContext = createContext<ShellState | null>(null);
@@ -37,9 +68,18 @@ const ShellContext = createContext<ShellState | null>(null);
 export function ShellStateProvider({ children }: { children: ReactNode }) {
   const [railExpanded, setRailExpanded] = useState(false);
   const [railPeek, setRailPeek] = useState(false);
-  const [openGroup, setOpenGroup] = useState<FilterGroupKey | null>('platform');
+  const [openGroup, setOpenGroup] = useState<RailGroupKey | null>(null);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [sectionCount, setSectionCount] = useState<number | null>(null);
+  // ── BRAND SELECTION ────────────────────────────────────────────
+  // Stored above the search pages so changing routes doesn't clear it.
+  const [pickedBrands, setPickedBrands] = useState<PickedBrands>({});
+  // ── CREATOR SELECTION ──────────────────────────────────────────
+  const [pickedCreators, setPickedCreators] = useState<PickedCreators>({});
+  // ── CAMPAIGNS SELECTION ──────────────────────────────────────────
+  const [pickedCampaigns, setPickedCampaigns] = useState<PickedCampaigns>({});
+  // ── PITCHES SELECTION ──────────────────────────────────────────
+  const [pickedPitches, setPickedPitches] = useState<PickedPitches>({});
 
 
   const closeMenu = useCallback(() => setOpenMenu(null), []);
@@ -71,8 +111,16 @@ export function ShellStateProvider({ children }: { children: ReactNode }) {
       setOpenMenu,
       sectionCount,
       setSectionCount,
+      pickedBrands,
+      setPickedBrands,
+      pickedCreators,
+      setPickedCreators,
+      pickedCampaigns,
+      setPickedCampaigns,
+      pickedPitches,
+      setPickedPitches
     }),
-    [railExpanded, toggleRail, railPeek, expandRail, openGroup, openMenu, sectionCount],
+    [railExpanded, toggleRail, railPeek, expandRail, openGroup, openMenu, sectionCount, pickedBrands, pickedCreators, pickedCampaigns, pickedPitches],
   );
 
   return <ShellContext value={value}>{children}</ShellContext>;

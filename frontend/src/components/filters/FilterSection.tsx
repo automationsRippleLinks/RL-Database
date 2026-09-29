@@ -1,9 +1,12 @@
+import type { ComponentType } from "react";
 import CreatorFilters from "./CreatorFilters";
-import CampaignFilters from "./CampaignFilters";
 import BrandFilters from "./BrandFilters";
+import CampaignFilters from "./CampaignFilters";
 import PitchFilters from "./PitchFilters";
 import { useCreatorFilterModel } from "@/hooks/filterModels/useCreatorFilterModel";
 import { useBrandFilterModel } from "@/hooks/filterModels/useBrandFilterModel";
+import { useCampaignFilterModel } from "@/hooks/filterModels/useCampaignFilterModel";
+import { usePitchFilterModel } from "@/hooks/filterModels/usePitchFilterModel";
 import {
   useCreatorFacets,
   useBrandFacets,
@@ -25,10 +28,10 @@ export default function FilterSection({
       return <CreatorFilterSection shellState={shellState} />;
     case "brands":
       return <BrandFilterSection shellState={shellState} />;
-    // case "campaigns":
-    //   return <CampaignFilterSection shellState={shellState} />;
-    // case "pitches":
-    //   return <PitchFilterSection shellState={shellState} />;
+    case "campaigns":
+      return <CampaignFilterSection shellState={shellState} />;
+    case "pitches":
+      return <PitchFilterSection shellState={shellState} />;
     default:
       return null;
   }
@@ -62,35 +65,69 @@ function BrandFilterSection({ shellState }: { shellState: ShellState }) {
   );
 }
 
-// function CampaignFilterSection({ shellState }: { shellState: ShellState }) {
-//   const facets = useCampaignFacets();
-//   const model = useCamapignFilterModel(facets.data); //define
+function CampaignFilterSection({ shellState }: { shellState: ShellState }) {
+  const facets = useCampaignFacets();
+  const model = useCampaignFilterModel(facets.data);
 
-//   return (
-//     <FilterSectionShell
-//       shellState={shellState}
-//       facets={facets}
-//       model={model}
-//       Component={CampaignFilters}
-//     />
-//   );
-// }
+  return (
+    <FilterSectionShell
+      shellState={shellState}
+      facets={facets}
+      model={model}
+      Component={CampaignFilters}
+    />
+  );
+}
 
-// function PitchFilterSection({ shellState }: { shellState: ShellState }) {
-//   const facets = usePitchFacets();
-//   const model = usePitchFilterModel(facets.data);
+function PitchFilterSection({ shellState }: { shellState: ShellState }) {
+  const facets = usePitchFacets();
+  const model = usePitchFilterModel(facets.data);
 
-//   return (
-//     <FilterSectionShell
-//       shellState={shellState}
-//       facets={facets}
-//       model={model}
-//       Component={PitchFilters}
-//     />
-//   );
-// }
+  return (
+    <FilterSectionShell
+      shellState={shellState}
+      facets={facets}
+      model={model}
+      Component={PitchFilters}
+    />
+  );
+}
 
-function FilterSectionShell({ shellState, facets, model, Component }) {
+/**
+ * The chrome around one scope's filter groups (the "Filters" label, "Clear
+ * all", the collapsed-rail applied-count badge) plus the groups themselves,
+ * rendered by whichever <XFilters> component this scope's model belongs to.
+ *
+ * Generic over the model/facets/component triple rather than typed to
+ * Creator's specifically, since Brand (and eventually Campaign and Pitch)
+ * plug in their own versions of all three below.
+ */
+function FilterSectionShell<TFacets, TModel extends { totalApplied: number; actions: { clearAll: () => void } }>({
+  shellState,
+  facets,
+  model,
+  Component,
+}: {
+  shellState: ShellState;
+  facets: { data: TFacets | undefined };
+  model: TModel;
+  // openGroup/onOpenGroup are typed `any` deliberately: each scope's
+  // <XFilters> narrows this to its own FilterGroupKey union (Creator's and
+  // Brand's don't overlap), and this shell only ever forwards shell-state's
+  // value straight through without inspecting it — it doesn't need the
+  // precise type, and requiring one here would make every component's prop
+  // type a mismatch for every other scope's.
+  Component: ComponentType<{
+    model: TModel;
+    facets: TFacets | undefined;
+    railOpen: boolean;
+    openGroup: any;
+    onOpenGroup: (key: any) => void;
+    openMenu: string | null;
+    onOpenMenu: (key: string | null) => void;
+    onExpandRail: () => void;
+  }>;
+}) {
   return (
     <div className="mt-2.5 flex min-h-0 flex-1 flex-col border-t border-rp-border">
       <div

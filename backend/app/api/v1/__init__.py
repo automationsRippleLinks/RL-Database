@@ -6,6 +6,7 @@ from .auth import router as auth_router
 from .search import router as search_router
 from .detail import router as detail_router
 from .taxonomy import router as taxonomy_router
+from .apify import router as apify_router
 
 router = APIRouter()
 
@@ -15,3 +16,4 @@ router.include_router(auth_router, prefix="/auth", tags=["Auth"])
 router.include_router(search_router, prefix="/search", tags=["Search"])
 router.include_router(taxonomy_router, prefix="/taxonomy", tags=["Taxonomy"])
 router.include_router(detail_router, tags=["Detail"])
+router.include_router(apify_router, prefix="/apify", tags=["Apify"])

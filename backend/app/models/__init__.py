@@ -5,7 +5,7 @@ from .link_models import (
     CategoryCreatorLink,
     CampaignCreatorLink,
     TagCreatorLink,
-    BrandCreatorLink
+    BrandCreatorLink,
 )
 from .pitch import Pitch
 from .category import Category
@@ -15,7 +15,8 @@ from .company import Company
 from .auth import User
 from .campaign import Campaign
 from .brand import Brand
-from .ingest_job import IngestJob
+from .ingest_job import IngestJob, IngestSource, JobStatus
+from .apify_run import ApifyRun, RunTrigger
 from .tag import Tag
 from .commercial_package import CommercialPackage, PackageDeliverables
 
@@ -45,6 +46,10 @@ __all__ = [
     "Campaign",
     "Brand",
     "IngestJob",
+    "IngestSource",
+    "JobStatus",
+    "ApifyRun",
+    "RunTrigger",
     "CommercialPackage",
     "PackageDeliverables",
 ]

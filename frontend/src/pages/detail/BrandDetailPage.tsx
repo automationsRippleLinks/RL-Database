@@ -2,7 +2,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 // import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/UI/button';
-import { Card, CardContent } from '@/components/UI/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { DataTable } from '@/components/DataTable';
 import { ErrorState, LoadingState } from '@/components/states';
 import { StatRow, StatTile } from '@/components/StatTile';
@@ -16,10 +16,10 @@ import {
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format';
 import { useBackTo } from '@/hooks/useBackTo';
 import { withBackState } from '@/lib/navigation';
-import { campaignColumns } from '../campaigns/columns';
-import { pitchColumns } from '../pitches/columns';
-import { creatorColumns } from '../creators/columns';
-import { useBrandDetail } from '../queries';
+import { campaignColumns } from '@/features/search/campaigns/columns';
+import { pitchColumns } from '@/features/search/pitches/columns';
+import { creatorColumns } from '@/features/search/creators/columns';
+import { useBrandDetail } from '@/features/search/queries';
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
 
 export function BrandDetailPage() {

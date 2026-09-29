@@ -17,7 +17,8 @@ export default defineConfig(({ mode }) => {
       proxy: {
         "/api": {
           target: env.VITE_PROXY_TARGET,
-          changeOrigin: false,
+          changeOrigin: true,
+    
         },
       },
     },

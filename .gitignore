@@ -8,3 +8,5 @@ node_modules/
 
 google_oauth_credentials*
 temp*
+
+old_migrations/

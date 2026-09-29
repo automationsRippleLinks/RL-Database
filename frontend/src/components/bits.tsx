@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink as ExternalLinkIcon } from 'lucide-react';
-import { Badge } from './UI/badge';
+import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import {
   CAMPAIGN_STATUS_LABELS,

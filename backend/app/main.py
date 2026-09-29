@@ -7,11 +7,12 @@ from app.core.cache import invalidate
 from app.core.db import create_engine, create_session_factory
 from app.core.redis_client import create_redis, create_redis_pool
 from app.api.v1 import router as v1_router
+from app.worker import broker
 
 CACHE_REFRESH_PREFIX_LIST = [
-    settings.FACETS_PREFIX,
-    settings.SEARCH_PREFIX,
-    settings.SUGGEST_PREFIX,
+    settings.FACETS_CACHE_PREFIX,
+    settings.SEARCH_CACHE_PREFIX,
+    settings.SUGGEST_CACHE_PREFIX,
     settings.RATE_LIMIT_PREFIX,
 ]
 
@@ -42,8 +43,10 @@ async def lifespan(app: FastAPI):
             pass
         await app.state.redis.ping()  # check if redis is alive
         await invalidate(app.state.redis, *CACHE_REFRESH_PREFIX_LIST)  # refresh cache
+        await broker.startup()
         yield
     finally:
+        await broker.shutdown()
         try:
             await app.state.redis.aclose()
             await redis_pool.aclose()

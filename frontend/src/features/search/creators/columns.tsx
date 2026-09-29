@@ -62,12 +62,12 @@ export const creatorColumns: Column<CreatorRow>[] = [
   {
     id: 'email',
     header: 'Email',
-    cell: (row) => <MaskedContact value={row.email} kind="email" />,
+    cell: (row) => <MaskedContact value={row.emails[0] ?? null} kind="email" />,
     className: 'max-w-56',
   },
   {
     id: 'phone',
     header: 'Phone',
-    cell: (row) => <MaskedContact value={row.phone} kind="phone" />,
+    cell: (row) => <MaskedContact value={row.phones[0] ?? null} kind="phone" />,
   },
 ];

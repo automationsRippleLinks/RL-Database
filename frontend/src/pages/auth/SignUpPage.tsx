@@ -3,8 +3,8 @@ import { Link, Navigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, Loader2, MailCheck, UserPlus } from 'lucide-react';
 import { Button } from '@/components/UI/button';
-import { Input } from '@/components/UI/input';
-import { Label } from '@/components/UI/label';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ApiError } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
 import { AuthShell } from "@/features/auth/AuthShell";
@@ -52,7 +52,7 @@ export function SignUpPage() {
         }
       >
         <div className="mb-4 flex justify-center">
-          <MailCheck className="size-8 text-[var(--success)]" />
+          <MailCheck className="size-8 text-success" />
         </div>
         <p className="mb-4 text-center text-xs text-muted-foreground">
           Didn't arrive? Check spam, or send it again.

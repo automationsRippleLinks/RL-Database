@@ -110,6 +110,7 @@ export function useCreatorRequest(facetCities: string[] = []): CreatorSearchRequ
   const url = useUrlSearchState();
   const paging = usePaging();
   const text = url.getString('q');
+  const contact = url.getString('contact');
   // Joined so the memo compares by value: the array identity changes on every
   // facets render even when the vocabulary has not.
   const cityVocabulary = facetCities.join('\u0000');
@@ -134,12 +135,12 @@ export function useCreatorRequest(facetCities: string[] = []): CreatorSearchRequ
       // key, and the two must not reinterpret each other across a tab switch.
       brand_ids: url.getList('c_brand').map(Number).filter(Number.isFinite),
       tags: url.getList('tag'),
-      has_email: url.getBool('has_email'),
-      has_phone: url.getBool('has_phone'),
+      has_email: contact === 'email' || contact === 'contact',
+      has_phone: contact === 'phone' || contact === 'contact',
+      has_contact: false,
       // Inverted on purpose. This filter defaults to ON, and setParams drops
       // `false` from the URL, so the only encodable state is the non-default
       // one: `no_contact=1` means the box was unticked.
-      has_contact: !url.getBool('no_contact'),
       campaign_involvement:
         (url.getString('in_campaign') as CampaignInvolvement) || null,
       min_followers: parseAmount(url.getString('min_followers')),
@@ -150,8 +151,7 @@ export function useCreatorRequest(facetCities: string[] = []): CreatorSearchRequ
         (url.getString('sort', DEFAULT_CREATOR_SORT) as CreatorSort) || DEFAULT_CREATOR_SORT,
       ...paging,
     }),
-    [url, paging, text, cityVocabulary],
-  );
+    [url, paging, text, cityVocabulary, contact],);
 }
 
 /**
@@ -259,7 +259,7 @@ export const SCOPE_FILTER_KEYS: Record<string, string[]> = {
  * would pin the "N active" badge at 1 forever and make "reset" look broken.
  */
 const FILTER_DEFAULTS: Record<string, Record<string, unknown>> = {
-  creators: { has_contact: true },
+  creators: { has_contact: false },
 };
 
 /** How many filters are active, for the "N active" badge on the filter panel. */

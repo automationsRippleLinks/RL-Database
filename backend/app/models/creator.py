@@ -12,7 +12,7 @@ from sqlmodel import (
 )
 from sqlalchemy import Enum as SaEnum, Column
 from sqlalchemy.dialects.postgresql import ARRAY
-from pydantic import ConfigDict
+from pydantic import ConfigDict, AwareDatetime
 
 
 from .link_models import (
@@ -82,6 +82,12 @@ class Creator(SQLModel, table=True):
     phones: list[str] = Field(
         default_factory=list,
         sa_column=Column(ARRAY(String), server_default=text("ARRAY[]::VARCHAR[]")),
+    )
+
+    bio: Optional[str] = Field(default=None, nullable=True)
+    
+    stats_refreshed_at: Optional[AwareDatetime] = Field(
+        default=None, nullable=True, index=True
     )
 
     affiliated_pitches: list["PitchCreatorLink"] = Relationship(

@@ -1,26 +1,27 @@
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/UI/button';
-import { Card, CardContent } from '@/components/UI/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/UI/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ErrorState, LoadingState } from '@/components/states';
 import { StatRow, StatTile } from '@/components/StatTile';
-import { Badge } from '@/components/UI/badge';
+import { Badge } from '@/components/ui/badge';
+import { PlatformMark } from '@/components/PlatformMark';
+import { PLATFORM_LABELS } from '@/lib/enums';
 import {
   BrandLink,
   DefinitionItem,
   DefinitionList,
   OrgTypeBadge,
-  PlatformBadge,
   PlatformBadges,
   RequirementBadge,
   SectionTitle,
   TierBadge,
 } from '@/components/bits';
-import { formatCurrency, formatDateTime, formatNumber } from '@/lib/format';
+import { formatCurrency, formatDateTime, formatNumber, initials, profileUrlFor } from '@/lib/format';
 import type { PitchCreatorRow } from '@/types/api';
-import { usePitchDetail } from '../queries';
+import { usePitchDetail } from '@/features/search/queries';
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
 
 export function PitchDetailPage() {
@@ -81,10 +82,10 @@ export function PitchDetailPage() {
           value={
             data.totals.total_brand_cost && data.totals.total_final_cost
               ? `${(
-                  ((data.totals.total_brand_cost - data.totals.total_final_cost) /
-                    data.totals.total_brand_cost) *
-                  100
-                ).toFixed(1)}%`
+                ((data.totals.total_brand_cost - data.totals.total_final_cost) /
+                  data.totals.total_brand_cost) *
+                100
+              ).toFixed(1)}%`
               : '—'
           }
         />
@@ -186,18 +187,46 @@ const identityColumns: Column<PitchCreatorRow>[] = [
   {
     id: 'creator',
     header: 'Creator',
-    cell: (row) => (
-      <Link to={`/creators/${row.creator_id}`} className="font-medium text-primary hover:underline">
-        {row.name}
-      </Link>
-    ),
-    className: 'max-w-44 truncate',
-  },
-  {
-    id: 'handle',
-    header: 'Handle',
-    cell: (row) => <span className="text-muted-foreground">@{row.username}</span>,
-    className: 'max-w-36 truncate',
+    cell: (row) => {
+      const profileUrl = profileUrlFor(row);
+
+      return (
+        <span className="flex items-center gap-2.25">
+          <Link
+            to={`/creators/${row.creator_id}`}
+            className="flex size-7 shrink-0 items-center justify-center rounded-full border border-rp-border bg-rp-surface2 text-[10.5px] font-bold"
+          >
+            {initials(row.name)}
+          </Link>
+
+          <span className="min-w-0">
+            <Link
+              to={`/creators/${row.creator_id}`}
+              className="block truncate font-semibold text-rp-text hover:underline"
+            >
+              {row.name}
+            </Link>
+
+            {row.username &&
+              (profileUrl ? (
+                <a
+                  href={profileUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="block truncate text-[11px] text-rp-muted hover:underline"
+                >
+                  @{row.username}
+                </a>
+              ) : (
+                <span className="block truncate text-[11px] text-rp-muted">
+                  @{row.username}
+                </span>
+              ))}
+          </span>
+        </span>
+      );
+    },
+    className: 'max-w-52',
   },
 ];
 
@@ -212,8 +241,15 @@ function money(value: number) {
 
 const deliverableColumns: Column<PitchCreatorRow>[] = [
   ...identityColumns,
-  { id: 'platform', header: 'Platform', cell: (row) => <PlatformBadge platform={row.platform} /> },
-  { id: 'tier', header: 'Tier', cell: (row) => <TierBadge tier={row.tier} /> },
+  {
+    id: 'platform',
+    header: 'Platform',
+    cell: (row) => (
+      <span title={PLATFORM_LABELS[row.platform] ?? row.platform}>
+        <PlatformMark platform={row.platform} size={15} />
+      </span>
+    ),
+  }, { id: 'tier', header: 'Tier', cell: (row) => <TierBadge tier={row.tier} /> },
   { id: 'followers', header: 'Followers', numeric: true, cell: (row) => formatNumber(row.followers) },
   { id: 'reels', header: 'Reels', numeric: true, cell: (row) => count(row.reel_count) },
   { id: 'reel_stories', header: 'Reel stories', numeric: true, cell: (row) => count(row.reel_story_count) },
@@ -252,8 +288,25 @@ const costColumns: Column<PitchCreatorRow>[] = [
 
 const rightsColumns: Column<PitchCreatorRow>[] = [
   ...identityColumns,
-  { id: 'usage', header: 'Usage rights', cell: (row) => row.usage_rights ?? '—' },
-  { id: 'ad_promo', header: 'Ad / promo rights', cell: (row) => row.ad_promo_rights ?? '—' },
-  { id: 'boosting', header: 'Boosting', cell: (row) => row.boosting ?? '—' },
-  { id: 'terms', header: 'Payment terms', cell: (row) => row.payment_terms ?? '—' },
+  {
+    id: 'usage',
+    header: 'Usage rights',
+    cell: (row) => row.usage_rights?.trim() || '—',
+    
+  },
+  {
+    id: 'ad_promo',
+    header: 'Ad / promo rights',
+    cell: (row) => row.ad_promo_rights?.trim() || '—',
+  },
+  {
+    id: 'boosting',
+    header: 'Boosting',
+    cell: (row) => row.boosting?.trim() || '—',
+  },
+  {
+    id: 'terms',
+    header: 'Payment terms',
+    cell: (row) => row.payment_terms?.trim() || '—',
+  },
 ];
