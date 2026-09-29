@@ -7,8 +7,6 @@ import {
   ClipboardList,
   Clock,
   Copy,
-  Maximize2,
-  Minimize2,
   PauseCircle,
   X,
   XCircle,
@@ -17,21 +15,27 @@ import type { LucideIcon } from 'lucide-react';
 import { PlatformMark } from '@/components/PlatformMark';
 import { useToast } from '@/components/Toast';
 import { ErrorState } from '@/components/states';
-import { Skeleton } from '@/components/UI/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDismissable } from '@/hooks/useDismissable';
 import { MONTH_LABELS, PLATFORM_LABELS } from '@/lib/enums';
 import { compact, formatDate, formatNumber, initials, profileUrlFor } from '@/lib/format';
 import { describePlace } from '@/lib/geo';
 import { cn } from '@/lib/utils';
-import type { CampaignStatus, CreatorCampaignSummary, CreatorDetail } from '@/types/api';
+import type { CampaignStatus, CreatorCampaignSummary, CreatorPitchSummary, CreatorDetail } from '@/types/api';
 import { useCreatorDetail } from '../queries';
 import { commercialPackageFor } from './deliverables';
+import { Link } from 'react-router-dom';
+import { withBackState } from '@/lib/navigation';
+import { ExpandableSection } from '@/components/ExpandableSection';
+import { DetailDrawer } from '@/components/DetailDrawer';
 
 /**
  * Must match the `rpDrawerOut` duration in index.css. The panel is unmounted
  * when the exit animation ends, and a shorter value here cuts it off mid-slide.
  */
+
 const EXIT_MS = 185;
+type CreatorSection = "campaigns" | "pitches";
 
 /**
  * The creator record, as a panel over the results rather than a page.
@@ -47,10 +51,10 @@ export function CreatorDrawer({
   creatorId: string;
   onClose: () => void;
 }) {
-  const { copy, flash } = useToast();
+  const { copy } = useToast();
   const [closing, setClosing] = useState(false);
   const [dealsOpen, setDealsOpen] = useState(false);
-  const [campaignsOpen, setCampaignsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<CreatorSection | null>(null);
   const [contactIndex, setContactIndex] = useState({ email: 0, phone: 0 });
   const exitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -77,8 +81,7 @@ export function CreatorDrawer({
       setDisplayedId(creatorId);
       setClosing(false);
       setDealsOpen(false);
-      setCampaignsOpen(false);
-      setContactIndex({ email: 0, phone: 0 });
+      setActiveSection(null); setContactIndex({ email: 0, phone: 0 });
     }, EXIT_MS);
   }, [creatorId, displayedId]);
 
@@ -106,61 +109,71 @@ export function CreatorDrawer({
   useDismissable(['drawer', 'results'], !closing, requestClose);
 
   return (
-    // The overlay itself is inert: the results stay clickable to the drawer's
-    // left, so a click on another row swaps the panel rather than being eaten.
-    <div className="pointer-events-none fixed inset-0 z-60">
-      <div
-        data-rp-pop="drawer"
-        role="dialog"
-        aria-modal="false"
-        aria-label={data ? `${data.name} — creator record` : 'Creator record'}
-        className={cn(
-          'pointer-events-auto absolute top-0 right-0 flex h-full max-w-[96vw] flex-col border-l border-rp-border bg-rp-surface shadow-rp',
-          'transition-[width] duration-200 ease-out',
-          campaignsOpen ? 'w-181' : 'w-106',
-          closing ? 'animate-rp-drawer-out' : 'animate-rp-drawer',
-        )}
-      >
-        {isError ? (
-          <div className="flex h-full flex-col">
-            <DrawerBar onClose={requestClose} />
-            <div className="p-4">
-              <ErrorState error={error} onRetry={() => refetch()} />
-            </div>
+    <DetailDrawer
+      ariaLabel={data ? `${data.name} — creator record` : "Creator record"}
+      closing={closing}
+
+      sidePanel={
+        activeSection && data && !isPending && !isError
+          ? {
+            title: activeSection === "campaigns" ? "Campaigns" : "Pitches",
+            count:
+              activeSection === "campaigns"
+                ? data.campaigns.length
+                : data.pitches.length,
+            content:
+              activeSection === "campaigns" ? (
+                <CreatorCampaignList campaigns={data.campaigns} />
+              ) : (
+                <CreatorPitchList pitches={data.pitches} />
+              ),
+            onClose: () => setActiveSection(null),
+          }
+          : null
+      }
+    >
+      {isError ? (
+        <div className="flex h-full flex-col">
+          <DrawerBar onClose={requestClose} />
+          <div className="p-4">
+            <ErrorState error={error} onRetry={() => refetch()} />
           </div>
-        ) : isPending || !data ? (
-          <div className="flex h-full flex-col">
-            <DrawerBar onClose={requestClose} />
-            <div className="space-y-3 p-4.5">
-              <Skeleton className="h-11 w-2/3" />
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-28 w-full" />
-              <Skeleton className="h-24 w-full" />
-            </div>
+        </div>
+      ) : isPending || !data ? (
+        <div className="flex h-full flex-col">
+          <DrawerBar onClose={requestClose} />
+          <div className="space-y-3 p-4.5">
+            <Skeleton className="h-11 w-2/3" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-24 w-full" />
           </div>
-        ) : (
-          <DrawerBody
-            detail={data}
-            onClose={requestClose}
-            dealsOpen={dealsOpen}
-            onToggleDeals={() => setDealsOpen((open) => !open)}
-            campaignsOpen={campaignsOpen}
-            onToggleCampaigns={() => setCampaignsOpen((open) => !open)}
-            contactIndex={contactIndex}
-            onCycleContact={(kind, length) =>
-              setContactIndex((current) => ({
-                ...current,
-                [kind]: (current[kind] + 1) % length,
-              }))
-            }
-            onCopy={copy}
-            onFlash={flash}
-          />
-        )}
-      </div>
-    </div>
+        </div>
+      ) : (
+        <DrawerBody
+          detail={data}
+          onClose={requestClose}
+          dealsOpen={dealsOpen}
+          onToggleDeals={() => setDealsOpen((open) => !open)}
+          activeSection={activeSection}
+          onToggleSection={(section) =>
+            setActiveSection((current) =>
+              current === section ? null : section
+            )
+          }
+          contactIndex={contactIndex}
+          onCycleContact={(kind, length) =>
+            setContactIndex((current) => ({
+              ...current,
+              [kind]: (current[kind] + 1) % length,
+            }))
+          }
+          onCopy={copy}
+        />
+      )}
+    </DetailDrawer>
   );
-}
+};
 
 /** The close button alone, for the loading and error states. */
 function DrawerBar({ onClose }: { onClose: () => void }) {
@@ -190,12 +203,11 @@ interface DrawerBodyProps {
   onClose: () => void;
   dealsOpen: boolean;
   onToggleDeals: () => void;
-  campaignsOpen: boolean;
-  onToggleCampaigns: () => void;
+  activeSection: CreatorSection | null;
+  onToggleSection: (section: CreatorSection) => void;
   contactIndex: { email: number; phone: number };
-  onCycleContact: (kind: 'email' | 'phone', length: number) => void;
+  onCycleContact: (kind: "email" | "phone", length: number) => void;
   onCopy: (text: string, message: string) => void;
-  onFlash: (message: string) => void;
 }
 
 function DrawerBody({
@@ -203,12 +215,11 @@ function DrawerBody({
   onClose,
   dealsOpen,
   onToggleDeals,
-  campaignsOpen,
-  onToggleCampaigns,
+  activeSection,
+  onToggleSection,
   contactIndex,
   onCycleContact,
   onCopy,
-  onFlash,
 }: DrawerBodyProps) {
   const profileUrl = profileUrlFor(detail);
   const packageQuote = commercialPackageFor(detail);
@@ -261,250 +272,261 @@ function DrawerBody({
         <CloseButton onClose={onClose} />
       </div>
 
-      <div
-        className={cn(
-          "flex min-h-0 flex-1 scrollbar-thin",
-          campaignsOpen ? "flex-row" : "flex-col",
-        )}
-      >
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
-          {/* ── stats ────────────────────────────────────────────────────── */}
-          <div className="grid shrink-0 grid-cols-2 gap-px bg-rp-border">
-            <Stat
-              label="Followers"
-              value={compact(detail.followers)}
-              full={detail.followers}
-            />
-            <Stat
-              label="Avg views"
-              value={compact(detail.avg_views)}
-              full={detail.avg_views}
-            />
-            <Stat label="Campaigns with us" value={String(ran.length)} />
-            <Stat label="Times pitched" value={String(detail.pitches.length)} />
-          </div>
+      {/* The shared DetailDrawer now handles the sideways layout. */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto scrollbar-thin">
+        {/* ── stats ────────────────────────────────────────────────────── */}
+        <div className="grid shrink-0 grid-cols-2 gap-px bg-rp-border">
+          <Stat
+            label="Followers"
+            value={compact(detail.followers)}
+            full={detail.followers}
+          />
+          <Stat
+            label="Avg views"
+            value={compact(detail.avg_views)}
+            full={detail.avg_views}
+          />
+          <Stat label="Campaigns with us" value={String(ran.length)} />
+          <Stat label="Times pitched" value={String(detail.pitches.length)} />
+        </div>
 
-          {/* ── commercial package ───────────────────────────────────────── */}
-          {packageQuote && (
-            <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
-              <Eyebrow>Commercial package</Eyebrow>
-              <div className="mb-2.75 flex items-baseline gap-2.5">
-                <span className="shrink-0 text-2xl font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums">
-                  ₹{packageQuote.total.toLocaleString("en-IN")}
-                </span>
-                <span
-                  title={packageQuote.items
-                    .map((item) => item.label)
-                    .join(" + ")}
-                  className="min-w-0 truncate text-[11.5px] text-rp-muted"
-                >
-                  package of {packageQuote.items.length}{" "}
-                  {packageQuote.items.length === 1
-                    ? "deliverable"
-                    : "deliverables"}
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={onToggleDeals}
-                aria-expanded={dealsOpen}
-                className={cn(
-                  "flex w-full cursor-pointer items-center gap-2 rounded-[10px] border border-rp-border px-2.75 py-2.25 text-xs font-semibold",
-                  dealsOpen ? "text-rp-primary" : "text-rp-text",
-                )}
+        {/* ── commercial package ───────────────────────────────────────── */}
+        {packageQuote && (
+          <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
+            <Eyebrow>Commercial package</Eyebrow>
+            <div className="mb-2.75 flex items-baseline gap-2.5">
+              <span className="shrink-0 text-2xl font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums">
+                ₹{packageQuote.total.toLocaleString("en-IN")}
+              </span>
+              <span
+                title={packageQuote.items
+                  .map((item) => item.label)
+                  .join(" + ")}
+                className="min-w-0 truncate text-[11.5px] text-rp-muted"
               >
-                <ClipboardList className="size-3.75 shrink-0" />
-                <span className="flex-1 text-left">Deliverables</span>
-                <ChevronDown
-                  className={cn(
-                    "size-3.5 shrink-0 transition-transform",
-                    dealsOpen && "rotate-180",
-                  )}
-                  strokeWidth={2.2}
-                />
-              </button>
+                package of {packageQuote.items.length}{" "}
+                {packageQuote.items.length === 1
+                  ? "deliverable"
+                  : "deliverables"}
+              </span>
+            </div>
 
-              {dealsOpen && (
-                <div className="mt-2.5 flex flex-wrap gap-2">
-                  {packageQuote.items.map(
-                    ({ key, label, icon: Icon, quantity, cost }) => (
-                      <div
-                        key={key}
-                        className="flex min-w-0 flex-[0_1_calc(50%-4px)] items-center gap-2.5 rounded-sm border border-rp-border bg-rp-surface2 px-3 py-2.75"
-                      >
-                        <span className="flex size-7 shrink-0 items-center justify-center rounded-sm bg-rp-primary-soft text-rp-primary">
-                          <Icon className="size-3.75" />
+            <button
+              type="button"
+              onClick={onToggleDeals}
+              aria-expanded={dealsOpen}
+              className={cn(
+                "flex w-full cursor-pointer items-center gap-2 rounded-[10px] border border-rp-border px-2.75 py-2.25 text-xs font-semibold",
+                dealsOpen ? "text-rp-primary" : "text-rp-text",
+              )}
+            >
+              <ClipboardList className="size-3.75 shrink-0" />
+              <span className="flex-1 text-left">Deliverables</span>
+              <ChevronDown
+                className={cn(
+                  "size-3.5 shrink-0 transition-transform",
+                  dealsOpen && "rotate-180",
+                )}
+                strokeWidth={2.2}
+              />
+            </button>
+
+            {dealsOpen && (
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {packageQuote.items.map(
+                  ({ key, label, icon: Icon, quantity, cost }) => (
+                    <div
+                      key={key}
+                      className="flex min-w-0 flex-[0_1_calc(50%-4px)] items-center gap-2.5 rounded-sm border border-rp-border bg-rp-surface2 px-3 py-2.75"
+                    >
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-sm bg-rp-primary-soft text-rp-primary">
+                        <Icon className="size-3.75" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-2.75 whitespace-nowrap text-rp-muted">
+                          {label}
+                          {quantity > 1 && (
+                            <span className="ml-1 tabular-nums">
+                              ×{quantity}
+                            </span>
+                          )}
                         </span>
-                        <span className="min-w-0">
-                          <span className="block text-2.75 whitespace-nowrap text-rp-muted">
-                            {label}
-                            {quantity > 1 && (
-                              <span className="ml-1 tabular-nums">
-                                ×{quantity}
-                              </span>
-                            )}
-                          </span>
-                          <span className="mt-px block text-sm font-bold tabular-nums">
-                            {cost > 0
-                              ? `₹${cost.toLocaleString("en-IN")}`
-                              : "in package"}
-                          </span>
+                        <span className="mt-px block text-sm font-bold tabular-nums">
+                          {cost > 0
+                            ? `₹${cost.toLocaleString("en-IN")}`
+                            : "in package"}
                         </span>
-                      </div>
-                    ),
-                  )}
-                </div>
+                      </span>
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
+
+            <span className="mt-2.5 block text-rp-muted text-[11px]">
+              LQP on {formatDate(packageQuote.validFrom)}.
+              <br />
+              Confirm before pitching.
+            </span>
+          </section>
+        )}
+
+        {/* ── profile ──────────────────────────────────────────────────── */}
+        <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
+          <Eyebrow>Profile</Eyebrow>
+          <div className="flex flex-col gap-2.25">
+            <Fact label="Location" value={describePlace(detail.city)} />
+            <Fact
+              label="Categories"
+              value={detail.categories[0] ?? "—"}
+              extra={
+                detail.categories.length > 1
+                  ? `+${detail.categories.length - 1}`
+                  : ""
+              }
+              extraTitle={`Also: ${detail.categories.slice(1).join(", ")}`}
+            />
+            <Fact
+              label="Languages"
+              value={detail.languages.slice(0, 2).join(", ") || "—"}
+              extra={
+                detail.languages.length > 2
+                  ? `+${detail.languages.length - 2}`
+                  : ""
+              }
+              extraTitle={`Also: ${detail.languages.slice(2).join(", ")}`}
+            />
+            <Fact label="Gender" value={detail.gender ?? "—"} />
+            <Fact
+              label="Worked with us"
+              value={
+                ran.length
+                  ? `Yes — ${ran.length} ${ran.length === 1 ? "campaign" : "campaigns"}`
+                  : dropped.length
+                    ? "Proposed but dropped"
+                    : "Not yet"
+              }
+            />
+          </div>
+        </section>
+        {/* ── contact ─────────────────────────────────────────────────── */}
+        {(emails.length > 0 || phones.length > 0) && (
+          <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
+            <Eyebrow>Contact</Eyebrow>
+
+            <div className="flex flex-col gap-2.25">
+              {emails.length > 0 && (
+                <ContactRow
+                  label="Email"
+                  values={emails}
+                  index={contactIndex.email}
+                  href={(value) => `mailto:${value}`}
+                  actionTitle="Send an email"
+                  onCopy={(value) => onCopy(value, "Email copied")}
+                  onNext={() => onCycleContact("email", emails.length)}
+                />
               )}
 
-              <span className="mt-2.5 block text-rp-muted text-[11px]">
-                LQP on {formatDate(packageQuote.validFrom)}.
-                <br />
-                Confirm before pitching.
-              </span>
-            </section>
-          )}
-
-          {/* ── profile ──────────────────────────────────────────────────── */}
-          <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
-            <Eyebrow>Profile</Eyebrow>
-            <div className="flex flex-col gap-2.25">
-              <Fact label="Location" value={describePlace(detail.city)} />
-              <Fact
-                label="Categories"
-                value={detail.categories[0] ?? "—"}
-                extra={
-                  detail.categories.length > 1
-                    ? `+${detail.categories.length - 1}`
-                    : ""
-                }
-                extraTitle={`Also: ${detail.categories.slice(1).join(", ")}`}
-              />
-              <Fact
-                label="Languages"
-                value={detail.languages.slice(0, 2).join(", ") || "—"}
-                extra={
-                  detail.languages.length > 2
-                    ? `+${detail.languages.length - 2}`
-                    : ""
-                }
-                extraTitle={`Also: ${detail.languages.slice(2).join(", ")}`}
-              />
-              <Fact label="Gender" value={detail.gender ?? "—"} />
-              <Fact
-                label="Worked with us"
-                value={
-                  ran.length
-                    ? `Yes — ${ran.length} ${ran.length === 1 ? "campaign" : "campaigns"}`
-                    : dropped.length
-                      ? "Proposed but dropped"
-                      : "Not yet"
-                }
-              />
+              {phones.length > 0 && (
+                <ContactRow
+                  label="Phone"
+                  values={phones}
+                  index={contactIndex.phone}
+                  href={(value) => `tel:${value.replace(/\s/g, "")}`}
+                  actionTitle="Call this number"
+                  onCopy={(value) => onCopy(value, "Phone number copied")}
+                  onNext={() => onCycleContact("phone", phones.length)}
+                />
+              )}
             </div>
           </section>
+        )}
 
-          {/* ── contact ──────────────────────────────────────────────────── */}
-          {(emails.length > 0 || phones.length > 0) && (
-            <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
-              <Eyebrow>Contact</Eyebrow>
-              <div className="flex flex-col gap-2.25">
-                {emails.length > 0 && (
-                  <ContactRow
-                    label="Email"
-                    values={emails}
-                    index={contactIndex.email}
-                    href={(value) => `mailto:${value}`}
-                    actionTitle="Send an email"
-                    onCopy={(value) => onCopy(value, "Email copied")}
-                    onNext={() => onCycleContact("email", emails.length)}
-                  />
-                )}
-                {phones.length > 0 && (
-                  <ContactRow
-                    label="Phone"
-                    values={phones}
-                    index={contactIndex.phone}
-                    href={(value) => `tel:${value.replace(/\s/g, "")}`}
-                    actionTitle="Call this number"
-                    onCopy={(value) => onCopy(value, "Phone number copied")}
-                    onNext={() => onCycleContact("phone", phones.length)}
-                  />
-                )}
-              </div>
-            </section>
-          )}
-        </div>
+        {/* ── campaigns ──────────────────────────────────────────────── */}
+        <ExpandableSection
+          label="Campaigns"
+          count={detail.campaigns.length}
+          open={activeSection === "campaigns"}
+          onToggle={() => onToggleSection("campaigns")}
+        />
 
-        {/* ── campaigns ──────────────────────────────────────────────────── */}
-        <div
-          className={cn(
-            "flex flex-col",
-            campaignsOpen
-              ? "min-h-0 flex-[0_0_300px] overflow-hidden border-l border-rp-border bg-rp-surface"
-              : "flex-[0_0_auto] border-t border-rp-border",
-          )}
-        >
-          <button
-            type="button"
-            onClick={onToggleCampaigns}
-            aria-expanded={campaignsOpen}
-            className="flex w-full shrink-0 cursor-pointer items-center gap-2.25 px-4.5 pt-3.75 pb-2.75 text-left"
-          >
-            <span className="flex-1 text-[10.5px] font-bold tracking-[0.06em] text-rp-muted uppercase">
-              Campaigns
-            </span>
-            <span className="rounded-full bg-rp-surface2 px-1.75 py-px text-[10.5px] font-bold tabular-nums text-rp-muted">
-              {detail.campaigns.length}
-            </span>
-            {campaignsOpen ? (
-              <Minimize2 className="size-3.75 shrink-0 text-rp-primary" />
-            ) : (
-              <Maximize2 className="size-3.75 shrink-0 text-rp-muted" />
-            )}
-          </button>
+        {/* ── pitches ────────────────────────────────────────────────── */}
+        <ExpandableSection
+          label="Pitches"
+          count={detail.pitches.length}
+          open={activeSection === "pitches"}
+          onToggle={() => onToggleSection("pitches")}
+        />
 
-          {campaignsOpen && (
-            <div className="min-h-0 flex-1 overflow-y-auto px-4.5 pb-3.75">
-              {detail.campaigns.map((campaign) => (
-                <CampaignRow key={campaign.campaign_id} campaign={campaign} />
-              ))}
-              {detail.campaigns.length === 0 && (
-                <p className="pt-1.5 pb-0.5 text-xs text-rp-muted">
-                  We have not hired this creator yet.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
       </div>
+    </>
+  );
+}
 
-      {/* ── footer ───────────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 gap-2 border-t border-rp-border px-4.5 py-3.5">
-        {/* {emails.length > 0 && (
-          <a
-            href={`mailto:${emails[0]}`}
-            title="Email this creator"
-            aria-label="Email this creator"
-            className="inline-flex items-center justify-center rounded-[10px] border border-rp-border px-3 py-2.5 text-rp-text hover:bg-rp-surface2"
-          >
-            <Mail className="size-4" />
-          </a>
-        )} */}
-        <button
-          type="button"
-          // Pitch lists are the next thing to build, not something this screen
-          // can fake. Saying so is better than a button that appears to work.
-          onClick={() =>
-            onFlash(
-              "Pitch lists aren't built yet — this is where they'll start",
-            )
-          }
-          className="flex-1 cursor-pointer rounded-[10px] bg-rp-primary px-3.5 py-2.5 text-[12.5px] font-bold text-rp-primary-fg"
+// Campaign rows displayed in the shared right panel.
+
+// Renders campaign rows without controlling where they appear.
+// We can use this inside the shared DetailDrawer side panel later.
+function CreatorCampaignList({
+  campaigns,
+}: {
+  campaigns: CreatorCampaignSummary[];
+}) {
+  return (
+    <>
+      {campaigns.map((campaign) => (
+        <CampaignRow
+          key={campaign.campaign_id}
+          campaign={campaign}
+        />
+      ))}
+
+      {campaigns.length === 0 && (
+        <p className="pt-1.5 pb-0.5 text-xs text-rp-muted">
+          We have not hired this creator yet.
+        </p>
+      )}
+    </>
+  );
+}
+function CreatorPitchList({
+  pitches,
+}: {
+  pitches: CreatorPitchSummary[];
+}) {
+  if (pitches.length === 0) {
+    return (
+      <p className="pt-1.5 pb-0.5 text-xs text-rp-muted">
+        No pitches for this creator yet.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      {pitches.map((pitch) => (
+        <Link
+          key={pitch.pitch_id}
+          to={`/pitches/${pitch.pitch_id}`}
+          state={withBackState(window.location).state}
+          className="flex items-center gap-2.75 border-t border-rp-border py-2.25 hover:bg-rp-surface2"
         >
-          We don't know what do with this button!
-        </button>
-      </div>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[12.5px] font-semibold">
+              {pitch.campaign_name}
+            </span>
+            <span className="block truncate text-[11.5px] text-rp-muted">
+              {pitch.brand?.name ?? "No brand linked"} · {pitch.pitch_code}
+            </span>
+          </span>
+
+          {pitch.final_cost !== null && (
+            <span className="shrink-0 text-[11.5px] font-semibold tabular-nums">
+              ₹{pitch.final_cost.toLocaleString("en-IN")}
+            </span>
+          )}
+        </Link>
+      ))}
     </>
   );
 }
@@ -648,8 +670,12 @@ function CampaignRow({ campaign }: { campaign: CreatorCampaignSummary }) {
   const brand = campaign.brand?.name ?? 'no brand linked';
 
   return (
-    <div className="flex items-center gap-2.75 border-t border-rp-border py-2.25">
-      <span className="min-w-0 flex-1">
+
+    <Link
+      to={`/campaigns/${campaign.campaign_id}`}
+      state={withBackState(window.location).state}
+      className="flex items-center gap-2.75 border-t border-rp-border py-2.25 hover:bg-rp-surface2"
+    >      <span className="min-w-0 flex-1">
         <span className="block truncate text-[12.5px] font-semibold">{campaign.campaign_name}</span>
         <span className="block truncate text-[11.5px] text-rp-muted">
           {brand} · {period}
@@ -658,7 +684,7 @@ function CampaignRow({ campaign }: { campaign: CreatorCampaignSummary }) {
       <span title={status.label} aria-label={status.label} className={cn('inline-flex', status.className)}>
         <StatusIcon className="size-4" />
       </span>
-    </div>
+    </Link>
   );
 }
 

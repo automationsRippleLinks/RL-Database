@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { Checkbox } from '@/components/UI/checkbox';
-import { Label } from '@/components/UI/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import type { BrandRef } from '@/types/api';
 
 /**

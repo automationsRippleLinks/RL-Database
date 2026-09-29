@@ -19,6 +19,8 @@ import { ShellStateProvider } from '@/store/shell-state';
 export function App() {
   const location = useLocation();
   const isSearch = location.pathname.startsWith('/search');
+  const showDataRail =
+    isSearch && location.pathname.replace(/\/+$/, '') !== '/search';
 
   return (
     <ShellStateProvider>
@@ -26,11 +28,13 @@ export function App() {
         <div className="flex h-full flex-col overflow-hidden bg-rp-bg text-rp-text">
           <PulseHeader />
 
+
           <div className="flex min-h-0 flex-1">
             <AppRail />
             {/* The data rail belongs to search. Ingest and Taxonomy are their
                 own destinations and take the full width. */}
-            {isSearch && <DataRail />}
+          
+            {showDataRail && <DataRail />}
 
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
               <Suspense fallback={<LoadingState />}>

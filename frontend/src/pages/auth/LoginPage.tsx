@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Database, Loader2, LogIn, MailWarning } from 'lucide-react';
 import { Button } from '@/components/UI/button';
-import { Input } from '@/components/UI/input';
-import { Label } from '@/components/UI/label';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ApiError, googleLoginUrl } from '@/lib/api-client';
 import { useAuth } from '@/features/auth/useAuth'; 
 import { describeAuthError } from '@/features/auth/AuthProvider';
@@ -150,8 +150,8 @@ export function LoginPage() {
             action, so offer it right here instead of leaving a dead-end message.
           */}
           {needsVerification && (
-            <div className="mt-4 space-y-2.5 rounded-md border border-[var(--warning)]/40 bg-[var(--warning)]/10 p-3">
-              <p className="flex gap-2 text-xs text-[var(--warning)]">
+            <div className="mt-4 space-y-2.5 rounded-md border border-(--warning)/40 bg-(--warning)/10 p-3">
+              <p className="flex gap-2 text-xs text-warning)">
                 <MailWarning className="mt-px size-3.5 shrink-0" />
                 <span>This account hasn't been verified yet. Send yourself a new link.</span>
               </p>

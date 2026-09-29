@@ -1,11 +1,10 @@
 import { useMemo } from 'react';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
-import { PLATFORM_LABELS } from '@/lib/enums';
-import { citiesIn, regionsIn, statesIn } from '@/lib/geo';
-import type { CreatorFacets, Platform } from '@/types/api';
+import { ORG_TYPE_LABELS, PITCH_REQUIREMENT_LABELS, PLATFORM_LABELS } from '@/lib/enums';
+import type { OrgType, PitchFacets, PitchRequirement, Platform } from '@/types/api';
 import type { DropdownOption } from '../../components/FilterDropdown';
 
-export type FilterGroupKey = 'platform' | 'brand' | 'content' | 'location' | 'reach';
+export type FilterGroupKey = 'platform' | 'type' | 'brand' | 'team' | 'converted' | 'dates';
 
 /** One removable pill above the results, and the state it removes. */
 export interface FilterPill {
@@ -15,36 +14,31 @@ export interface FilterPill {
 }
 
 /**
- * The creator rail's whole filter model, derived from the URL and the facets.
+ * The pitch rail's whole filter model — same shape as the other three scopes.
+ * Built from PitchFacets and the URL keys usePitchRequest already reads
+ * (p_org, requirement, p_platform, sales_lead, list_lead, p_brand_id,
+ * created_from, created_to, converted — see SCOPE_FILTER_KEYS.pitches).
  *
- * It lives apart from the components that draw it because two of them need it:
- * the rail renders the groups, and the results header renders the same
- * selections as pills. Deriving it twice would be two chances to disagree about
- * what "applied" means.
+ * `p_` prefixes on platform/org/brand are deliberate — Creators and
+ * Campaigns/Brands each own their own `platform`/`brand_id`-shaped keys, and
+ * a pitch filter must not collide with those when someone switches tabs
+ * (see request-state.ts's own note on this).
  */
-export function useCreatorFilterModel(
-  facets: CreatorFacets | undefined,
-) {
+export function usePitchFilterModel(facets: PitchFacets | undefined) {
   const url = useUrlSearchState();
 
-  const platforms = url.getList('platform');
-  const brandIds = url.getList('c_brand');
-  const categories = url.getList('category');
-  const languages = url.getList('language');
-  const tags = url.getList('tag');
-  const regions = url.getList('region');
-  const states = url.getList('state');
-  const cities = url.getList('city');
-  const folMin = url.getString('min_followers');
-  const folMax = url.getString('max_followers');
-  const viewMin = url.getString('min_views');
-  const viewMax = url.getString('max_views');
+  const orgTypes = url.getList('p_org');
+  const requirements = url.getList('requirement');
+  const platforms = url.getList('p_platform');
+  const salesLeads = url.getList('sales_lead');
+  const listLeads = url.getList('list_lead');
+  const brandIds = url.getList('p_brand_id');
+  const createdFrom = url.getString('created_from');
+  const createdTo = url.getString('created_to');
+  const converted = url.getString('converted'); // '', '1' or '0'
 
-  /** Every filter change resets to page 1 — page 7 of a smaller set is a dead end. */
   const set = (updates: Parameters<typeof url.setParams>[0]) =>
     url.setParams(updates, { replace: true, resetPage: true });
-
-  const facetCities = useMemo(() => facets?.cities ?? [], [facets]);
 
   const options = useMemo(() => {
     const asOptions = (values: readonly string[]): DropdownOption[] =>
@@ -56,74 +50,63 @@ export function useCreatorFilterModel(
         label: PLATFORM_LABELS[platform] ?? platform,
         platform: platform as Platform,
       })),
+      orgType: asOptions([...(facets?.org_types ?? [])].sort((a, b) => a.localeCompare(b))),
+      requirement: (facets?.requirements ?? []).map((requirement) => ({
+        value: requirement,
+        label: PITCH_REQUIREMENT_LABELS[requirement] ?? requirement,
+      })),
+      salesLead: asOptions([...(facets?.sales_leads ?? [])].sort((a, b) => a.localeCompare(b))),
+      listLead: asOptions([...(facets?.list_leads ?? [])].sort((a, b) => a.localeCompare(b))),
       brand: (facets?.brands ?? [])
         .map((brand) => ({ value: String(brand.id), label: brand.name }))
         .sort((a, b) => a.label.localeCompare(b.label)),
-      category: asOptions([...(facets?.categories ?? [])].sort((a, b) => a.localeCompare(b))),
-      language: asOptions([...(facets?.languages ?? [])].sort((a, b) => a.localeCompare(b))),
-      // Region narrows State, and Region + State narrow City. All three are
-      // computed from the city facet — see lib/geo.ts.
-      region: regionsIn(facetCities).map((region) => ({ value: region, label: `${region} India` })),
-      state: asOptions(statesIn(facetCities, regions)),
-      city: asOptions(citiesIn(facetCities, regions, states)),
     };
-  }, [facets, facetCities, regions, states]);
+  }, [facets]);
 
-  /** Applied-filter counts, per group, for the badge on each group header. */
   const counts: Record<FilterGroupKey, number> = {
     platform: platforms.length,
+    type: orgTypes.length + requirements.length,
     brand: brandIds.length,
-    content: categories.length + languages.length + tags.length,
-    location: regions.length + states.length + cities.length,
-    reach: (folMin || folMax ? 1 : 0) + (viewMin || viewMax ? 1 : 0),
+    team: salesLeads.length + listLeads.length,
+    converted: converted ? 1 : 0,
+    dates: createdFrom || createdTo ? 1 : 0,
   };
 
   const totalApplied = Object.values(counts).reduce((sum, count) => sum + count, 0);
 
   const values = {
+    orgTypes,
+    requirements,
     platforms,
+    salesLeads,
+    listLeads,
     brandIds,
-    categories,
-    languages,
-    tags,
-    regions,
-    states,
-    cities,
-    folMin,
-    folMax,
-    viewMin,
-    viewMax,
+    createdFrom,
+    createdTo,
+    converted,
   };
 
   const actions = {
-    setPlatforms: (next: string[]) => set({ platform: next }),
-    setBrands: (next: string[]) => set({ c_brand: next }),
-    setCategories: (next: string[]) => set({ category: next }),
-    setLanguages: (next: string[]) => set({ language: next }),
-    setTags: (next: string[]) => set({ tag: next }),
-    // Changing Region clears State and City; changing State clears City. Keeping
-    // a city that the new region doesn't contain would produce a filter pair
-    // that can only ever return nothing.
-    setRegions: (next: string[]) => set({ region: next, state: null, city: null }),
-    setStates: (next: string[]) => set({ state: next, city: null }),
-    setCities: (next: string[]) => set({ city: next }),
-    setFollowers: (min: string, max: string) => set({ min_followers: min, max_followers: max }),
-    setViews: (min: string, max: string) => set({ min_views: min, max_views: max }),
+    setPlatforms: (next: string[]) => set({ p_platform: next }),
+    setOrgTypes: (next: string[]) => set({ p_org: next }),
+    setRequirements: (next: string[]) => set({ requirement: next }),
+    setSalesLeads: (next: string[]) => set({ sales_lead: next }),
+    setListLeads: (next: string[]) => set({ list_lead: next }),
+    setBrands: (next: string[]) => set({ p_brand_id: next }),
+    setDates: (from: string, to: string) => set({ created_from: from || null, created_to: to || null }),
+    setConverted: (next: '' | '1' | '0') => set({ converted: next || null }),
     clearAll: (clearQuery: boolean = false) =>
       set({
-        platform: null,
-        c_brand: null,
-        category: null,
-        language: null,
-        tag: null,
-        region: null,
-        state: null,
-        city: null,
-        min_followers: null,
-        max_followers: null,
-        min_views: null,
-        max_views: null,
-        ...(clearQuery && {q: null})
+        p_org: null,
+        requirement: null,
+        p_platform: null,
+        sales_lead: null,
+        list_lead: null,
+        p_brand_id: null,
+        created_from: null,
+        created_to: null,
+        converted: null,
+        ...(clearQuery && { q: null }),
       }),
   };
 
@@ -135,73 +118,74 @@ export function useCreatorFilterModel(
       list.push({
         key: `platform:${value}`,
         label: PLATFORM_LABELS[value as Platform] ?? value,
-        remove: () => set({ platform: drop(platforms, value) }),
+        remove: () => set({ p_platform: drop(platforms, value) }),
+      });
+    }
+    for (const value of orgTypes) {
+      list.push({
+        key: `org:${value}`,
+        label: ORG_TYPE_LABELS[value as OrgType] ?? value,
+        remove: () => set({ p_org: drop(orgTypes, value) }),
+      });
+    }
+    for (const value of requirements) {
+      list.push({
+        key: `req:${value}`,
+        label: PITCH_REQUIREMENT_LABELS[value as PitchRequirement] ?? value,
+        remove: () => set({ requirement: drop(requirements, value) }),
+      });
+    }
+    for (const value of salesLeads) {
+      list.push({
+        key: `sales:${value}`,
+        label: `Sales: ${value}`,
+        remove: () => set({ sales_lead: drop(salesLeads, value) }),
+      });
+    }
+    for (const value of listLeads) {
+      list.push({
+        key: `list:${value}`,
+        label: `List: ${value}`,
+        remove: () => set({ list_lead: drop(listLeads, value) }),
       });
     }
     for (const value of brandIds) {
       const name = facets?.brands?.find((brand) => String(brand.id) === value)?.name ?? `Brand ${value}`;
       list.push({
         key: `brand:${value}`,
-        label: `Worked with ${name}`,
-        remove: () => set({ c_brand: drop(brandIds, value) }),
+        label: name,
+        remove: () => set({ p_brand_id: drop(brandIds, value) }),
       });
     }
-    for (const value of categories) {
+    if (converted) {
       list.push({
-        key: `category:${value}`,
-        label: value,
-        remove: () => set({ category: drop(categories, value) }),
+        key: 'converted',
+        label: converted === '1' ? 'Converted' : 'Not converted',
+        remove: () => set({ converted: null }),
       });
     }
-    for (const value of languages) {
+    if (createdFrom || createdTo) {
       list.push({
-        key: `language:${value}`,
-        label: `Speaks ${value}`,
-        remove: () => set({ language: drop(languages, value) }),
-      });
-    }
-    for (const value of tags) {
-      list.push({ key: `tag:${value}`, label: value, remove: () => set({ tag: drop(tags, value) }) });
-    }
-    for (const value of regions) {
-      list.push({
-        key: `region:${value}`,
-        label: `${value} India`,
-        // Same cascade as the control: dropping a region drops what it narrowed.
-        remove: () => set({ region: drop(regions, value), state: null, city: null }),
-      });
-    }
-    for (const value of states) {
-      list.push({
-        key: `state:${value}`,
-        label: value,
-        remove: () => set({ state: drop(states, value), city: null }),
-      });
-    }
-    for (const value of cities) {
-      list.push({
-        key: `city:${value}`,
-        label: value,
-        remove: () => set({ city: drop(cities, value) }),
-      });
-    }
-    if (folMin || folMax) {
-      list.push({
-        key: 'followers',
-        label: `Followers ${folMin || 'any'}–${folMax || 'any'}`,
-        remove: () => set({ min_followers: null, max_followers: null }),
-      });
-    }
-    if (viewMin || viewMax) {
-      list.push({
-        key: 'views',
-        label: `Views ${viewMin || 'any'}–${viewMax || 'any'}`,
-        remove: () => set({ min_views: null, max_views: null }),
+        key: 'dates',
+        label: `Created ${createdFrom || 'any'} – ${createdTo || 'any'}`,
+        remove: () => set({ created_from: null, created_to: null }),
       });
     }
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [platforms, brandIds, categories, languages, tags, regions, states, cities, folMin, folMax, viewMin, viewMax, url]);
+  }, [
+    facets,
+    platforms,
+    orgTypes,
+    requirements,
+    salesLeads,
+    listLeads,
+    brandIds,
+    converted,
+    createdFrom,
+    createdTo,
+    url,
+  ]);
 
   return { options, counts, totalApplied, values, actions, pills };
 }

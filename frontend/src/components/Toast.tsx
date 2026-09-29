@@ -30,23 +30,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     timer.current = setTimeout(() => setMessage(''), VISIBLE_MS);
   }, []);
 
-  // const copy = useCallback(
-  //   (text: string, confirmation: string) => {
-  //     // navigator.clipboard is absent on http origins and can reject when the
-  //     // document isn't focused. Neither is worth a modal: the toast is the only
-  //     // feedback either way, so say what happened rather than what was promised.
-  //     const clipboard = navigator.clipboard;
-  //     if (!clipboard?.writeText) {
-  //       flash('Could not copy — your browser blocked clipboard access');
-  //       return;
-  //     }
-  //     clipboard.writeText(text).then(
-  //       () => flash(confirmation),
-  //       () => flash('Could not copy — your browser blocked clipboard access'),
-  //     );
-  //   },
-  //   [flash],
-  // );
+  
   const copy = useCallback(
     (text: string, confirmation: string) => {
       // navigator.clipboard is absent on http origins and can reject when the

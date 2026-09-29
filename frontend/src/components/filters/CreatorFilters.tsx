@@ -1,10 +1,11 @@
-import { Building2, ChevronDown, Globe, MapPin, Tag, Users } from 'lucide-react';
+import { Building2, ChevronDown, Globe, MapPin, Tag, Users, MapIcon, Contact as ContactIcon, Mail, Phone } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CreatorFacets } from '@/types/api';
 import { FilterDropdown } from '../FilterDropdown';
 import { RangeControl } from '../RangeControl';
 import { TagsControl } from '../TagsControl';
+import { IconFilter } from '../IconFilter';
 import type { FilterGroupKey, useCreatorFilterModel } from '../../hooks/filterModels/useCreatorFilterModel';
 
 type FilterModel = ReturnType<typeof useCreatorFilterModel>;
@@ -15,7 +16,14 @@ const GROUPS: { key: FilterGroupKey; label: string; icon: LucideIcon }[] = [
   { key: 'content', label: 'Attributes', icon: Tag },
   { key: 'location', label: 'Location', icon: MapPin },
   { key: 'reach', label: 'Reach', icon: Users },
+  { key: 'contact', label: 'Contact', icon: ContactIcon },
 ];
+const CONTACT_OPTIONS = [
+  { value: 'contact', label: 'Has Contact', icon: ContactIcon },
+  { value: 'email', label: 'Has Email', icon: Mail },
+  { value: 'phone', label: 'Has Phone', icon: Phone },
+];
+
 
 interface CreatorFilterGroupsProps {
   model: FilterModel;
@@ -30,10 +38,11 @@ interface CreatorFilterGroupsProps {
   onExpandRail: () => void;
 }
 
+
 /**
- * The five filter drawers, as an accordion — one open at a time. Five groups
- * each holding up to three controls do not fit in a 214px column at once, and an
- * accordion means the open one is always the one being worked on.
+ * Filter groups are rendered as an accordion with one group open at a time.
+ * This keeps the filter rail compact while allowing each group enough space
+ * for its controls.
  */
 export default function CreatorFilters({
   model,
@@ -45,6 +54,8 @@ export default function CreatorFilters({
   onOpenMenu,
   onExpandRail,
 }: CreatorFilterGroupsProps) {
+
+
   const menuProps = (key: string) => ({
     open: openMenu === key,
     onToggle: () => onOpenMenu(openMenu === key ? null : key),
@@ -55,7 +66,7 @@ export default function CreatorFilters({
       {GROUPS.map(({ key, label, icon: Icon }) => {
         const count = model.counts[key];
         const open = openGroup === key && railOpen;
-
+ 
         return (
           <div key={key} className="shrink-0">
             <button
@@ -109,96 +120,125 @@ export default function CreatorFilters({
 
             {open && (
               <div data-rp-pop="menu" className="flex flex-col gap-2.75 px-2.25 pt-1 pb-3">
+
                 {key === 'platform' && (
-                  <FilterDropdown
-                    label="Platform"
+                  <IconFilter
                     options={model.options.platform}
                     selected={model.values.platforms}
                     onChange={model.actions.setPlatforms}
-                    {...menuProps('platform')}
                   />
                 )}
-
                 {key === 'brand' && (
                   <FilterDropdown
-                    label="Worked with"
+                    label="Brand"
                     searchable
                     options={model.options.brand}
                     selected={model.values.brandIds}
                     onChange={model.actions.setBrands}
-                    emptyHint="No brands on file yet."
-                    {...menuProps('brand')}
+                    emptyHint="No brands"
+                    inline
                   />
                 )}
 
+
                 {key === 'content' && (
-                  <>
+                  <div className="flex flex-col gap-1.8 rounded-[9px] border border-rp-border bg-rp-surface p-0.5">
                     <FilterDropdown
                       label="Category"
+                      icon={Tag}
                       searchable
                       options={model.options.category}
                       selected={model.values.categories}
                       onChange={model.actions.setCategories}
+                      inline
                       {...menuProps('category')}
                     />
                     <FilterDropdown
                       label="Language"
+                      icon={Globe}
+                      searchable
                       options={model.options.language}
                       selected={model.values.languages}
                       onChange={model.actions.setLanguages}
+                      inline
                       {...menuProps('language')}
                     />
                     <TagsControl
                       vocabulary={facets?.tags}
                       selected={model.values.tags}
                       onChange={model.actions.setTags}
+                      {...menuProps('tags')}
+
                     />
-                  </>
+                  </div>
                 )}
 
                 {key === 'location' && (
-                  <>
-                    <FilterDropdown
-                      label="Region"
-                      options={model.options.region}
-                      selected={model.values.regions}
-                      onChange={model.actions.setRegions}
-                      {...menuProps('region')}
-                    />
-                    <FilterDropdown
-                      label="State"
-                      searchable
-                      options={model.options.state}
-                      selected={model.values.states}
-                      onChange={model.actions.setStates}
-                      {...menuProps('state')}
-                    />
+                  <div className="flex flex-col gap-1.8 rounded-[9px] border border-rp-border bg-rp-surface p-0.5">
+
                     <FilterDropdown
                       label="City"
+                      icon={MapPin}
                       searchable
                       options={model.options.city}
                       selected={model.values.cities}
                       onChange={model.actions.setCities}
+                      inline
                       {...menuProps('city')}
                     />
-                  </>
-                )}
-
-                {key === 'reach' && (
-                  <>
-                    <RangeControl
-                      label="Followers"
-                      min={model.values.folMin}
-                      max={model.values.folMax}
-                      onChange={model.actions.setFollowers}
+                    <FilterDropdown
+                      label="State"
+                      icon={MapIcon}
+                      searchable
+                      options={model.options.state}
+                      selected={model.values.states}
+                      onChange={model.actions.setStates}
+                      inline
+                      {...menuProps('state')}
                     />
-                    {/* <RangeControl
-                      label="Avg views"
-                      min={model.values.viewMin}
-                      max={model.values.viewMax}
-                      onChange={model.actions.setViews}
-                    /> */}
-                  </>
+                    <FilterDropdown
+                      label="Region"
+                      searchable
+                      icon={Globe}
+                      options={model.options.region}
+                      selected={model.values.regions}
+                      onChange={model.actions.setRegions}
+                      inline
+                      {...menuProps('region')}
+                    />
+                  </div>
+                )}
+                {key === 'contact' && (
+                  <IconFilter
+                    options={CONTACT_OPTIONS.map((option) => ({
+                      ...option,
+                      disabled:
+                        model.values.contact === 'contact' &&
+                        option.value !== 'contact',
+                    }))}
+                    selected={model.values.contact ? [model.values.contact] : []}
+                    onChange={(values) =>
+                      model.actions.setContact(values[values.length - 1] ?? null)
+                    }
+                  />
+                )}
+                {/*Followers*/}
+                {key === 'reach' && (
+                  <RangeControl
+                    label="Followers"
+                    min={model.values.folMin}
+                    max={model.values.folMax}
+                    onChange={model.actions.setFollowers}
+                  />
+                )}
+                {/*Average views*/}
+                {key === 'reach' && (
+                  <RangeControl
+                    label="Average Views"
+                    min={model.values.viewMin}
+                    max={model.values.viewMax}
+                    onChange={model.actions.setViews}
+                  />
                 )}
               </div>
             )}

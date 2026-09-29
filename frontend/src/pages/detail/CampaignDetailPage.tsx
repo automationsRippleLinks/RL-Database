@@ -1,24 +1,23 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/UI/button';
-import { Card, CardContent } from '@/components/UI/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/UI/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ErrorState, LoadingState } from '@/components/states';
 import { StatRow, StatTile } from '@/components/StatTile';
-import { Badge } from '@/components/UI/badge';
-import {
+import { Badge } from '@/components/ui/badge';
+import { PlatformMark } from '@/components/PlatformMark';
+import { MONTH_LABELS, PLATFORM_LABELS } from '@/lib/enums'; import {
   BrandLink,
   ChipList,
   DefinitionItem,
   DefinitionList,
   ExternalLink,
-  PlatformBadge,
   SectionTitle,
   StatusBadge,
   TierBadge,
 } from '@/components/bits';
-import { MONTH_LABELS } from '@/lib/enums';
 import {
   formatCurrency,
   formatDate,
@@ -26,9 +25,11 @@ import {
   formatNumber,
   formatPercent,
   humaniseCount,
+  initials,
+  profileUrlFor
 } from '@/lib/format';
 import type { CampaignCreatorRow } from '@/types/api';
-import { useCampaignDetail } from '../queries';
+import { useCampaignDetail } from '@/features/search/queries';
 import { useBackTo } from '@/hooks/useBackTo';
 import { withBackState } from '@/lib/navigation';
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
@@ -185,29 +186,63 @@ const creatorIdentityColumns: Column<CampaignCreatorRow>[] = [
   {
     id: 'creator',
     header: 'Creator',
-    cell: (row) => (
-      <Link
-        to={`/creators/${row.creator_id}`}
-        state={withBackState(window.location).state}
-        className="font-medium text-primary hover:underline"
-      >
-        {row.name}
-      </Link>
-    ),
-    className: 'max-w-44 truncate',
-  },
-  {
-    id: 'handle',
-    header: 'Handle',
-    cell: (row) => <span className="text-muted-foreground">@{row.username}</span>,
-    className: 'max-w-36 truncate',
+    cell: (row) => {
+      const profileUrl = profileUrlFor(row);
+
+      return (
+        <span className="flex items-center gap-2.25">
+          <Link
+            to={`/creators/${row.creator_id}`}
+            state={withBackState(window.location).state}
+            className="flex size-7 shrink-0 items-center justify-center rounded-full border border-rp-border bg-rp-surface2 text-[10.5px] font-bold"
+          >
+            {initials(row.name)}
+          </Link>
+
+          <span className="min-w-0">
+            <Link
+              to={`/creators/${row.creator_id}`}
+              state={withBackState(window.location).state}
+              className="block truncate font-semibold text-rp-text hover:underline"
+            >
+              {row.name}
+            </Link>
+
+            {row.username && (
+              profileUrl ? (
+                <a
+                  href={profileUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="block truncate text-[11px] text-rp-muted hover:underline"
+                >
+                  @{row.username}
+                </a>
+              ) : (
+                <span className="block truncate text-[11px] text-rp-muted">
+                  @{row.username}
+                </span>
+              )
+            )}
+          </span>
+        </span>
+      );
+    },
+    className: 'max-w-52',
   },
 ];
 
 const deliveryColumns: Column<CampaignCreatorRow>[] = [
   ...creatorIdentityColumns,
-  { id: 'platform', header: 'Platform', cell: (row) => <PlatformBadge platform={row.platform} /> },
-  { id: 'tier', header: 'Tier', cell: (row) => <TierBadge tier={row.tier} /> },
+  {
+    id: 'platform',
+    header: 'Platform',
+    cell: (row) => (
+      <span title={PLATFORM_LABELS[row.platform] ?? row.platform}>
+        <PlatformMark platform={row.platform} size={15} />
+      </span>
+    ),
+  }, { id: 'tier', header: 'Tier', cell: (row) => <TierBadge tier={row.tier} /> },
   {
     id: 'deliverables',
     header: 'Deliverables',
@@ -224,7 +259,12 @@ const deliveryColumns: Column<CampaignCreatorRow>[] = [
         <Badge variant="outline">{row.content_status ?? '—'}</Badge>
       ),
   },
-  { id: 'product', header: 'Product', cell: (row) => row.product_status ?? '—' },
+  {
+    id: 'product',
+    header: 'Product',
+    cell: (row) => row.product_status?.trim() || '—',
+    className: 'text-center',
+  },
   { id: 'shoot', header: 'Shoot', cell: (row) => formatDate(row.shoot_date) },
   { id: 'live', header: 'Live', cell: (row) => formatDate(row.live_date) },
   { id: 'poc', header: 'POC', cell: (row) => <ChipList items={row.poc_name} max={2} /> },
@@ -277,7 +317,7 @@ const performanceColumns: Column<CampaignCreatorRow>[] = [
       if (!row.expected_views || !actual) return '—';
       const delta = ((actual - row.expected_views) / row.expected_views) * 100;
       return (
-        <span className={delta >= 0 ? 'text-[var(--success)]' : 'text-destructive'}>
+        <span className={delta >= 0 ? 'text-(--success)]' : 'text-destructive'}>
           {delta >= 0 ? '+' : ''}
           {delta.toFixed(0)}%
         </span>

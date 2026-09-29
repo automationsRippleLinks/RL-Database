@@ -22,31 +22,31 @@ const SECTIONS: {
   icon: LucideIcon;
   oneLiner: string;
 }[] = [
-  {
-    scope: "creators",
-    label: "Creators",
-    icon: Users,
-    oneLiner: "People who post — reach, topics and contacts.",
-  },
-  {
-    scope: "brands",
-    label: "Brands",
-    icon: Building2,
-    oneLiner: "Companies we sell to, and our history with them.",
-  },
-  {
-    scope: "campaigns",
-    label: "Campaigns",
-    icon: Megaphone,
-    oneLiner: "Work we are delivering, and how it is going.",
-  },
-  {
-    scope: "pitches",
-    label: "Pitches",
-    icon: FileText,
-    oneLiner: "Proposals we sent, and which ones we won.",
-  },
-];
+    {
+      scope: "creators",
+      label: "Creators",
+      icon: Users,
+      oneLiner: "People who post — reach, topics and contacts.",
+    },
+    {
+      scope: "brands",
+      label: "Brands",
+      icon: Building2,
+      oneLiner: "Companies we sell to, and our history with them.",
+    },
+    {
+      scope: "campaigns",
+      label: "Campaigns",
+      icon: Megaphone,
+      oneLiner: "Work we are delivering, and how it is going.",
+    },
+    {
+      scope: "pitches",
+      label: "Pitches",
+      icon: FileText,
+      oneLiner: "Proposals we sent, and which ones we won.",
+    },
+  ];
 
 export function DataRail() {
   const location = useLocation();
@@ -67,13 +67,21 @@ export function DataRail() {
     (section) => location.pathname === `/search/${section.scope}`,
   )?.scope;
 
-  // Carry the query text across a section switch: "search this term, but in
-  // brands" is the point of having sections at all. Filters are scope-specific
-  // and are dropped, which is why only `q` is copied.
-  const query = new URLSearchParams(location.search).get("q");
-  const linkFor = (scope: SearchScope) =>
-    `/search/${scope}${query ? `?q=${encodeURIComponent(query)}` : ""}`;
+  // save the current url scope incluting its filters , search and sorting 
+  // this hook logic lets users return to the same page results after switching scopes
+  useEffect(() => {
+    if (!activeScope) return;
 
+    sessionStorage.setItem(
+      `rp:search:${activeScope}`,
+      `${location.pathname}${location.search}`,
+    );
+  }, [activeScope, location.pathname, location.search]);
+
+  // restore the last visited url for this scope 
+  
+  const linkFor = (scope: SearchScope) =>
+    sessionStorage.getItem(`rp:search:${scope}`) ?? `/search/${scope}`;
   return (
     <aside
       data-rp-pop="rail"
@@ -109,6 +117,7 @@ export function DataRail() {
             const count =
               active && shell.sectionCount !== null ? shell.sectionCount : null;
 
+
             return (
               <button
                 key={scope}
@@ -133,22 +142,24 @@ export function DataRail() {
                       {compact(count)}
                     </span>
                   ) : // Ringed in the rail's background so it clears the glyph.
-                  shell.railPeek ? (
-                    <span className="shrink-0 rounded-full bg-rp-primary-soft px-1.5 py-px text-[10.5px] font-bold tabular-nums text-rp-primary">
-                      {compact(count)}
-                    </span>
-                  ) : (
-                    <span className="absolute -top-0.75 -right-0.75 min-w-3.75 rounded-full border-[1.5px] border-rp-bg bg-rp-primary px-0.75 text-center text-[9px] leading-3.5 font-bold tabular-nums text-rp-primary-fg">
-                      {compact(count)}
-                    </span>
-                  ))}
+                    shell.railPeek ? (
+                      <span className="shrink-0 rounded-full bg-rp-primary-soft px-1.5 py-px text-[10.5px] font-bold tabular-nums text-rp-primary">
+                        {compact(count)}
+                      </span>
+                    ) : (
+                      <span className="absolute -top-0.75 -right-0.75 min-w-3.75 rounded-full border-[1.5px] border-rp-bg bg-rp-primary px-0.75 text-center text-[9px] leading-3.5 font-bold tabular-nums text-rp-primary-fg">
+                        {compact(count)}
+                      </span>
+                    ))}
               </button>
             );
           })}
         </div>
         {/* ── filters ────────────────────────────────────────────────────── */}
-        <FilterSection shellState={shell} scope={activeScope ?? "creators"} />
-        {/* ── collapse ───────────────────────────────────────────────────── */}
+        {activeScope && (
+          <FilterSection shellState={shell} scope={activeScope} />
+
+        )}        {/* ── collapse ───────────────────────────────────────────────────── */}
         <button
           type="button"
           onClick={shell.toggleRail}

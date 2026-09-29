@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { Button } from '@/components/UI/button';
 import { DataTable, type Column } from '@/components/DataTable';
 import { EmptyState, ErrorState } from '@/components/states';
-import { Skeleton } from '@/components/UI/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SectionTitle } from '@/components/bits';
 import { formatNumber, pluralise } from '@/lib/format';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';

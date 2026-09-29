@@ -26,17 +26,6 @@ export function MaskedContact({
 
   const masked = kind === 'email' ? maskEmail(value) : maskPhone(value);
 
-  // const copy = async (event: React.MouseEvent) => {
-  //   event.stopPropagation();
-  //   try {
-  //     await navigator.clipboard.writeText(value);
-  //     setCopied(true);
-  //     setTimeout(() => setCopied(false), 1400);
-  //   } catch {
-  //     // Clipboard can be blocked by permissions; revealing still lets them select it.
-  //     setRevealed(true);
-  //   }
-  // };
   const copy = async (event: React.MouseEvent) => {
     event.stopPropagation();
     const ok = await copyToClipboard(value);

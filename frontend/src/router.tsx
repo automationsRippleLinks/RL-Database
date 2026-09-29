@@ -6,7 +6,6 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { Building2, FileText, Megaphone } from "lucide-react";
 import { App } from "./App";
 import { EmptyState } from "./components/states";
 import { AuthCallbackPage } from "./pages/auth/AuthCallbackPage";
@@ -16,40 +15,14 @@ import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
 import { RequireAuth, RequireIngestPermission } from "./features/auth/guards";
-import { ComingSoon } from "./pages/fallback/ComingSoon";
 import { HomeScreen } from "./features/pulse/HomeScreen";
 import { GlobalSearchPage } from "./pages/search/GlobalSearchPage";
 import { CreatorSearchPage } from "./pages/search/CreatorSearchPage";
 import { BrandSearchPage } from "./pages/search/BrandSearchPage";
-import { CampaignSearchPage } from "./pages/search/CampaignSearchPage";
+import {CampaignSearchPage} from "./pages/search/CampaignSearchPage";
 import { PitchSearchPage } from "./pages/search/PitchSearchPage";
-import type { SearchScope } from "./types/api";
-
-/**
- * Sections to hide behind the "Coming soon" placeholder. Empty on purpose.
- *
- * The handoff says Brands, Campaigns and Pitches should render that placeholder,
- * because in the prototype those screens had not been designed yet. In this app
- * all three have real, working search today — tables, filters, detail pages — so
- * they are left alone: the redesign being unfinished is a reason not to restyle
- * them, not a reason to take them away from the people using them. If hiding
- * them until they are redesigned really is the intent, adding the scopes to this
- * set is the whole change.
- */
-const PLACEHOLDER_SCOPES = new Set<SearchScope>();
-
-const SECTION_META = {
-  brands: { title: "Brands", icon: Building2 },
-  campaigns: { title: "Campaigns", icon: Megaphone },
-  pitches: { title: "Pitches", icon: FileText },
-} as const;
 
 // lazy load detail pages
-const BrandDetailPage = lazy(() =>
-  import("./pages/detail/BrandDetailPage").then((m) => ({
-    default: m.BrandDetailPage,
-  })),
-);
 const CampaignDetailPage = lazy(() =>
   import("./pages/detail/CampaignDetailPage").then((m) => ({
     default: m.CampaignDetailPage,
@@ -96,30 +69,19 @@ export function AppRoutes() {
           <Route path="search">
             <Route index element={<SearchHome />} />
             <Route path="creators" element={<CreatorSearchPage />} />
-            <Route
-              path="brands"
-              element={
-                <Scoped scope="brands">
-                  <BrandSearchPage />
-                </Scoped>
-              }
-            />
-            <Route
-              path="campaigns"
-              element={
-                <Scoped scope="campaigns">
-                  <CampaignSearchPage />
-                </Scoped>
-              }
-            />
-            <Route
-              path="pitches"
-              element={
-                <Scoped scope="pitches">
-                  <PitchSearchPage />
-                </Scoped>
-              }
-            />
+            {/* Brands got the same redesign as Creators — the search page
+                manages its own scrolling and the record opens as a drawer,
+                so it is not wrapped in <Scoped>/<Page> the way the
+                not-yet-redesigned Campaigns and Pitches pages still are. */}
+            {/* Brands, Campaigns and Pitches all got the same redesign as
+                Creators now — each search page manages its own scrolling,
+                so none of them are wrapped in <Scoped>/<Page> any more.
+                Campaigns and Pitches keep their own full detail pages
+                (no drawer), so a row click there navigates instead of
+                opening a URL-param-driven overlay. */}
+            <Route path="brands" element={<BrandSearchPage />} />
+            <Route path="campaigns" element={<CampaignSearchPage />} />
+            <Route path="pitches" element={<PitchSearchPage />} />
           </Route>
 
           {/*
@@ -130,16 +92,19 @@ export function AppRoutes() {
           */}
           <Route path="creators/:creatorId" element={<CreatorRedirect />} />
 
-          {/* The other detail pages sit outside the search views — they're
-              destinations, not a filtered list. */}
-          <Route
-            path="brands/:brandId"
-            element={
-              <Page>
-                <BrandDetailPage />
-              </Page>
-            }
-          />
+          {/*
+            Brands followed the same move: BrandDetailPage is retired in favor
+            of the drawer over /search/brands, and this redirect keeps every
+            existing /brands/:id link working (campaign and pitch rows, the
+            "most-used creators" list, old bookmarks) without having to touch
+            each one.
+          */}
+          <Route path="brands/:brandId" element={<BrandRedirect />} />
+
+          {/* Unlike Brands, Campaigns and Pitches keep their own full detail
+              pages rather than folding into a drawer — a row in the new
+              CampaignTable/PitchTable navigates straight here instead of
+              opening a URL-param overlay, so these routes are unchanged. */}
           <Route
             path="campaigns/:campaignId"
             element={
@@ -208,30 +173,21 @@ function Page({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * A section that has not been redesigned: either its existing page, in the
- * scrolling layout it was written for, or the placeholder if it has been listed
- * in PLACEHOLDER_SCOPES.
- */
-function Scoped({
-  scope,
-  children,
-}: {
-  scope: keyof typeof SECTION_META;
-  children: ReactNode;
-}) {
-  if (PLACEHOLDER_SCOPES.has(scope)) {
-    const { title, icon } = SECTION_META[scope];
-    return <ComingSoon title={title} icon={icon} />;
-  }
-  return <Page>{children}</Page>;
-}
-
 function CreatorRedirect() {
   const { creatorId } = useParams<{ creatorId: string }>();
   return (
     <Navigate
       to={`/search/creators?creator=${encodeURIComponent(creatorId ?? "")}`}
+      replace
+    />
+  );
+}
+
+function BrandRedirect() {
+  const { brandId } = useParams<{ brandId: string }>();
+  return (
+    <Navigate
+      to={`/search/brands?brand=${encodeURIComponent(brandId ?? "")}`}
       replace
     />
   );

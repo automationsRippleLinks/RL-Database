@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
-import { PLATFORM_LABELS } from '@/lib/enums';
+import { PLATFORMS, PLATFORM_LABELS } from '@/lib/enums';
 import { citiesIn, regionsIn, statesIn } from '@/lib/geo';
 import type { CreatorFacets, Platform } from '@/types/api';
 import type { DropdownOption } from '../../components/FilterDropdown';
 
-export type FilterGroupKey = 'platform' | 'brand' | 'content' | 'location' | 'reach';
+export type FilterGroupKey = 'platform' | 'brand' | 'content' | 'location' | 'reach' | 'contact';
 
 /** One removable pill above the results, and the state it removes. */
 export interface FilterPill {
@@ -16,17 +16,20 @@ export interface FilterPill {
 
 /**
  * The creator rail's whole filter model, derived from the URL and the facets.
- *
- * It lives apart from the components that draw it because two of them need it:
- * the rail renders the groups, and the results header renders the same
- * selections as pills. Deriving it twice would be two chances to disagree about
- * what "applied" means.
- */
+*
+* It lives apart from the components that draw it because two of them need it:
+* the rail renders the groups, and the results header renders the same
+* selections as pills. Deriving it twice would be two chances to disagree about
+* what "applied" means.
+*/
+
+
+
+
 export function useCreatorFilterModel(
   facets: CreatorFacets | undefined,
 ) {
   const url = useUrlSearchState();
-
   const platforms = url.getList('platform');
   const brandIds = url.getList('c_brand');
   const categories = url.getList('category');
@@ -39,6 +42,7 @@ export function useCreatorFilterModel(
   const folMax = url.getString('max_followers');
   const viewMin = url.getString('min_views');
   const viewMax = url.getString('max_views');
+  const contact = url.getString('contact');
 
   /** Every filter change resets to page 1 — page 7 of a smaller set is a dead end. */
   const set = (updates: Parameters<typeof url.setParams>[0]) =>
@@ -46,15 +50,16 @@ export function useCreatorFilterModel(
 
   const facetCities = useMemo(() => facets?.cities ?? [], [facets]);
 
+
   const options = useMemo(() => {
     const asOptions = (values: readonly string[]): DropdownOption[] =>
       values.map((value) => ({ value, label: value }));
 
     return {
-      platform: (facets?.platforms ?? []).map((platform) => ({
+      platform: PLATFORMS.map((platform) => ({
         value: platform,
         label: PLATFORM_LABELS[platform] ?? platform,
-        platform: platform as Platform,
+        platform,
       })),
       brand: (facets?.brands ?? [])
         .map((brand) => ({ value: String(brand.id), label: brand.name }))
@@ -76,9 +81,11 @@ export function useCreatorFilterModel(
     content: categories.length + languages.length + tags.length,
     location: regions.length + states.length + cities.length,
     reach: (folMin || folMax ? 1 : 0) + (viewMin || viewMax ? 1 : 0),
-  };
+    contact: contact ? 1 : 0,
 
+  };
   const totalApplied = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
 
   const values = {
     platforms,
@@ -93,11 +100,12 @@ export function useCreatorFilterModel(
     folMax,
     viewMin,
     viewMax,
+    contact,
   };
 
   const actions = {
     setPlatforms: (next: string[]) => set({ platform: next }),
-    setBrands: (next: string[]) => set({ c_brand: next }),
+    setContact: (next: string | null) => set({ contact: next }), setBrands: (next: string[]) => set({ c_brand: next }),
     setCategories: (next: string[]) => set({ category: next }),
     setLanguages: (next: string[]) => set({ language: next }),
     setTags: (next: string[]) => set({ tag: next }),
@@ -109,9 +117,11 @@ export function useCreatorFilterModel(
     setCities: (next: string[]) => set({ city: next }),
     setFollowers: (min: string, max: string) => set({ min_followers: min, max_followers: max }),
     setViews: (min: string, max: string) => set({ min_views: min, max_views: max }),
+
     clearAll: (clearQuery: boolean = false) =>
       set({
         platform: null,
+        contact: null,
         c_brand: null,
         category: null,
         language: null,
@@ -123,7 +133,7 @@ export function useCreatorFilterModel(
         max_followers: null,
         min_views: null,
         max_views: null,
-        ...(clearQuery && {q: null})
+        ...(clearQuery && { q: null }),
       }),
   };
 
@@ -228,3 +238,4 @@ export function useCreatorFilterModel(
 
   return { options, counts, totalApplied, values, actions, pills };
 }
+
