@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Any
 from uuid import UUID
 from datetime import datetime, UTC, timedelta
@@ -6,8 +7,11 @@ from sqlmodel import select
 
 from app.core.config import settings
 from app.core.db import SessionFactory
-from app.models.ingest_job import IngestJob, JobStatus
+from app.models.ingest_job import IngestJob, JobStatus, IngestSource
 from app.schemas.ingest import RowError
+from app.observability.metrics import INGEST_JOBS
+
+log = logging.getLogger(__name__)
 
 
 async def claim(sf: SessionFactory, job_id: UUID) -> Optional[IngestJob]:
@@ -40,6 +44,7 @@ async def finish(
     message: Optional[str] = None,
     ai_output: Optional[dict[str, Any]] = None,
     ai_usage: Optional[dict[str, Any]] = None,
+    system: bool = False
 ) -> None:
     errors = sorted(errors, key=lambda e: (e.row, e.field or ""))
     kept = errors[: settings.MAX_STORED_ERRORS]
@@ -83,6 +88,23 @@ async def finish(
         job.sqlmodel_update(values)
         session.add(job)
         await session.commit()
+        reason = "system" if system or any(e.field == "ai" for e in errors) else "data"
+        INGEST_JOBS.add(
+            amount=1,
+            attributes={
+                "source": IngestSource(job.source).value,
+                "status": values["status"].value,
+                "dry_run": job.dry_run,
+            }
+            | ({"reason": reason} if errors else {}),
+        )
+        log.info(
+            "ingest job %s %s: %s rows, %s errors",
+            job_id,
+            values["status"].value,
+            received,
+            len(errors),
+        )
 
 
 async def sweep(sf: SessionFactory) -> list[UUID]:
@@ -104,6 +126,16 @@ async def sweep(sf: SessionFactory) -> list[UUID]:
             j.message = "The worker stopped while this job was running. Upload again."
 
             session.add(j)
+            INGEST_JOBS.add(
+                amount=1,
+                attributes={
+                    "source": IngestSource(j.source).value,
+                    "status": "failed",
+                    "dry_run": j.dry_run,
+                    "reason": "system",
+                },
+            )
+            log.warning("ingest job %s abandoned by a dead worker", j.job_id)
 
         stuck = (
             await session.exec(

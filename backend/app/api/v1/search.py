@@ -982,7 +982,7 @@ async def global_search(
         cache_key(
             f"{settings.SEARCH_CACHE_PREFIX}global", {"q": q.strip().lower(), "limit": limit}
         ),
-        settings.SESSION_CACHE_TTL,
+        settings.SEARCH_CACHE_TTL,
         produce,
     )
 

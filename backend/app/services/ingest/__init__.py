@@ -4,7 +4,9 @@ import logging
 
 from sqlmodel import select
 from redis.asyncio import Redis
+from opentelemetry import trace
 
+from app.observability import tracer
 from app.core.config import settings
 from app.core.db import SessionFactory
 from app.core.cache import invalidate
@@ -13,6 +15,7 @@ from app.schemas.ingest import RowError
 from app.services import ai, jobs
 from .masters import PitchMaster, CampaignMaster
 from .creators import PitchCreator, CampaignCreator
+from .direct import DirectCreator
 from .common import load_taxonomy
 
 logger = logging.getLogger(__name__)
@@ -22,7 +25,7 @@ SOURCES = {
     IngestSource.campaign_master: CampaignMaster(),
     IngestSource.pitch_creator: PitchCreator(),
     IngestSource.campaign_creator: CampaignCreator(),
-    # IngestSource.creator: "" # TODO: add direct creator ingestion
+    IngestSource.creator: DirectCreator(),
 }
 
 
@@ -34,9 +37,11 @@ def _unmatched(row: int, out: dict) -> list[RowError]:
             field=u["field"],
             message=(
                 f"{u['value']!r} doesn't match anythin allowed. "
-                + ("Add it under Taxonomy or fix the cell.")
-                if u["field"] in taxonomy_hint
-                else "Fix the cell."
+                + (
+                    ("Add it under Taxonomy or fix the cell.")
+                    if u["field"] in taxonomy_hint
+                    else "Fix the cell."
+                )
             ),
         )
         for u in out.get("unmatched", [])
@@ -62,6 +67,13 @@ async def run_job(sf: SessionFactory, redis: Redis, job_id: UUID) -> None:
     if job is None:
         return
     rows: list[dict] = []
+    trace.get_current_span().set_attributes(
+        {
+            "ingest.job_id": str(job_id),
+            "ingest.source": IngestSource(job.source).value,
+            "ingest.dry_run": job.dry_run,
+        }
+    )
     try:
         rows, saved_ai = await _inputs(sf, job)
         await _run(sf, redis, job, rows, saved_ai)
@@ -73,6 +85,7 @@ async def run_job(sf: SessionFactory, redis: Redis, job_id: UUID) -> None:
             received=len(rows),
             errors=[RowError(message=f"Unexpected error: {type(e).__name__}: {e}")],
             message="Ingest failed; nothing was written.",
+            system=True,
         )
 
 
@@ -95,54 +108,82 @@ async def _run(
             **extra,
         )
 
-    records, errors = source.parse(rows)
+    def stage(name: str):
+        return tracer.start_as_current_span(
+            f"ingest.{name}",
+            attributes={"ingest.source": IngestSource(job.source).value},
+        )
+
+    with stage("parse") as span:
+        records, errors = source.parse(rows)
+        span.set_attributes("ingest.errors", len(errors))
+
     if errors:
         return await fail(errors, "reading the file")
 
-    async with sf() as session:
-        errors = await source.validate(session, records)
-        if errors:
-            return await fail(errors, "checking against the database")
-        taxonomy = await load_taxonomy(session)
+    with stage("validate") as span:
+        async with sf() as session:
+            errors = await source.validate(session, records)
+            taxonomy = await load_taxonomy(session)
+        span.set_attributes("ingest.errors", len(errors))
+    if errors:
+        return await fail(errors, "checking against the database")
 
     usage = None
-    if saved_ai is None:
-        try:
-            result = await ai.judge(
-                source.ai, {r.row: r.ai_input for r in records}, taxonomy, redis
-            )
-        except Exception as e:
-            return await fail(
-                [RowError(field="ai", message=f"The AI step failed: {e}")],
-                "running the AI step",
-            )
-        outputs, errors, usage = result.outputs, result.errors, result.usage
-    else:
-        outputs, errors = {int(k): v for k, v in saved_ai.items()}, []
-    for r in records:
-        if r.row in outputs:
-            r.ai = outputs[r.row]
-            errors += _unmatched(r.row, r.ai)
+    with stage("ai") as span:
+        if saved_ai is None:
+            try:
+                result = await ai.judge(
+                    source.ai, {r.row: r.ai_input for r in records}, taxonomy, redis
+                )
+            except Exception as e:
+                logger.exception("AI step failed for job %s", job.job_id)
+                return await fail(
+                    [RowError(field="ai", message=f"The AI step failed: {e}")],
+                    "running the AI step",
+                    system=True,
+                )
+            outputs, errors, usage = result.outputs, result.errors, result.usage
+        else:
+            outputs, errors = {int(k): v for k, v in saved_ai.items()}, []
+            span.set_attributes("ingest.ai_reused", True)
+        for r in records:
+            if r.row in outputs:
+                r.ai = outputs[r.row]
+                errors += _unmatched(r.row, r.ai)
+        span.set_attributes("ingest.errors", len(errors))
     if errors:
         return await fail(errors, "running the AI step", ai_usage=usage)
     for r in records:
         source.apply_ai(r)
 
-    async with sf() as session:
-        counts, message = await source.write(session, records, taxonomy)
-        if job.dry_run:
-            await session.rollback()
-            message = f"Dry run, nothing written. Would have: {message}"
-        else:
-            await session.commit()
+    with stage("write") as span:
+        async with sf() as session:
+            counts, message = await source.write(session, records, taxonomy)
+            if job.dry_run:
+                await session.rollback()
+                message = f"Dry run, nothing written. Would have: {message}"
+            else:
+                await session.commit()
+        span.set_attributes({f"ingest.{k}": v for k, v in counts.items()})
 
     if not job.dry_run:
         try:
-            await invalidate(redis, settings.FACETS_CACHE_PREFIX, settings.SEARCH_CACHE_PREFIX, settings.SUGGEST_CACHE_PREFIX)
+            await invalidate(
+                redis,
+                settings.FACETS_CACHE_PREFIX,
+                settings.SEARCH_CACHE_PREFIX,
+                settings.SUGGEST_CACHE_PREFIX,
+            )
         except Exception:
             logger.warning("cache invalidation failed after job %s", job.job_id)
     await jobs.finish(
-        sf, job.job_id, received=len(rows), errors=[], counts=counts, message=message,
+        sf,
+        job.job_id,
+        received=len(rows),
+        errors=[],
+        counts=counts,
+        message=message,
         ai_output={str(k): v for k, v in outputs.items()} if job.dry_run else None,
-        ai_usage=usage
+        ai_usage=usage,
     )

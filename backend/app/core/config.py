@@ -34,9 +34,9 @@ class Settings(BaseSettings):
     DB_NAME: str = "RL_DB_DEV"
     DB_ECHO: bool = False
     DB_POOL_SIZE: int = 10
-    DB_MAX_OVERFLOW: int = 20
-    DB_POOL_TIMEOUT: int = 30
-    DB_POOL_RECYCLE: int = 1800
+    DB_MAX_OVERFLOW: int = 20           # no. of overflow connections during extra load
+    DB_POOL_TIMEOUT: int = 30           # no. of seconds after which connection times out
+    DB_POOL_RECYCLE: int = 1800         # no. of seconds after which connections in the db pool get refreshed
     DB_POOL_PRE_PING: bool = True
 
     @computed_field
@@ -124,7 +124,7 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str
     SMTP_FROM: str = "Automation RL <automations@ripplelinks.com>"
 
-    @field_validator("ALLOWED_DOMAINS", "BACKEND_CORS_ORIGINS", mode="before")
+    @field_validator("ALLOWED_DOMAINS", "BACKEND_CORS_ORIGINS" "ALERT_EMAILS", mode="before")
     @classmethod
     def domain_parser(cls, v: Any) -> Any:
         if v is None or v == "":
@@ -148,6 +148,21 @@ class Settings(BaseSettings):
     AI_CONCURRENCY: int = 4
     AI_TIMEOUT: int = 90
     AI_MAX_ATTEMPTS: int = 2
+
+    # === Observability: Opentelemetry -> Grafana ============================================================================================
+    LOG_LEVEL: str= "INFO"
+    OTEL_ENABLED: bool= False
+    OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4318"
+    OTEL_EXPORTER_OTLP_HEADERS: str = "" # "Authorization=Basic <base64 of instanceId:token>", from grafana cloud
+    OTEL_METRIC_INTERVAL_SECONDS: int = 60
+
+    # === Alerts: `python -m app.oversability.alerts` pushes these to Grafana ================================================================
+    GRAFANA_URL: str = "http://localhost:3000"
+    GRAFANA_TOKEN: str = "" # service account token; empty = admin/admin (local otel-lgtm only)
+    GRAFANA_PROMETHEUS_UID: str = ""
+    ALERT_EMAILS: Annotated[list[str], NoDecode]= "automations@ripplelinks.com"
+    ALERT_APIFY_OVERDUE_MINUTES: int = 60
+    ALERT_WORKER_SILENT_MINUTES: int = 15
 
     # === Apps Script endpoint settings ======================================================================================================
     APPS_SCRIPT_API_SECRET: str

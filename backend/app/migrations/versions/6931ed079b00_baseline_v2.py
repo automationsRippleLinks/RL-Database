@@ -103,10 +103,17 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('rows', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('ai_output', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
-    sa.ForeignKeyConstraint(['parent_job_id'], ['ingest_job.job_id'], ),
+    # sa.ForeignKeyConstraint(['parent_job_id'], ['ingest_job.job_id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_ingest_job_job_id'), 'ingest_job', ['job_id'], unique=True)
+    op.create_foreign_key(
+        "ingest_job_parent_job_id_fkey",
+        "ingest_job",
+        "ingest_job",
+        ['parent_job_id'],
+        ['job_id']
+    )
     op.create_index(op.f('ix_ingest_job_source'), 'ingest_job', ['source'], unique=False)
     op.create_index(op.f('ix_ingest_job_status'), 'ingest_job', ['status'], unique=False)
     op.create_table('language',

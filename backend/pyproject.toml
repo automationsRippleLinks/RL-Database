@@ -20,11 +20,17 @@ dependencies = [
     "httpx>=0.28.0",
     "aiosmtplib>=5.1.0",
     "requests>=2.34.0",
-    "taskiq>=0.12.6,<0.13",
+    "taskiq[opentelemetry]>=0.12.6,<0.13",
     "taskiq-redis>=1.2.3,<2",
     "apify-client>=3.2.0,<4",
     "langchain-core>=1.6.4,<2",
     "langchain-anthropic>=1.7.4,<2",
+    "opentelemetry-sdk>=1.45,<2",
+    "opentelemetry-exporter-otlp-proto-http>=1.45,<2",
+    "opentelemetry-instrumentation-fastapi>=0.66b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.66b0",
+    "opentelemetry-instrumentation-redis>=0.66b0",
+    "opentelemetry-instrumentation-httpx>=0.66b0",
 ]
 
 [tool.fastapi]

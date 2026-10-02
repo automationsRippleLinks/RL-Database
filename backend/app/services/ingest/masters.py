@@ -56,7 +56,7 @@ youtube; "IG" is instagram).
         covers={
             "org_type": ("org_type",),
             "requirement": ("requirement",),
-            "platform": ("platform",),
+            "platform": ("platforms",),
         },
         fields=lambda _: {
             "org_type": (Optional[_choices(OrgTypeChoices)], ...),
@@ -182,7 +182,7 @@ class CampaignMaster:
             r = RowReader(raw, i, errors)
             year = r.get("year", cells.whole, required=True)
             month = r.get("month_name", required=True)
-            if month and month.lower() not in {m.value() for m in MonthChoices}:
+            if month and month.lower() not in {m.value for m in MonthChoices}:
                 month = r.fail("month_name", f"{month!r} is not a month")
             data = {
                 "campaign_code": (r.get("campaign_code", required=True) or "").upper()

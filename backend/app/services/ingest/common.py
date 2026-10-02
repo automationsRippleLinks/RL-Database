@@ -70,7 +70,7 @@ def read_columns(r: RowReader, model: type[SQLModel], skip: set[str]) -> dict[st
         kw = {}
         if kind is Decimal and column.name.endswith(("_perc", "_rate_content")):
             kw["max_value"] = 100
-        value = r.get(column.name, _BY_TYPE[kind] ** kw)
+        value = r.get(column.name, _BY_TYPE[kind], **kw)
         if kind is str and value == "" and column.nullable:
             value = None
         out[column.name] = value
@@ -129,17 +129,15 @@ async def brand_ids(
 
 
 async def creator_ids(
-    session: AsyncSession, creators: dict[tuple:dict]
+    session: AsyncSession, creators: dict[tuple, dict]
 ) -> tuple[dict[tuple, UUID], int]:
     if not creators:
         return {}, 0
-    created = (
-        await bulk_insert(
-            session,
-            Creator,
-            [creators[k] for k in sorted(creators, key=lambda k: (k[0].value, k[1]))],
-            index_elements=["platform", "username"],
-        ),
+    created = await bulk_insert(
+        session,
+        Creator,
+        [creators[k] for k in sorted(creators, key=lambda k: (k[0].value, k[1]))],
+        index_elements=["platform", "username"],
     )
 
     usernames = sorted({u for _, u in creators})

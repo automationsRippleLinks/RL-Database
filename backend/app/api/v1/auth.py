@@ -21,7 +21,7 @@ from app.core.security import (
     destroy_email_verification_token,
     create_password_reset_token,
     read_password_reset_token,
-    destory_password_reset_token,
+    destroy_password_reset_token,
 )
 from app.core.rate_limit import check_rate_limit
 from app.core.email import (
@@ -452,7 +452,7 @@ async def reset_password(
             detail="Invalid or expired password reset link",
             headers={"X-Error-Code": "invalid_token"},
         )
-    await destory_password_reset_token(redis, body.token)
+    await destroy_password_reset_token(redis, body.token)
 
     user = await session.get(User, user_id)
     if user is None:

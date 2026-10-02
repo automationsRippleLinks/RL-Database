@@ -1,6 +1,7 @@
 from typing import Any, Optional, Callable, Awaitable
 import json
 from datetime import datetime, UTC, timedelta
+import logging
 
 from redis.asyncio import Redis
 from sqlmodel import select, or_, col
@@ -14,7 +15,11 @@ from app.models.ingest_job import JobStatus
 from app.models.apify_run import RunTrigger, ApifyRun
 from app.models.enums import PlatformChoices
 from app.schemas.ingest import RowError
+from app.observability import tracer
+from app.observability.metrics import APIFY_RUNS, APIFY_OVERDUE
 from . import instagram
+
+log = logging.getLogger(__name__)
 
 Handler = Callable[
     [SessionFactory, Redis, list[dict]], Awaitable[tuple[int, list[RowError], str]]
@@ -46,16 +51,8 @@ def _webhook_url() -> str:
     return f"{str(settings.PUBLIC_API_URL).rstrip('/')}{settings.API_ROOT_PATH}/apify/webhook"
 
 
-async def start_run(
-    session: AsyncSession,
-    actor: str,
-    run_input: dict[str, Any],
-    trigger: RunTrigger,
-    started_by: Optional[str],
-) -> ApifyRun:
-    if actor not in HANDLERS:
-        raise UnknownActor(actor)
-    run = (
+async def _start(actor: str, run_input: dict[str, Any]):
+    return (
         await _client()
         .actor(actor)
         .start(
@@ -71,6 +68,21 @@ async def start_run(
             ],
         )
     )
+
+
+async def start_run(
+    session: AsyncSession,
+    actor: str,
+    run_input: dict[str, Any],
+    trigger: RunTrigger,
+    started_by: Optional[str],
+) -> ApifyRun:
+    if actor not in HANDLERS:
+        raise UnknownActor(actor)
+    with tracer.start_as_current_span(
+        "apify.start", attributes={"apify.actor": actor, "apify.trigger": trigger.value}
+    ):
+        run = await _start(actor, run_input)
     row = ApifyRun(
         run_id=run.id,
         actor=actor,
@@ -81,6 +93,7 @@ async def start_run(
     )
     session.add(row)
     await session.commit()
+    log.info("apify run %s started: %s (%s)", run.id, actor, trigger.value)
     return row
 
 
@@ -122,9 +135,27 @@ async def _save(sf: SessionFactory, run_id: str, **values: Any) -> None:
         run.sqlmodel_update(values)
         session.add(run)
         await session.commit()
+        if values.get("status") in (JobStatus.SUCCESS, JobStatus.FAILED):
+            APIFY_RUNS.add(
+                amount=1,
+                attributes={"actor": run.actor, "status": values.get("status").value},
+            )
+            log.info(
+                "apify run %s %s: %s",
+                run_id,
+                values["status"].value,
+                values.get("message"),
+            )
 
 
 async def process_run(sf: SessionFactory, redis: Redis, run_id: str) -> None:
+    with tracer.start_as_current_span(
+        "apify.process", attributes={"apify.run_id": run_id}
+    ):
+        await _process(sf, redis, run_id)
+
+
+async def _process(sf: SessionFactory, redis: Redis, run_id: str) -> None:
     row = await _claim(sf, run_id)
     if row is None:
         return
@@ -170,7 +201,7 @@ async def process_run(sf: SessionFactory, redis: Redis, run_id: str) -> None:
             message=message,
         )
     except Exception as e:
-        print(f"apify run {run_id} failed while processing")
+        log.exception("apify run %s failed while processing", run_id)
         await _save(
             sf,
             run_id,
@@ -185,10 +216,16 @@ async def unfinished_runs(sf: SessionFactory) -> list[str]:
         minutes=settings.APIFY_RECONCILE_AFTER_MINUTES
     )
     async with sf() as session:
-        stmnt = select(ApifyRun.run_id).where(
+        stmnt = select(ApifyRun.run_id, ApifyRun.actor, ApifyRun.started_at).where(
             ApifyRun.status == JobStatus.RUNNING, ApifyRun.started_at < overdue
         )
-        return list((await session.exec(stmnt)).all())
+        rows = (await session.exec(stmnt)).all()
+    late = datetime.now(UTC) - timedelta(minutes=settings.ALERT_APIFY_OVERDUE_MINUTES)
+    for run_id, actor, started_at in rows:
+        if started_at < late:
+            APIFY_OVERDUE.add(amount=1, attributes={"actor": actor})
+            log.warning("apify run %s has had no webbhook for %s minutes", run_id, settings.ALERT_APIFY_OVERDUE_MINUTES)
+    return [run_id for run_id, _, _ in rows]
 
 
 async def start_scheduled_refresh(sf: SessionFactory) -> Optional[ApifyRun]:

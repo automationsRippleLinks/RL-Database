@@ -43,5 +43,5 @@ class ApifyRun(ApifyRunBase, table=True):
 
     claimed_at: Optional[AwareDatetime] = Field(default=None, nullable=True)
     run_input: dict[str, Any] = Field(
-        default=dict, sa_column=_jsonb(nullable=False, default="{}")
+        default_factory=dict, sa_column=_jsonb(nullable=False, default="{}")
     )

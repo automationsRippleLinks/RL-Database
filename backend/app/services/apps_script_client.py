@@ -1,9 +1,11 @@
 import httpx
+import logging
 
 from fastapi import HTTPException, status
 
 from app.core.config import settings
 
+log = logging.getLogger(__name__)
 VALID_ACTIONS = ("getPitchMasterData", "getCampaignMasterData")
 
 class Client:
@@ -30,8 +32,8 @@ class Client:
                 response = await client.post(settings.APPS_SCRIPT_API_URL, json=payload)
 
             response.raise_for_status()
-        except Exception as e:
-            print(f"Api_call exception: {e}")
+        except Exception:
+            log.exception("Apps Script call failed")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="something went wrong while making the api_call to apps script",

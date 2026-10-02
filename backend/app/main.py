@@ -1,3 +1,7 @@
+from app import observability
+
+observability.setup("ripple-pulse-api")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -41,6 +45,7 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.connect():
             pass
+        observability.instrument_clients(engine=engine, redis=app.state.redis)
         await app.state.redis.ping()  # check if redis is alive
         await invalidate(app.state.redis, *CACHE_REFRESH_PREFIX_LIST)  # refresh cache
         await broker.startup()
@@ -52,6 +57,7 @@ async def lifespan(app: FastAPI):
             await redis_pool.aclose()
         finally:
             await engine.dispose()
+            observability.shutdown()
 
 
 app = FastAPI(
@@ -72,6 +78,7 @@ app.add_middleware(
 
 
 app.include_router(v1_router)
+observability.instrument_app(app=app)
 
 
 @app.get("/home")

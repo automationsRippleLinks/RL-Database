@@ -82,7 +82,7 @@ async def _reject_duplicate(
 async def _invalidate(redis) -> None:
     """The creator facets are cached for 24h; a rename would otherwise linger."""
     await invalidate(
-        redis, settings.FACETS_PREFIX, settings.SEARCH_PREFIX, settings.SUGGEST_PREFIX
+        redis, settings.FACETS_CACHE_PREFIX, settings.SEARCH_CACHE_PREFIX, settings.SUGGEST_CACHE_PREFIX
     )
 
 

@@ -1,8 +1,11 @@
+import logging
+
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import text
 
 from app.api.deps import RedisDep, SessionDep
 
+log = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -11,8 +14,8 @@ async def redis_health(r: RedisDep):
     try:
         pong = await r.ping()
         return {"service": "redis", "status": "up" if pong else "down"}
-    except Exception as e:
-        print(f"Redis health check failed! : {e}")
+    except Exception:
+        log.exception("Redis health check failed!")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="redis is down!",
@@ -29,9 +32,8 @@ async def db_health(session: SessionDep):
             "service": "postgres",
             "status": "up",
         }
-    except Exception as e:
-        print(f"Database health check failed! : {e}")
-
+    except Exception:
+        log.exception("Database health check failed!")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="databse connection failed!",

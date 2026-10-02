@@ -93,7 +93,7 @@ async def upload(
     user: IngestUser,
     file: UploadFile = File(...),
     source: IngestSource = Form(...),
-    dry_run: bool = Form(False),
+    dry_run: bool = Form(True),
 ):
     raw = await file.read(settings.MAX_UPLOAD_BYTES + 1)
     if len(raw) > settings.MAX_UPLOAD_BYTES:

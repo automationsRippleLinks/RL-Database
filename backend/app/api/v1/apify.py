@@ -1,7 +1,7 @@
 import hmac
-from fastapi import APIRouter, HTTPException, status, Request, Header
+from fastapi import APIRouter, HTTPException, status, Request, Header, Query
 
-from sqlmodel import select
+from sqlmodel import select, col
 
 from app.core.config import settings
 from app.api.deps import IngestUser, CSRFProtected, SessionDep
@@ -34,6 +34,11 @@ async def start(body: ApifyRunCreate, session: SessionDep, user: IngestUser):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"No result handler for actor {body.actor!r}",
         )
+
+@router.get("/runs", response_model=list[ApifyRunOut])
+async def list_runs(session: SessionDep, user: IngestUser, limit: int = Query(20, ge=1, le=100)):
+    stmnt = select(ApifyRun).order_by(col(ApifyRun.started_at).desc()).limit(limit)
+    return (await session.exec(stmnt)).all()
 
 
 @router.get("/runs/{run_id}", response_model=ApifyRunOut)

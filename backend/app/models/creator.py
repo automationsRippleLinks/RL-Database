@@ -66,10 +66,10 @@ class Creator(SQLModel, table=True):
         back_populates="creators", link_model=BrandCreatorLink
     )
 
-    gender: str = Field(default=None, nullable=True)
-    city: str = Field(default=None, nullable=True)
-    state: str = Field(default=None, nullable=True)
-    region: str = Field(default=None, nullable=True)
+    gender: Optional[str] = Field(default=None, nullable=True)
+    city: Optional[str] = Field(default=None, nullable=True)
+    state: Optional[str] = Field(default=None, nullable=True)
+    region: Optional[str] = Field(default=None, nullable=True)
 
     commercial_packages: list["CommercialPackage"] = Relationship(
         back_populates="creator"

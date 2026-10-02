@@ -133,7 +133,7 @@ async def handle(
                     c.city, c.state, filled = out["city"], out["state"] or c.state, filled + 1
                 if c.id not in has_category:
                     pairs += [(c.id, taxonomy.categories[name]) for name in out["categories"]]
-                filled += await link_taxonomy(session, CategoryCreatorLink, "category_id", pairs)
+            filled += await link_taxonomy(session, CategoryCreatorLink, "category_id", pairs)
         await session.commit()
     return len(creators), errors, (
         f"{len(creators)} creators refreshed from {len(items)} results; "

@@ -117,5 +117,5 @@ async def read_password_reset_token(redis: RedisClient, token: str) -> int | Non
     return int(user_id) if user_id is not None else None
 
 
-async def destory_password_reset_token(redis: RedisClient, token: str) -> None:
+async def destroy_password_reset_token(redis: RedisClient, token: str) -> None:
     await redis.delete(f"{settings.PASSWORD_RESET_CACHE_PREFIX}{token}")

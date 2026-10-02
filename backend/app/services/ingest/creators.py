@@ -40,11 +40,13 @@ _TIERS = (
 
 
 def tier_for(followers: int, raw_tier: Any = None) -> TierChoices:
-    if re.search(f"celeb", cells.text(raw_tier), re.I):
+    if re.search(r"celeb", cells.text(raw_tier), re.I):
         return TierChoices.CELEB
     if not followers:
         return TierChoices.NA
     return next((t for ceiling, t in _TIERS if followers < ceiling), TierChoices.MEGA)
+
+REGIONS = ("North", "South", "East", "West", "Central", "North-East")
 
 
 def taxonomy_list(names: dict[str, int]) -> Any:
@@ -61,6 +63,8 @@ Blr, "Mumbai" for Bombay, "Gurugram" for Gurgaon). If the cell names only a \
 state or region, leave city empty.
 - state: the Indian state or union territory the city is in, or that the cell \
 names.
+-region: the part of India that state is in: North, South, East, West, Central \
+or North-East. Empty when there is no state.
 - categories: every allowed category the category cell mentions. Several are \
 separated by commas, "&", "/" or "+" -- but some allowed names contain "&" \
 themselves ("Beauty & Makeup"), so match whole allowed names first. Map a \
@@ -68,7 +72,7 @@ variant to an allowed name only when it means the same thing.
 - languages: the same, for the language cell.""",
     covers={
         "gender": ("gender",),
-        "city": ("city", "state"),
+        "city": ("city", "state", "region"),
         "category": ("categories",),
         "language": ("languages",),
     },
@@ -76,13 +80,14 @@ variant to an allowed name only when it means the same thing.
         "gender": (Optional[Literal["Female", "Male", "Couple", "Community"]], ...),
         "city": (Optional[str], ...),
         "state": (Optional[str], ...),
+        "region": (Optional[Literal[REGIONS]], ...),
         "categories": (taxonomy_list(tax.categories), ...),
         "languages": (taxonomy_list(tax.languages), ...),
     },
 )
 
 
-def _creator(r: RowReader, raw: dict) -> Optional[dict]:
+def creator_fields(r: RowReader, raw: dict) -> Optional[dict]:
     link = raw.get("profile_link")
     platform, username = platform_of(link, cells.text(raw.get("sheet"))), handle_of(
         link
@@ -101,7 +106,7 @@ def _creator(r: RowReader, raw: dict) -> Optional[dict]:
         "avg_views": r.get("avg_views", cells.whole) or None,
         "tier": tier_for(followers or 0, raw.get("tier")),
         "emails": r.get("email", cells.emails),
-        "phones": r.get("phones", cells.phones),
+        "phones": r.get("phone", cells.phones),
     }
 
 
@@ -117,7 +122,7 @@ class _CreatorSource:
         for i, raw in enumerate(rows, start=1):
             r = RowReader(raw, i, errors)
             key = r.get(self.key_field, required=True)
-            creator = _creator(r, raw)
+            creator = creator_fields(r, raw)
             link = read_columns(r, self.link_model, skip={"creator_id", self.parent_fk})
             records.append(
                 Record(
@@ -140,11 +145,8 @@ class _CreatorSource:
 
     def apply_ai(self, rec: Record) -> None:
         c = rec.data["creator"]
-        c["gender"], c["city"], c["state"] = (
-            rec.ai["gender"],
-            rec.ai["city"],
-            rec.ai["state"],
-        )
+        for key in ("gender", "city", "state", "region"):
+            c[key] = rec.ai[key]
         rec.data["categories"], rec.data["languages"] = (
             rec.ai["categories"],
             rec.ai["languages"],
@@ -235,7 +237,7 @@ class PitchCreator(_CreatorSource):
         "package_cost",
         "final_cost",
     )
-    _LEGACY_COSTS = ("costs_with_deliverables", "cost_with_deliverables_usage")
+    _LEGACY_COSTS = ("cost_with_deliverables", "cost_with_deliverables_usage")
 
     def _file_checks(self, rows: list[dict]) -> list[RowError]:
         legacy = sum(
@@ -262,12 +264,12 @@ class PitchCreator(_CreatorSource):
     def _orphan_message(self, key, n):
         return f"no pitch uses spreadsheet {key} ({n} rows); ingest pitch_master first"
 
-    async def write_links(self, session, links):
+    async def _write_links(self, session, links):
         inserted = await bulk_insert(
             session,
             PitchCreatorLink,
             links,
-            inserted_elements=["creator_id", "pitch_id"],
+            index_elements=["creator_id", "pitch_id"],
         )
         return {"inserted": inserted, "skipped": len(links) - inserted}
 
