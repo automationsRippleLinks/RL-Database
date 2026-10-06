@@ -55,7 +55,7 @@ async def handle(
                     field=username or item.get("url"),
                     message=item.get("errorDescription")
                     or item.get("error")
-                    or "no username is result",
+                    or "no username in result",
                 )
             )
             continue
@@ -77,7 +77,7 @@ async def handle(
         for missing in sorted(set(scraped) - {c.username for c in creators}):
             errors.append(
                 RowError(
-                    field=missing, message="scraped, but not in the datbase; skipped"
+                    field=missing, message="scraped, but not in the database; skipped"
                 )
             )
 

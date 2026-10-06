@@ -64,7 +64,7 @@ def setup(service: str) -> None:
 
     resource = Resource.create(
         {
-            "service_name": service,
+            "service.name": service,
             "service.namespace": "ripple-pulse",
             "service.instance.id": f"{socket.gethostname()}-{os.getpid()}",
             "deployment.environment.name": settings.ENVIRONMENT.lower(),

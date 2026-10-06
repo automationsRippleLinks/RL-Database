@@ -1,4 +1,4 @@
-from typing import Generic, Literal, TypeVar, Optional
+from typing import Generic, Literal, TypeVar, Optional, Any
 from uuid import UUID
 from datetime import date, datetime
 
@@ -15,6 +15,10 @@ from app.models.enums import (
 from app.core.config import settings
 
 RowT = TypeVar("RowT")
+
+
+def docs_link(file_id: Optional[str]) -> Optional[str]:
+    return f"https://docs.google.com/open?id={file_id}" if file_id else None
 
 
 class Paging(BaseModel):
@@ -35,15 +39,23 @@ class BrandRef(BaseModel):
     id: int
     name: str
 
+    @classmethod
+    def of(cls, brand: Any) -> Optional["BrandRef"]:
+        return cls(id=brand.id, name=brand.display_name) if brand else None
+
 
 class CompanyRef(BaseModel):
     id: int
     name: str
     gstin: Optional[str] = None
 
-
-#: Fields on CreatorRow that shadow a lazy relationship on the ORM Creator.
-_TAG_FIELDS = frozenset({"categories", "languages"})
+    @classmethod
+    def of(cls, company: Any) -> Optional["CompanyRef"]:
+        return (
+            cls(id=company.id, name=company.name, gstin=company.gstin)
+            if company
+            else None
+        )
 
 
 # --- Creators ---
@@ -68,8 +80,7 @@ class CreatorSearchRequest(Paging):
     cities: list[str] = []
     has_email: bool = False
     has_phone: bool = False
-    #: "at least one of the two". has_email and has_phone each add their own
-    #: clause, so ticking both means email AND phone -- this is the OR.
+    #: email OR phone (ticking has_email and has_phone means both)
     has_contact: bool = False
     campaign_involvement: Optional[CampaignInvolvement] = None
     min_followers: Optional[int] = None
@@ -112,26 +123,16 @@ class CreatorRow(BaseModel):
         return tmpl.format(h=handle) if (handle and tmpl) else None
 
     @classmethod
-    def from_creator(
-        cls,
-        creator,
-        *,
-        categories: list[str] = [],
-        languages: list[str] = [],
-    ) -> "CreatorRow":
+    def of(cls, creator: Any, categories=(), languages=()) -> "CreatorRow":
+        # Field by field, never model_validate(creator): that would touch the
+        # lazy categories relationship, which raises inside an async session.
         data = {
-            name: getattr(creator, name)
-            for name in cls.model_fields
-            if name not in _TAG_FIELDS and name not in ("emails", "phones")
+            f: getattr(creator, f)
+            for f in cls.model_fields
+            if f not in ("categories", "languages")
         }
-        emails = getattr(creator, "emails")
-        phones = getattr(creator, "phones")
-        merged = {
-            **data,
-            "emails": emails if emails else [],
-            "phones": phones if phones else [],
-        }
-        return cls(**merged, categories=list(categories), languages=list(languages))
+        data["emails"], data["phones"] = creator.emails or [], creator.phones or []
+        return cls(**data, categories=list(categories), languages=list(languages))
 
 
 # --- Brands ---
@@ -139,6 +140,7 @@ class CreatorRow(BaseModel):
 
 class BrandSearchRequest(Paging):
     text: Optional[str] = None
+    ids: list[int] = []
     org_types: list[OrgTypeChoices] = []
     platforms: list[PlatformChoices] = []
     has_company: bool = False
@@ -161,7 +163,7 @@ class BrandRow(BaseModel):
     latest_activity: Optional[date] = None
 
 
-# --- Campaign ---
+# --- Campaigns ---
 
 
 class CampaignSearchRequest(Paging):
@@ -196,6 +198,28 @@ class CampaignRow(BaseModel):
     spreadsheet_link: Optional[str] = None
     report_link: Optional[str] = None
 
+    @classmethod
+    def of(cls, c: Any, brand: Any, creator_count: int) -> "CampaignRow":
+        return cls(
+            id=c.id,
+            campaign_code=c.campaign_code,
+            campaign_name=c.campaign_name,
+            brand=BrandRef.of(brand),
+            manager=c.manager,
+            member_names=c.member_names or [],
+            month_name=c.month_name,
+            year=c.year,
+            status=c.status,
+            report_status=c.report_status,
+            start_date=c.start_date,
+            expected_end_date=c.expected_end_date,
+            end_date=c.end_date,
+            report_completion_date=c.report_completion_date,
+            creator_count=creator_count,
+            spreadsheet_link=docs_link(file_id=c.spreadsheet_id),
+            report_link=docs_link(file_id=c.report_id),
+        )
+
 
 # --- Pitches ---
 
@@ -229,3 +253,22 @@ class PitchRow(BaseModel):
     spreadsheet_link: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    @classmethod
+    def of(cls, p: Any, brand: Any, creator_count: int, converted: bool) -> "PitchRow":
+        return cls(
+            id=p.id,
+            pitch_code=p.pitch_code,
+            brand=BrandRef.of(brand),
+            campaign_name=p.campaign_name,
+            org_type=p.org_type,
+            requirement=p.requirement,
+            platform=p.platform or [],
+            sales_lead=p.sales_lead,
+            list_lead=p.list_lead,
+            creator_count=creator_count,
+            converted=converted,
+            spreadsheet_link=docs_link(file_id=p.spreadsheet_id),
+            created_at=p.created_at,
+            updated_at=p.updated_at,
+        )

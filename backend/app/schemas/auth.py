@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from pydantic import EmailStr, AfterValidator, BaseModel, Field, field_validator
+from pydantic import EmailStr, AfterValidator, BaseModel, Field
 from fastapi import HTTPException, status
 
 from app.core.config import settings
@@ -48,7 +48,7 @@ class SessionUser(BaseModel):
     permissions: Permissions
 
     @classmethod
-    def from_user(cls, user: User) -> SessionUser:
+    def from_user(cls, user: User) -> "SessionUser":
         return cls(
             id=user.id,
             name=user.name,
@@ -63,16 +63,9 @@ class VerifyEmailRequest(BaseModel):
     token: str
 
 
-class ResendVerificationRequest(BaseModel):
-    email: EmailStr
-
-    @field_validator("email", mode="after")
-    @classmethod
-    def normalize_email(cls, email: EmailStr) -> str:
-        return email.strip().lower()
-
-class ForgotPasswordRequest(ResendVerificationRequest):
-    pass
+class EMailRequest(BaseModel):
+    """Resend-verification and forgot-password: just an address, any domain."""
+    email: Annotated[EmailStr, AfterValidator(lambda e: e.strip().lower())]
 
 class ResetPasswordRequest(BaseModel):
     token: str

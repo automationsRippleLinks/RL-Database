@@ -36,7 +36,7 @@ def _unmatched(row: int, out: dict) -> list[RowError]:
             row=row,
             field=u["field"],
             message=(
-                f"{u['value']!r} doesn't match anythin allowed. "
+                f"{u['value']!r} doesn't match anything allowed. "
                 + (
                     ("Add it under Taxonomy or fix the cell.")
                     if u["field"] in taxonomy_hint

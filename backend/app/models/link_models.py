@@ -46,14 +46,7 @@ class TagCreatorLink(SQLModel, table=True):
     tag_id: Optional[int] = Field(default=None, foreign_key="tag.id", primary_key=True)
 
 
-class PitchCreatorLink(SQLModel, table=True):
-    creator_id: Optional[UUID] = Field(
-        default=None, foreign_key="creator.id", primary_key=True
-    )
-    pitch_id: Optional[UUID] = Field(
-        default=None, foreign_key="pitch.id", primary_key=True
-    )
-
+class PitchCreatorLinkBase(SQLModel):
     # deliverables count
 
     # IG
@@ -145,18 +138,20 @@ class PitchCreatorLink(SQLModel, table=True):
         default=0, nullable=False, sa_column_kwargs={"server_default": "0"}
     )
 
+
+class PitchCreatorLink(PitchCreatorLinkBase, table=True):
+    creator_id: Optional[UUID] = Field(
+        default=None, foreign_key="creator.id", primary_key=True
+    )
+    pitch_id: Optional[UUID] = Field(
+        default=None, foreign_key="pitch.id", primary_key=True
+    )
+
     pitch: "Pitch" = Relationship(back_populates="creators")
     creator: "Creator" = Relationship(back_populates="affiliated_pitches")
 
 
-class CampaignCreatorLink(SQLModel, table=True):
-    creator_id: Optional[UUID] = Field(
-        default=None, foreign_key="creator.id", primary_key=True
-    )
-    campaign_id: Optional[UUID] = Field(
-        default=None, foreign_key="campaign.id", primary_key=True
-    )
-
+class CampaignCreatorLinkBase(SQLModel):
     is_dropped: bool = Field(
         default=False, sa_column_kwargs={"server_default": "false"}
     )
@@ -179,8 +174,8 @@ class CampaignCreatorLink(SQLModel, table=True):
         default=0, nullable=False, sa_column_kwargs={"server_default": "0"}
     )
 
-    product_status: str = Field(default=None, nullable=True)
-    product_ordered_by: str = Field(default=None, nullable=True)
+    product_status: Optional[str] = Field(default=None, nullable=True)
+    product_ordered_by: Optional[str] = Field(default=None, nullable=True)
 
     product_cost: int = Field(
         default=0, nullable=False, sa_column_kwargs={"server_default": "0"}
@@ -349,6 +344,15 @@ class CampaignCreatorLink(SQLModel, table=True):
     )
     yt_total_watch_time: timedelta = Field(
         default=timedelta(), sa_column_kwargs={"server_default": text("'0'::interval")}
+    )
+
+
+class CampaignCreatorLink(CampaignCreatorLinkBase, table=True):
+    creator_id: Optional[UUID] = Field(
+        default=None, foreign_key="creator.id", primary_key=True
+    )
+    campaign_id: Optional[UUID] = Field(
+        default=None, foreign_key="campaign.id", primary_key=True
     )
 
     creator: "Creator" = Relationship(back_populates="affiliated_campaigns")

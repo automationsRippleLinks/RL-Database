@@ -47,7 +47,7 @@ class PitchMaster:
         instructions="""Each row is a pitch to a client.
 - org_type: the kind of client. Cells look like "Brand - Core", "brand-other", \
 "Agency", "Retainer account".
-- requirement: what the client asked for. Cells lok like "List", "Plan", \
+- requirement: what the client asked for. Cells look like "List", "Plan", \
 "List and Plan", "Content buckets", "Media plan", "Production", \
 "Content buckets and list", "Demographics/Data".
 - platforms: every platform the cell names ("Insta + YT" is instagram and \

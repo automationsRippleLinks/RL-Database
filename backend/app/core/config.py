@@ -138,7 +138,7 @@ class Settings(BaseSettings):
     APIFY_WEBHOOK_SECRET: str
     APIFY_IG_PROFILE_ACTOR: str = "apify/instagram-profile-scraper"
     APIFY_REFRESH_AFTER_DAYS: int = 30
-    APIFY_REFRESH_BACTH: int = 500
+    APIFY_REFRESH_BATCH: int = 500
     APIFY_RECONCILE_AFTER_MINUTES: int = 10
 
     # === AI Parser settings ============================================================================================

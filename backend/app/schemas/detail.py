@@ -1,9 +1,9 @@
-from datetime import timedelta, date, datetime
+from datetime import date, datetime
 from uuid import UUID
-from typing import Optional
+from typing import Optional, Any
 from decimal import Decimal
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, ConfigDict
 
 from app.schemas.search import (
     CompanyRef,
@@ -19,13 +19,9 @@ from app.models.enums import (
     CampaignStatusChoices,
     TierChoices,
 )
+from app.models.link_models import PitchCreatorLinkBase, CampaignCreatorLinkBase
 
-
-class _Seconds(BaseModel):
-
-    @field_serializer("*", when_used="json", check_fields=False)
-    def _td(self, v):
-        return v.total_seconds() if isinstance(v, timedelta) else v
+# === a creator's own page =====================================================================================
 
 
 class CreatorPitchSummary(BaseModel):
@@ -52,68 +48,62 @@ class CreatorCampaignSummary(BaseModel):
     views: Optional[int] = None
     cpv: Optional[Decimal] = None
 
-class CreatorPackageItem(BaseModel):
+
+class PackageItem(BaseModel):
     deliverable_type: str
     quantity: int = 1
     price: int = 0
+
 
 class CreatorPackage(BaseModel):
     id: UUID
     name: str
     cost: int
     valid_from: datetime
-    items: list[CreatorPackageItem] = []
+    items: list[PackageItem] = []
 
 
 class CreatorDetail(CreatorRow):
+    bio: Optional[str] = None
+    tags: list[str] = []
+    brands: list[BrandRef] = []
+    stats_refreshed_at: Optional[datetime] = None
     package: Optional[CreatorPackage] = None
     pitches: list[CreatorPitchSummary] = []
     campaigns: list[CreatorCampaignSummary] = []
 
 
-class CampaignCreatorRow(_Seconds):
+# === creators on a pitch / campaign ========================================================================
+
+
+class _CreatorOnLink(BaseModel):
     creator_id: UUID
     name: str
     username: str
     platform: PlatformChoices
     tier: TierChoices
     followers: Optional[int] = None
-    is_dropped: bool
-    deliverables_raw: str
-    expected_views: Optional[int] = None
-    poc_name: list[str] = []
-    initial_cost: Optional[int] = None
-    final_cost: Optional[int] = None
-    brand_cost: Optional[int] = None
-    agency_fee: Optional[int] = None
-    payment_terms: Optional[str] = None
-    product_status: Optional[str] = None
-    content_status: Optional[str] = None
-    shoot_date: Optional[date] = None
-    live_date: Optional[date] = None
-    live_links: Optional[str] = None
-    script_links: Optional[str] = None
-    ig_reel_views: Optional[int] = None
-    ig_reel_likes: Optional[int] = None
-    ig_reel_comments: Optional[int] = None
-    ig_reel_shares: Optional[int] = None
-    ig_reel_saves: Optional[int] = None
-    ig_reel_reach: Optional[int] = None
-    ig_story_views: Optional[int] = None
-    ig_story_reach: Optional[int] = None
-    ig_avg_watch_time: Optional[timedelta] = None
-    ig_total_watch_time: Optional[timedelta] = None
-    ig_reels_ir_perc: Optional[Decimal] = None
-    ig_reels_er_perc: Optional[Decimal] = None
-    ig_male_perc: Optional[Decimal] = None
-    ig_female_perc: Optional[Decimal] = None
-    yt_views: Optional[int] = None
-    yt_likes: Optional[int] = None
-    yt_comments: Optional[int] = None
-    yt_er_perc: Optional[Decimal] = None
-    yt_total_impressions: Optional[int] = None
-    yt_total_watch_time: Optional[timedelta] = None
-    cpv: Optional[Decimal] = None
+
+    @classmethod
+    def of(cls, link: Any, creator: Any):
+        keys = {"creator_id", "pitch_id", "campaign_id"}
+        return cls(
+            **link.model_dump(exclude=keys),
+            creator_id=creator.id,
+            name=creator.name,
+            username=creator.username,
+            platform=creator.platform,
+            tier=creator.tier,
+            followers=creator.followers,
+        )
+
+
+class PitchCreatorRow(_CreatorOnLink, PitchCreatorLinkBase):
+    pass
+
+
+class CampaignCreatorRow(_CreatorOnLink, CampaignCreatorLinkBase):
+    model_config = ConfigDict(ser_json_timedelta="float") # watch times as seconds
 
 
 class CampaignTotals(BaseModel):
@@ -137,42 +127,7 @@ class CampaignDetail(CampaignRow):
     totals: CampaignTotals = CampaignTotals()
 
 
-class PitchCreatorRow(BaseModel):
-    creator_id: UUID
-    name: str
-    username: str
-    platform: PlatformChoices
-    tier: TierChoices
-    followers: Optional[int] = None
-    reel_count: int = 0
-    reel_story_count: int = 0
-    video_story_count: int = 0
-    static_carousel_count: int = 0
-    event_store_visit: bool = False
-    short_form_videos_count: int = 0
-    reshare_short_form_videos_count: int = 0
-    dedicated_video_count: int = 0
-    integrated_video_count: int = 0
-    usage_rights: Optional[str] = None
-    ad_promo_rights: Optional[str] = None
-    boosting: Optional[str] = None
-    payment_terms: Optional[str] = None
-    reel_cost: int = 0
-    reel_story_cost: int = 0
-    video_story_cost: int = 0
-    static_carousel_cost: int = 0
-    short_form_videos_cost: int = 0
-    reshare_short_form_videos_cost: int = 0
-    dedicated_video_cost: int = 0
-    integrated_video_cost: int = 0
-    rights_cost: int = 0
-    boosting_cost: int = 0
-    package_cost: int = 0
-    final_cost: int = 0
-    brand_cost: int = 0
-
-
-class CampaignRefLite(BaseModel):
+class CampaignRef(BaseModel):
     id: UUID
     campaign_code: str
     campaign_name: str
@@ -185,7 +140,7 @@ class PitchTotals(BaseModel):
 
 
 class PitchDetail(PitchRow):
-    campaign: Optional[CampaignRefLite] = None
+    campaign: Optional[CampaignRef] = None
     company: Optional[CompanyRef] = None
     creators: list[PitchCreatorRow] = []
     totals: PitchTotals = PitchTotals()

@@ -63,7 +63,7 @@ Blr, "Mumbai" for Bombay, "Gurugram" for Gurgaon). If the cell names only a \
 state or region, leave city empty.
 - state: the Indian state or union territory the city is in, or that the cell \
 names.
--region: the part of India that state is in: North, South, East, West, Central \
+- region: the part of India that state is in: North, South, East, West, Central \
 or North-East. Empty when there is no state.
 - categories: every allowed category the category cell mentions. Several are \
 separated by commas, "&", "/" or "+" -- but some allowed names contain "&" \
@@ -94,7 +94,7 @@ def creator_fields(r: RowReader, raw: dict) -> Optional[dict]:
     )
     if not platform or not username:
         return r.fail(
-            "profile_link", f"{cells.text(link)!r} is not a usabel profile_link"
+            "profile_link", f"{cells.text(link)!r} is not a usable profile_link"
         )
     followers = r.get("followers", cells.whole)
     return {
@@ -218,7 +218,7 @@ class _CreatorSource:
 
         counts = await self._write_links(session, links)
         return counts, (
-            f"{counts['inserted']} links addded, {counts.get('updated', 0)} updated, "
+            f"{counts['inserted']} links added, {counts.get('updated', 0)} updated, "
             f"{counts.get('skipped', 0)} already present; {created} new creators, "
             f"{new_cats} category and {new_langs} language links added"
         )
@@ -251,7 +251,7 @@ class PitchCreator(_CreatorSource):
         return [
             RowError(
                 field="template_version",
-                message=f"{legacy} rows use the old_v2 cost columns. Re-export from the current sheet template",
+                message=f"{legacy} rows use the old v2 cost columns. Re-export from the current sheet template",
             )
         ]
 

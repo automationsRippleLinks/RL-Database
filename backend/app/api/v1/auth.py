@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 import httpx
+import logging
 
 from fastapi import APIRouter, Request, Response, HTTPException, status, BackgroundTasks
 from fastapi.responses import RedirectResponse
@@ -35,11 +36,12 @@ from app.schemas.auth import (
     LoginRequest,
     SignUpRequest,
     VerifyEmailRequest,
-    ResendVerificationRequest,
-    ForgotPasswordRequest,
+    EMailRequest,
     ResetPasswordRequest,
 )
 from app.models import User
+
+log = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -65,6 +67,29 @@ def _set_session_cookies(response: Response, sid: str, csrf_token: str) -> None:
         samesite="lax",
         path="/",
         max_age=settings.SESSION_CACHE_TTL,
+    )
+
+
+async def _start_session(response: Response, redis, user_id: int) -> str:
+    """New session + CSRF token, both as cookies. Returns the session id."""
+    sid = await create_session(redis, user_id)
+    _set_session_cookies(response, sid, new_csrf_token())
+    return sid
+
+
+def _client_ip(request: Request) -> str:
+    return request.client.host if request.client else "unknown"
+
+
+async def _send_verification(
+    background_tasks: BackgroundTasks, redis, user: User
+) -> None:
+    token = await create_email_verification_token(redis, user.id)
+    text, html = verification_email_body(
+        user.name, f"{settings.FRONTEND_URL}verify-email?token={token}"
+    )
+    background_tasks.add_task(
+        send_email, user.email, "Verify your RippleLinks email", html, text
     )
 
 
@@ -106,7 +131,7 @@ async def login(
     await check_rate_limit(
         redis,
         "login:ip",
-        request.client.host if request.client else "unknown",
+        _client_ip(request),
         limit=15,
         window=60,
     )
@@ -132,10 +157,7 @@ async def login(
             headers={"X-Error-Code": "not_verified"},
         )
 
-    sid = await create_session(redis, user.id)
-    csrf_token = new_csrf_token()
-    _set_session_cookies(response, sid, csrf_token)
-
+    await _start_session(response, redis, user.id)
     return SessionUser.from_user(user)
 
 
@@ -145,7 +167,9 @@ async def google_login(request: Request, redis: RedisDep, next: str | None = Non
 
     state = new_token()
     await redis.setex(
-        f"{settings.OAUTH_STATE_CACHE_PREFIX}{state}", settings.OAUTH_STATE_CACHE_TTL, safe_next
+        f"{settings.OAUTH_STATE_CACHE_PREFIX}{state}",
+        settings.OAUTH_STATE_CACHE_TTL,
+        safe_next,
     )
 
     params = {
@@ -214,10 +238,10 @@ async def google_callback(
             raw_id_token,
             google_requests.Request(),
             settings.GOOGLE_CLIENT_ID,
-            clock_skew_in_seconds=10,       # 10 second tolerance to account for system clock and google clock time difference
+            clock_skew_in_seconds=10,  # 10 second tolerance to account for system clock and google clock time difference
         )
     except ValueError as e:
-        print(f"google id_token verification failed: {e}")
+        log.warning("google id_token verification failed: %s", e)
         return _error_redirect("unknown")
 
     email: str = claims.get("email")
@@ -251,14 +275,11 @@ async def google_callback(
     if not user.is_verified:
         return _error_redirect("not_verified")
 
-    sid = await create_session(redis, user.id)
-    csrf_token = new_csrf_token()
-
     response = RedirectResponse(
         f"{settings.FRONTEND_URL}auth/callback?next={safe_next}",
         status_code=status.HTTP_302_FOUND,
     )
-    _set_session_cookies(response, sid, csrf_token)
+    await _start_session(response, redis, user.id)
     return response
 
 
@@ -285,12 +306,8 @@ async def signup(
     redis: RedisDep,
     background_tasks: BackgroundTasks,
 ) -> SessionUser:
-    name = body.name
-    email = body.email
-    password = body.password
-
     existing_user = (
-        await session.exec(select(User).where(User.email == email))
+        await session.exec(select(User).where(User.email == body.email))
     ).first()
 
     if existing_user:
@@ -300,26 +317,18 @@ async def signup(
             headers={"X-Error-Code": "email_exists"},
         )
 
-    hashed_password = hash_password(password)
-
     new_user = User(
-        name=name,
-        email=email,
+        name=body.name,
+        email=body.email,
         auth_provider="password",
-        hashed_password=hashed_password,
+        hashed_password=hash_password(body.password),
     )
 
     session.add(new_user)
     await session.commit()
     await session.refresh(new_user)
 
-    token = await create_email_verification_token(redis, new_user.id)
-    verify_url = f"{settings.FRONTEND_URL}verify-email?token={token}"
-    text, html = verification_email_body(new_user.name, verify_url)
-    background_tasks.add_task(
-        send_email, new_user.email, "Verify your RippleLinks email", html, text
-    )
-
+    await _send_verification(background_tasks, redis, new_user)
     return SessionUser.from_user(new_user)
 
 
@@ -350,71 +359,55 @@ async def verify_email(
         await session.commit()
         await session.refresh(user)
 
-    sid = await create_session(redis, user.id)
-    csrf_token = new_csrf_token()
-    _set_session_cookies(response, sid, csrf_token)
-
+    await _start_session(response, redis, user.id)
     return SessionUser.from_user(user)
 
 
 @router.post("/resend-verification", status_code=status.HTTP_204_NO_CONTENT)
 async def resend_verification(
-    body: ResendVerificationRequest,
+    body: EMailRequest,
     request: Request,
     session: SessionDep,
     redis: RedisDep,
     background_tasks: BackgroundTasks,
 ) -> None:
-    email = body.email.strip().lower()
-
     await check_rate_limit(
-        redis, "resend_verification:email", email, limit=3, window=15 * 60
+        redis, "resend_verification:email", body.email, limit=3, window=15 * 60
     )
     await check_rate_limit(
         redis,
         "resend_verification:ip",
-        request.client.host if request.client else "unknown",
+        _client_ip(request),
         limit=5,
         window=60,
     )
 
-    user = (await session.exec(select(User).where(User.email == email))).first()
-
+    # Same 204 whether or not the account exists: no address enumeration.
+    user = (await session.exec(select(User).where(User.email == body.email))).first()
     if user is not None and not user.is_verified and user.auth_provider == "password":
-        token = await create_email_verification_token(redis, user.id)
-        verify_url = f"{settings.FRONTEND_URL}verify-email?token={token}"
-        text, html = verification_email_body(user.name, verify_url)
-        background_tasks.add_task(
-            send_email,
-            user.email,
-            "Verify your RippleLinks email",
-            html,
-            text,
-        )
+        await _send_verification(background_tasks, redis, user)
 
 
 @router.post("/forgot-password", status_code=status.HTTP_204_NO_CONTENT)
 async def forgot_password(
-    body: ForgotPasswordRequest,
+    body: EMailRequest,
     request: Request,
     session: SessionDep,
     redis: RedisDep,
     background_tasks: BackgroundTasks,
 ) -> None:
-    email = body.email.strip().lower()
-
     await check_rate_limit(
-        redis, "forgot_password:email", email, limit=3, window=15 * 60
+        redis, "forgot_password:email", body.email, limit=3, window=15 * 60
     )
     await check_rate_limit(
         redis,
         "forgot_password:ip",
-        request.client.host if request.client else "unknown",
+        _client_ip(request),
         limit=5,
         window=60,
     )
 
-    user = (await session.exec(select(User).where(User.email == email))).first()
+    user = (await session.exec(select(User).where(User.email == body.email))).first()
 
     if user is not None and user.auth_provider == "password":
         token = await create_password_reset_token(redis, user.id)
@@ -440,7 +433,7 @@ async def reset_password(
     await check_rate_limit(
         redis,
         "reset_password:ip",
-        request.client.host if request.client else "unknown",
+        _client_ip(request),
         limit=10,
         window=60,
     )
@@ -473,9 +466,8 @@ async def reset_password(
     await session.commit()
     await session.refresh(user)
 
-    sid = await create_session(redis, user.id)
-    await destroy_other_sessions(redis, user.id, sid)
-    csrf_token = new_csrf_token()
-    _set_session_cookies(response, sid, csrf_token)
-
+    sid = await _start_session(response, redis, user.id)
+    await destroy_other_sessions(
+        redis, user.id, sid
+    )  # a reset signs out everywhere else
     return SessionUser.from_user(user)

@@ -224,7 +224,7 @@ async def unfinished_runs(sf: SessionFactory) -> list[str]:
     for run_id, actor, started_at in rows:
         if started_at < late:
             APIFY_OVERDUE.add(amount=1, attributes={"actor": actor})
-            log.warning("apify run %s has had no webbhook for %s minutes", run_id, settings.ALERT_APIFY_OVERDUE_MINUTES)
+            log.warning("apify run %s has had no webhook for %s minutes", run_id, settings.ALERT_APIFY_OVERDUE_MINUTES)
     return [run_id for run_id, _, _ in rows]
 
 
@@ -255,7 +255,7 @@ async def start_scheduled_refresh(sf: SessionFactory) -> Optional[ApifyRun]:
                     col(Creator.stats_refreshed_at).asc().nulls_first(),
                     col(Creator.username),
                 )
-                .limit(settings.APIFY_REFRESH_BACTH)
+                .limit(settings.APIFY_REFRESH_BATCH)
             )
         ).all()
         if not usernames:

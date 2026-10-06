@@ -23,7 +23,7 @@ class Rule:
 
 
 def rules() -> list[Rule]:
-    env = f'deployment_enviroment_name="{settings.ENVIRONMENT.lower()}"'
+    env = f'deployment_environment_name="{settings.ENVIRONMENT.lower()}"'
     silent = settings.ALERT_WORKER_SILENT_MINUTES
     return [
         Rule(
@@ -168,7 +168,7 @@ async def _put_contact_point(c: httpx.AsyncClient, emails: list[str]) -> None:
     existing.raise_for_status()
     if existing.json():
         r = await c.put(
-            f"/api/v1/provisioning/contact-points{CONTACT_UID}",
+            f"/api/v1/provisioning/contact-points/{CONTACT_UID}",
             json=body,
             headers=headers,
         )
@@ -194,7 +194,7 @@ async def apply(emails: list[str]) -> list[str]:
             "rules": [_rule_json(r, ds_uid) for r in rules()],
         }
         r = await c.put(
-            f"/api/v1/provisioning/foler/{FOLDER_UID}/rule-groups/{GROUP}",
+            f"/api/v1/provisioning/folder/{FOLDER_UID}/rule-groups/{GROUP}",
             json=group,
             headers={"X-Disable-Provenance": "true"},
         )

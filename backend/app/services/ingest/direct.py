@@ -31,6 +31,7 @@ _DELIVERABLES = {
         "video_story",
         "static_carousel",
         "short_form_videos",
+        "reshare_short_form_videos",
         "dedicated_video",
         "integrated_video",
     )
@@ -67,7 +68,7 @@ def _package(r: RowReader) -> tuple[int, list[tuple[str, int, int]]] | None:
     if not items and not total:
         return None
     if not total:
-        r.fail("package_cost", "missing, but the row has deliverbles")
+        r.fail("package_cost", "missing, but the row has deliverables")
         return None
     return total, sorted(items)
 
@@ -222,7 +223,7 @@ class DirectCreator:
         links = ", ".join(f"{n} {kind}" for kind, n in added.items())
         return counts, (
             f"{len(new)} creators added, {updated} existing creators filled in, "
-            f"{counts['skipped']} unchanges; links added: {links}; {packages} packages set."
+            f"{counts['skipped']} unchanged; links added: {links}; {packages} packages set."
         )
 
     @staticmethod
