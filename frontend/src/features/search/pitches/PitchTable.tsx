@@ -14,9 +14,7 @@ import {
 import { formatDate, formatNumber } from '@/lib/format';
 import { withBackState } from '@/lib/navigation';
 import type { PitchRow } from '@/types/api';
-import { ExportDialog, type ExportScope } from '@/features/search/ExportDialog';
-import { searchApi } from '@/lib/endpoints';
-import { downloadCsv, fetchAllSearchRows, toCsv } from '@/lib/csv';
+
 
 
 // ── PITCH TABLE COLUMNS ────────────────────────────────────────

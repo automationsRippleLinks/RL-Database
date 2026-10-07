@@ -3,7 +3,7 @@ import { History } from 'lucide-react';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ErrorState, LoadingState } from '@/components/states';
 import { SectionTitle } from '@/components/bits';
-import { Badge } from '@/components/UI/badge';
+import { Badge } from '@/components/ui/badge';
 import { ingestApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';
 import { INGEST_SOURCE_LABELS } from '@/lib/enums';

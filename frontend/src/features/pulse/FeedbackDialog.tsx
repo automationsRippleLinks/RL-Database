@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '@/components/Toast';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/UI/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { ApiError } from '@/lib/api-client';
 import { feedbackApi } from '@/lib/endpoints';
 import { cn } from '@/lib/utils';

@@ -69,11 +69,12 @@ export default function CampaignFilters({
   openMenu,
   onOpenMenu,
   onExpandRail,
-}: CampaignFilterGroupsProps) {
-  const menuProps = (key: string) => ({
-    open: openMenu === key,
-    onToggle: () => onOpenMenu(openMenu === key ? null : key),
-  });
+}: CampaignFilterGroupsProps) 
+{
+  // const menuProps = (key: string) => ({
+  //   open: openMenu === key,
+  //   onToggle: () => onOpenMenu(openMenu === key ? null : key),
+  // });
 
   return (
     <>

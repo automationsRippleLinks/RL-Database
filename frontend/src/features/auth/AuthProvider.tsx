@@ -5,6 +5,7 @@ import { ApiError, setUnauthorizedHandler } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';
 import type { SessionUser } from '@/types/api';
+import { setObservabilityUser } from '@/lib/observability';
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
@@ -45,6 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // A 401 here is the expected "not logged in" answer, not an error to surface.
     throwOnError: false,
   });
+  const userId = sessionQuery.data?.id ?? null;
+  useEffect(() => {
+    setObservabilityUser(userId);
+  }, [userId]);
 
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>

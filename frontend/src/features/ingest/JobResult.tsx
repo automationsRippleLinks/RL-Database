@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
-import { Badge } from '@/components/UI/badge';
+import { Badge } from '@/components/ui/badge';
 import { formatDateTime, formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { IngestJob, IngestJobStatus, IngestRowError } from '@/types/api';

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, CheckCircle2, KeyRound, Loader2, LinkIcon } from 'lucide-react';
-import { Button } from '@/components/UI/button';
+import { Button } from '@/components/ui/button';
 import { ApiError } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
 import { useCooldown } from '@/hooks/useCooldown';

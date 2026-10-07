@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { Button } from './UI/button';
+import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Column } from '@/components/DataTable';
-import { Badge } from '@/components/UI/badge';
+import { Badge } from '@/components/ui/badge';
 import { BrandLink, ExternalLink, OrgTypeBadge, PlatformBadges, RequirementBadge } from '@/components/bits';
 import { formatDate, formatNumber } from '@/lib/format';
 import type { PitchRow } from '@/types/api';

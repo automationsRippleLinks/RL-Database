@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from '@/components/UI/dialog';
+} from '@/components/ui/dialog';
 
 // ── EXPORT OPTIONS ─────────────────────────────────────────────
 

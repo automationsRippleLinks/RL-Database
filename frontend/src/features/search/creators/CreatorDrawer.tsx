@@ -63,6 +63,8 @@ export function CreatorDrawer({
 
   const { data, isPending, isError, error, refetch } = useCreatorDetail(displayedId);
   useCreatorDetail(creatorId);
+  
+  
 
   // Clicking another row swaps the contents in place. Everything that was
   // "opened" belongs to the creator who was showing, not to the panel — and a
