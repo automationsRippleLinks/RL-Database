@@ -15,7 +15,7 @@ import type { LucideIcon } from 'lucide-react';
 import { PlatformMark } from '@/components/PlatformMark';
 import { useToast } from '@/components/Toast';
 import { ErrorState } from '@/components/states';
-import { Skeleton } from '@/components/UI/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDismissable } from '@/hooks/useDismissable';
 import { withBackState } from '@/lib/navigation';
 import { MONTH_LABELS, ORG_TYPE_LABELS, PLATFORM_LABELS } from '@/lib/enums';
@@ -187,7 +187,8 @@ export function BrandDrawer({
                   ))}
 
                   {/* Open the full filtered creator list when more creators exist. */}
-                  {data.creator_count > data.top_creators.length && (
+                  {data.top_creators.length > 10 && (
+
                     <button
                       type="button"
                       onClick={() =>
@@ -198,6 +199,7 @@ export function BrandDrawer({
                       See all {formatNumber(data.creator_count)}
                       <ArrowRight className="size-3.25" />
                     </button>
+
                   )}
                 </>
               ) : null,

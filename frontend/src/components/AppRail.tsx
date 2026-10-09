@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Database, Search, Tags } from 'lucide-react';
+import { BarChart3, Database, Search, Tags } from 'lucide-react';
 import { useAuth } from '@/features/auth/useAuth';
 import { cn } from '@/lib/utils';
 
@@ -12,14 +12,15 @@ export function AppRail() {
   const { canIngest } = useAuth();
 
   return (
-    <aside className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-rp-border py-[9px]">
+    <aside className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-rp-border py-2.25">
       <RailLink to="/search" label="Search" icon={<Search className="size-[19px]" />} />
       {/* Hidden unless the backend says this account may ingest. The routes are
           guarded too, and the backend's 403 remains the real gate. */}
       {canIngest && (
         <>
-          <RailLink to="/ingest" label="Ingest" icon={<Database className="size-[19px]" />} />
-          <RailLink to="/taxonomy" label="Tags" icon={<Tags className="size-[19px]" />} />
+          <RailLink to="/ingest" label="Ingest" icon={<Database className="size-4.75" />} />
+          <RailLink to="/taxonomy" label="Tags" icon={<Tags className="size-4.75" />} />
+          <RailLink to="/analytics" label="Analytics" icon={<BarChart3 className="size-.475" />} />
         </>
       )}
     </aside>

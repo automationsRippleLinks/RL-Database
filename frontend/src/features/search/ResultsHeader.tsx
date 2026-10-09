@@ -1,7 +1,7 @@
 import { Loader2, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/UI/button';
-import { Select } from '@/components/UI/select';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { formatNumber, pluralise } from '@/lib/format';
 
 interface ResultsHeaderProps {

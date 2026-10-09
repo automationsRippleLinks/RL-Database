@@ -1,11 +1,18 @@
-import { useMemo } from 'react';
-import { useUrlSearchState } from '@/hooks/useUrlSearchState';
-import { PLATFORMS, PLATFORM_LABELS } from '@/lib/enums';
-import { citiesIn, regionsIn, statesIn } from '@/lib/geo';
-import type { CreatorFacets, Platform } from '@/types/api';
-import type { DropdownOption } from '../../components/FilterDropdown';
+import { useMemo } from "react";
+import { useUrlSearchState } from "@/hooks/useUrlSearchState";
+import { PLATFORMS, PLATFORM_LABELS } from "@/lib/enums";
+import { citiesIn, regionsIn, statesIn } from "@/lib/geo";
+import type { CreatorFacets, Platform } from "@/types/api";
+import type { DropdownOption } from "../../components/FilterDropdown";
 
-export type FilterGroupKey = 'platform' | 'brand' | 'content' | 'location' | 'reach' | 'contact';
+export type FilterGroupKey =
+  | "platform"
+  | "brand"
+  | "content"
+  | "location"
+  | "reach"
+  | "contact"
+  | "deliverables";
 
 /** One removable pill above the results, and the state it removes. */
 export interface FilterPill {
@@ -16,40 +23,37 @@ export interface FilterPill {
 
 /**
  * The creator rail's whole filter model, derived from the URL and the facets.
-*
-* It lives apart from the components that draw it because two of them need it:
-* the rail renders the groups, and the results header renders the same
-* selections as pills. Deriving it twice would be two chances to disagree about
-* what "applied" means.
-*/
+ *
+ * It lives apart from the components that draw it because two of them need it:
+ * the rail renders the groups, and the results header renders the same
+ * selections as pills. Deriving it twice would be two chances to disagree about
+ * what "applied" means.
+ */
 
-
-
-
-export function useCreatorFilterModel(
-  facets: CreatorFacets | undefined,
-) {
+export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
   const url = useUrlSearchState();
-  const platforms = url.getList('platform');
-  const brandIds = url.getList('c_brand');
-  const categories = url.getList('category');
-  const languages = url.getList('language');
-  const tags = url.getList('tag');
-  const regions = url.getList('region');
-  const states = url.getList('state');
-  const cities = url.getList('city');
-  const folMin = url.getString('min_followers');
-  const folMax = url.getString('max_followers');
-  const viewMin = url.getString('min_views');
-  const viewMax = url.getString('max_views');
-  const contact = url.getString('contact');
+  const platforms = url.getList("platform");
+  const brandIds = url.getList("c_brand");
+  const categories = url.getList("category");
+  const languages = url.getList("language");
+  const tags = url.getList("tag");
+  const regions = url.getList("region");
+  const states = url.getList("state");
+  const cities = url.getList("city");
+  const folMin = url.getString("min_followers");
+  const folMax = url.getString("max_followers");
+  const viewMin = url.getString("min_views");
+  const viewMax = url.getString("max_views");
+  const contact = url.getString("contact") || "contact";
+  const hasPackage = url.getString("package") === "1";
+  const pkgMin = url.getString("min_package");
+  const pkgMax = url.getString("max_package");
 
   /** Every filter change resets to page 1 — page 7 of a smaller set is a dead end. */
   const set = (updates: Parameters<typeof url.setParams>[0]) =>
     url.setParams(updates, { replace: true, resetPage: true });
 
   const facetCities = useMemo(() => facets?.cities ?? [], [facets]);
-
 
   const options = useMemo(() => {
     const asOptions = (values: readonly string[]): DropdownOption[] =>
@@ -64,11 +68,18 @@ export function useCreatorFilterModel(
       brand: (facets?.brands ?? [])
         .map((brand) => ({ value: String(brand.id), label: brand.name }))
         .sort((a, b) => a.label.localeCompare(b.label)),
-      category: asOptions([...(facets?.categories ?? [])].sort((a, b) => a.localeCompare(b))),
-      language: asOptions([...(facets?.languages ?? [])].sort((a, b) => a.localeCompare(b))),
+      category: asOptions(
+        [...(facets?.categories ?? [])].sort((a, b) => a.localeCompare(b)),
+      ),
+      language: asOptions(
+        [...(facets?.languages ?? [])].sort((a, b) => a.localeCompare(b)),
+      ),
       // Region narrows State, and Region + State narrow City. All three are
       // computed from the city facet — see lib/geo.ts.
-      region: regionsIn(facetCities).map((region) => ({ value: region, label: `${region} India` })),
+      region: regionsIn(facetCities).map((region) => ({
+        value: region,
+        label: `${region} India`,
+      })),
       state: asOptions(statesIn(facetCities, regions)),
       city: asOptions(citiesIn(facetCities, regions, states)),
     };
@@ -81,11 +92,14 @@ export function useCreatorFilterModel(
     content: categories.length + languages.length + tags.length,
     location: regions.length + states.length + cities.length,
     reach: (folMin || folMax ? 1 : 0) + (viewMin || viewMax ? 1 : 0),
-    contact: contact ? 1 : 0,
-
+    // contact: contact ? 1 : 0,
+    contact: contact !== "contact" && contact !== "none" ? 1 : 0,
+    deliverables: (hasPackage ? 1 : 0) + (pkgMin || pkgMax ? 1 : 0),
   };
-  const totalApplied = Object.values(counts).reduce((sum, count) => sum + count, 0);
-
+  const totalApplied = Object.values(counts).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
 
   const values = {
     platforms,
@@ -101,22 +115,37 @@ export function useCreatorFilterModel(
     viewMin,
     viewMax,
     contact,
+    hasPackage,
+    pkgMax,
+    pkgMin,
   };
 
   const actions = {
     setPlatforms: (next: string[]) => set({ platform: next }),
-    setContact: (next: string | null) => set({ contact: next }), setBrands: (next: string[]) => set({ c_brand: next }),
+    // setContact: (next: string | null) => set({ contact: next }),
+    setContact: (next: string | null) => set({ contact: next ?? "none" }),
+    setBrands: (next: string[]) => set({ c_brand: next }),
     setCategories: (next: string[]) => set({ category: next }),
     setLanguages: (next: string[]) => set({ language: next }),
     setTags: (next: string[]) => set({ tag: next }),
     // Changing Region clears State and City; changing State clears City. Keeping
     // a city that the new region doesn't contain would produce a filter pair
     // that can only ever return nothing.
-    setRegions: (next: string[]) => set({ region: next, state: null, city: null }),
+    setRegions: (next: string[]) =>
+      set({ region: next, state: null, city: null }),
     setStates: (next: string[]) => set({ state: next, city: null }),
     setCities: (next: string[]) => set({ city: next }),
-    setFollowers: (min: string, max: string) => set({ min_followers: min, max_followers: max }),
-    setViews: (min: string, max: string) => set({ min_views: min, max_views: max }),
+    setFollowers: (min: string, max: string) =>
+      set({ min_followers: min, max_followers: max }),
+    setViews: (min: string, max: string) =>
+      set({ min_views: min, max_views: max }),
+    setHasPackage: (on: boolean) => set({ package: on ? "1" : null }),
+    // Update the filter when you type a package cost.
+    setPackageCost: (min: string, max: string) =>
+      set({
+        min_package: min,
+        max_package: max,
+      }),
 
     clearAll: (clearQuery: boolean = false) =>
       set({
@@ -133,6 +162,9 @@ export function useCreatorFilterModel(
         max_followers: null,
         min_views: null,
         max_views: null,
+        package: null,
+        min_package: null,
+        max_package: null,
         ...(clearQuery && { q: null }),
       }),
   };
@@ -210,6 +242,20 @@ export function useCreatorFilterModel(
         remove: () => set({ min_followers: null, max_followers: null }),
       });
     }
+    if (hasPackage) {
+      list.push({
+        key: "package",
+        label: "Has package",
+        remove: () => set({ package: null }),
+      });
+      if (pkgMin || pkgMax) {
+        list.push({
+          key: "package-cost",
+          label: `Package ₹${pkgMin || "any"}–${pkgMax || "any"}`,
+          remove: () => set({ min_package: null, max_package: null }),
+        });
+      }
+    }
     if (viewMin || viewMax) {
       list.push({
         key: "views",
@@ -233,9 +279,11 @@ export function useCreatorFilterModel(
     folMax,
     viewMin,
     viewMax,
+    hasPackage,
+    pkgMax,
+    pkgMin,
     url,
   ]);
 
   return { options, counts, totalApplied, values, actions, pills };
 }
-

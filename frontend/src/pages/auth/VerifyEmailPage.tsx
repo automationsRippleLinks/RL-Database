@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Loader2, MailWarning } from 'lucide-react';
-import { Button } from '@/components/UI/button';
+import { Button } from '@/components/ui/button';
 import { ApiError } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
 import { AuthShell } from "@/features/auth/AuthShell";

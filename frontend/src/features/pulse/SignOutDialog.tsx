@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/UI/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/features/auth/useAuth';
 
 /**
@@ -18,18 +18,18 @@ export function SignOutDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[364px] rounded-2xl border-rp-border bg-rp-surface p-[21px] shadow-rp">
+      <DialogContent className="max-w-91 rounded-2xl border-rp-border bg-rp-surface p-5.25 shadow-rp">
         <DialogTitle className="mb-1.5 text-[15.5px] font-bold">
           Sign out of Ripple Pulse?
         </DialogTitle>
-        <DialogDescription className="mb-[17px] text-[12.5px] leading-[1.5] text-rp-muted">
+        <DialogDescription className="mb-4.25 text-[12.5px] leading-normal text-rp-muted">
           You'll need your work email to sign back in.
         </DialogDescription>
-        <div className="flex justify-end gap-[9px]">
+        <div className="flex justify-end gap-2.25">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="cursor-pointer rounded-[10px] border border-rp-border px-[13px] py-[9px] text-[12.5px] font-semibold hover:bg-rp-surface2"
+            className="cursor-pointer rounded-[10px] border border-rp-border px-3.25 py-2.25 text-[12.5px] font-semibold hover:bg-rp-surface2"
           >
             Stay signed in
           </button>
@@ -43,7 +43,7 @@ export function SignOutDialog({
               setSigningOut(true);
               void logout();
             }}
-            className="cursor-pointer rounded-[10px] bg-rp-danger px-[14px] py-[9px] text-[12.5px] font-bold text-white disabled:opacity-60"
+            className="cursor-pointer rounded-[10px] bg-rp-danger px-3.5 py-2.25 text-[12.5px] font-bold text-white disabled:opacity-60"
           >
             {signingOut ? 'Signing out…' : 'Sign out'}
           </button>

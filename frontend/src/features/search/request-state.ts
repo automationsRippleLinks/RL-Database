@@ -27,6 +27,7 @@ import type {
   PitchSort,
   Platform,
 } from '@/types/api';
+// import { Contact } from 'lucide-react';
 
 export const DEFAULT_PAGE_SIZE = 50;
 
@@ -49,6 +50,8 @@ export const CREATOR_SORTS: { value: CreatorSort; label: string }[] = [
   { value: 'avg_views_desc', label: 'Most avg views' },
   { value: 'name_asc', label: 'Name A–Z' },
   { value: 'campaigns_desc', label: 'Most campaigns with us' },
+  { value: 'package_cost_desc', label: 'Highest package' },
+  { value: 'package_cost_asc', label: 'Lowest package' },
 ];
 
 export const DEFAULT_CREATOR_SORT: CreatorSort = 'followers_desc';
@@ -110,7 +113,7 @@ export function useCreatorRequest(facetCities: string[] = []): CreatorSearchRequ
   const url = useUrlSearchState();
   const paging = usePaging();
   const text = url.getString('q');
-  const contact = url.getString('contact');
+  const contact = url.getString('contact') || 'contact';
   // Joined so the memo compares by value: the array identity changes on every
   // facets render even when the vocabulary has not.
   const cityVocabulary = facetCities.join('\u0000');
@@ -135,18 +138,22 @@ export function useCreatorRequest(facetCities: string[] = []): CreatorSearchRequ
       // key, and the two must not reinterpret each other across a tab switch.
       brand_ids: url.getList('c_brand').map(Number).filter(Number.isFinite),
       tags: url.getList('tag'),
-      has_email: contact === 'email' || contact === 'contact',
-      has_phone: contact === 'phone' || contact === 'contact',
-      has_contact: false,
+      has_email: contact === 'email',
+      has_phone: contact === 'phone',
+      has_contact: contact === 'contact',
       // Inverted on purpose. This filter defaults to ON, and setParams drops
       // `false` from the URL, so the only encodable state is the non-default
       // one: `no_contact=1` means the box was unticked.
+
       campaign_involvement:
         (url.getString('in_campaign') as CampaignInvolvement) || null,
       min_followers: parseAmount(url.getString('min_followers')),
       max_followers: parseAmount(url.getString('max_followers')),
       min_avg_views: parseAmount(url.getString('min_views')),
       max_avg_views: parseAmount(url.getString('max_views')),
+      has_package: url.getString('package') === '1',
+      min_package_cost: parseAmount(url.getString('min_package')),
+      max_package_cost: parseAmount(url.getString('max_package')),
       sort:
         (url.getString('sort', DEFAULT_CREATOR_SORT) as CreatorSort) || DEFAULT_CREATOR_SORT,
       ...paging,
@@ -245,6 +252,8 @@ export const SCOPE_FILTER_KEYS: Record<string, string[]> = {
     'region', 'state', 'city', 'c_brand', 'tag',
     'has_email', 'has_phone', 'no_contact', 'in_campaign',
     'min_followers', 'max_followers', 'min_views', 'max_views',
+    'package', 'min_package', 'max_package',
+
   ],
   brands: ['b_org', 'b_platform', 'has_company', 'has_gstin', 'min_campaigns', 'min_pitches'],
   campaigns: ['status', 'report_status', 'month', 'year', 'manager', 'brand_id', 'start_from', 'start_to'],
@@ -259,7 +268,9 @@ export const SCOPE_FILTER_KEYS: Record<string, string[]> = {
  * would pin the "N active" badge at 1 forever and make "reset" look broken.
  */
 const FILTER_DEFAULTS: Record<string, Record<string, unknown>> = {
-  creators: { has_contact: false },
+  // creators: { has_contact: false },
+  creators: { has_contact: true },
+
 };
 
 /** How many filters are active, for the "N active" badge on the filter panel. */

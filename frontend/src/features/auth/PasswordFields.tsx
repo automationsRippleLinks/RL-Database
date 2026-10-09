@@ -1,5 +1,5 @@
-import { Input } from '@/components/UI/input';
-import { Label } from '@/components/UI/label';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 /**
  * Password + confirm pair, shared by signup and password reset.

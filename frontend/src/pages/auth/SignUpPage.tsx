@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle, Loader2, MailCheck, UserPlus } from 'lucide-react';
-import { Button } from '@/components/UI/button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ApiError } from '@/lib/api-client';

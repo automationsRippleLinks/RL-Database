@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Play, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/UI/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/card';
-import { Badge } from '@/components/UI/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ErrorState } from '@/components/states';
 import { ingestApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';

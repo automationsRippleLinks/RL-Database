@@ -1,4 +1,4 @@
-import { Building2, ChevronDown, Globe, MapPin, Tag, Users, MapIcon, Contact as ContactIcon, Mail, Phone } from 'lucide-react';
+import { Building2, ChevronDown, Globe, MapPin, Tag, Users, MapIcon, Contact as ContactIcon, Mail, Phone, Package } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CreatorFacets } from '@/types/api';
@@ -17,6 +17,7 @@ const GROUPS: { key: FilterGroupKey; label: string; icon: LucideIcon }[] = [
   { key: 'location', label: 'Location', icon: MapPin },
   { key: 'reach', label: 'Reach', icon: Users },
   { key: 'contact', label: 'Contact', icon: ContactIcon },
+  { key: 'deliverables', label: 'Deliverables', icon: Package },
 ];
 const CONTACT_OPTIONS = [
   { value: 'contact', label: 'Has Contact', icon: ContactIcon },
@@ -66,7 +67,7 @@ export default function CreatorFilters({
       {GROUPS.map(({ key, label, icon: Icon }) => {
         const count = model.counts[key];
         const open = openGroup === key && railOpen;
- 
+
         return (
           <div key={key} className="shrink-0">
             <button
@@ -210,18 +211,54 @@ export default function CreatorFilters({
                 )}
                 {key === 'contact' && (
                   <IconFilter
-                    options={CONTACT_OPTIONS.map((option) => ({
-                      ...option,
-                      disabled:
-                        model.values.contact === 'contact' &&
-                        option.value !== 'contact',
-                    }))}
-                    selected={model.values.contact ? [model.values.contact] : []}
-                    onChange={(values) =>
+                    options={CONTACT_OPTIONS}
+                    // selected={model.values.contact ? [model.values.contact] : []}
+                    selected={model.values.contact && model.values.contact !== 'none' ? [model.values.contact] : []} onChange={(values) =>
                       model.actions.setContact(values[values.length - 1] ?? null)
                     }
                   />
                 )}
+                {key === 'deliverables' && (
+                  <>
+                    <label className="flex cursor-pointer items-center gap-2 text-sm">
+                      <span className="relative flex size-4 shrink-0 items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(model.values.hasPackage)}
+                          onChange={(event) =>
+                            model.actions.setHasPackage(event.target.checked)
+                          }
+                          className="peer size-4 cursor-pointer appearance-none rounded-full border border-current bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rp-primary"
+                        />
+
+                        {/* Show only a tick inside the circle when selected. */}
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                          className="pointer-events-none absolute size-3 hidden peer-checked:block"
+                        >
+                          <path d="m5 12 4 4 10-10" />
+                        </svg>
+                      </span>
+
+                      <span>Has package</span>
+                    </label>
+
+                    <RangeControl
+                      label="Package cost (₹)"
+                      min={model.values.pkgMin}
+                      max={model.values.pkgMax}
+                      onChange={model.actions.setPackageCost}
+                    />
+                  </>
+                )}
+
+
                 {/*Followers*/}
                 {key === 'reach' && (
                   <RangeControl

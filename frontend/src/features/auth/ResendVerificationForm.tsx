@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { CheckCircle2, Loader2, Send } from 'lucide-react';
-import { Button } from '@/components/UI/button';
-import { Input } from '@/components/UI/input';
-import { Label } from '@/components/UI/label';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ApiError } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
 import { useCooldown } from '@/hooks/useCooldown';

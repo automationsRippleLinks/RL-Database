@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Building2, FileText, Link2, Link2Off, Megaphone, Search, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Button } from '@/components/UI/button';
+import { Button } from '@/components/ui/button';
 import { DataTable, type Column } from '@/components/DataTable';
 import { EmptyState, ErrorState } from '@/components/states';
 import { Skeleton } from '@/components/ui/skeleton';

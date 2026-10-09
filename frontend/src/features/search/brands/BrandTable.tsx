@@ -2,9 +2,6 @@ import { Building2 } from 'lucide-react';
 import { DataTable, type Column } from '@/components/DataTable';
 import { formatDate, formatNumber, initials } from '@/lib/format';
 import type { BrandRow } from '@/types/api';
-import { ExportDialog, type ExportScope } from '@/features/search/ExportDialog';
-import { searchApi } from '@/lib/endpoints';
-import { downloadCsv, fetchAllSearchRows, toCsv } from '@/lib/csv';
 
 // ── BRAND TABLE PROPS ──────────────────────────────────────────
 

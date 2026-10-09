@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { AlertTriangle, Inbox, Loader2, PlugZap, ShieldOff } from 'lucide-react';
 import { ApiError } from '@/lib/api-client';
-import { Button } from './UI/button';
+import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 
 export function EmptyState({
