@@ -16,6 +16,11 @@ import type {
   CreatorFacets,
   CreatorRow,
   CreatorSearchRequest,
+  CreatorSummary,
+  CreatorSummaryRequest,
+  CreatorUpdate,
+  EditRecord,
+  EditSession,
   GlobalSearchResponse,
   IngestJob,
   IngestSource,
@@ -241,4 +246,28 @@ export const ingestApi = {
     formData.append("dry_run", String(dryRun));
     return api.upload<IngestJob>("/ingest/upload", formData);
   },
+};
+
+// ─── creator analytics and editing ──────────────────────────────────────────
+
+export const analyticsApi = {
+  /** Counts for the data-quality dashboard. The database does the counting. */
+  creatorSummary: (
+    req: CreatorSummaryRequest,
+    { signal }: Ctx = {},
+  ): Promise<CreatorSummary> =>
+    api.post<CreatorSummary>("/analytics/creators/summary", req, { signal }),
+};
+
+export const creatorEditApi = {
+  /** Claims the edit lock (call again every minute to renew) and returns the row with its version. */
+  open: (id: string): Promise<EditSession> =>
+    api.post<EditSession>(`/creators/${id}/lock`),
+
+  /** Releases our lock. Failing to release is harmless: it expires on its own. */
+  close: (id: string): Promise<void> => api.del(`/creators/${id}/lock`),
+
+  /** 409 = someone changed it since you opened it, 423 = someone else holds the lock. */
+  save: (id: string, body: CreatorUpdate): Promise<EditRecord> =>
+    api.patch<EditRecord>(`/creators/${id}`, body),
 };

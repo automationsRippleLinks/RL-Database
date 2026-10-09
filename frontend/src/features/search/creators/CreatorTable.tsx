@@ -403,7 +403,7 @@ function TruncatedList({
           {isOpen && (
             <span
               role="tooltip"
-              className="absolute top-full left-0 z-50 mt-1 min-w-max max-w-64 rounded-lg border border-rp-border bg-rp-surface px-3 py-2 text-[11px] font-normal whitespace-normal text-rp-text shadow-lg"
+              className="absolute top-full right-0 z-50 mt-1 min-w-max max-w-64 rounded-lg border border-rp-border bg-rp-surface px-3 py-2 text-[11px] font-normal whitespace-normal text-rp-text shadow-lg"
               onClick={(event) => event.stopPropagation()}
             >
               <span className="block font-semibold">
@@ -435,14 +435,21 @@ function ContactGlyph({
   icon: LucideIcon;
   onCopy: (value: string) => void;
 }) {
+  const [clicked, setClicked] = useState(false); // true after a click, until the mouse leaves
+
+  const label = (
+    <span
+      className={`pointer-events-none absolute right-0 bottom-full z-50 mb-0.5 border border-rp-muted bg-rp-surface px-2 py-0.5 text-[13px] font-normal whitespace-nowrap text-rp-text opacity-0 ${clicked ? '' : 'group-hover/tip:opacity-100'}`}
+    >
+      {title}
+    </span>
+  );
+
   if (!value) {
     return (
-      <span
-        title={title}
-        aria-label={title}
-        className="inline-flex text-rp-faint"
-      >
+      <span aria-label={title} className="group/tip relative inline-flex text-rp-faint">
         <Icon className="size-4.25" />
+        {label}
       </span>
     );
   }
@@ -450,15 +457,17 @@ function ContactGlyph({
   return (
     <button
       type="button"
-      title={title}
       aria-label={title}
       onClick={(event) => {
         event.stopPropagation();
         onCopy(value);
+        setClicked(true);
       }}
-      className="inline-flex cursor-pointer text-rp-primary hover:text-rp-text"
+      onMouseLeave={() => setClicked(false)}
+      className="group/tip relative inline-flex cursor-pointer text-rp-primary hover:text-rp-text"
     >
       <Icon className="size-4" />
+      {label}
     </button>
   );
 }

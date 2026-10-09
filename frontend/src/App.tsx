@@ -33,7 +33,7 @@ export function App() {
             <AppRail />
             {/* The data rail belongs to search. Ingest and Taxonomy are their
                 own destinations and take the full width. */}
-          
+
             {showDataRail && <DataRail />}
 
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -41,10 +41,9 @@ export function App() {
                 {isSearch ? (
                   <Outlet /> // load search page
                 ) : (
-                  <div className={cn('min-h-0 flex-1 overflow-y-auto px-4 py-5')}>
-                    <div className="mx-auto max-w-[1600px]">
-                      <Outlet /> {/*load ingest or taxonomy page */}
-                    </div>
+                  <div className={cn('min-h-0 flex-1 overflow-y-auto px-4 py-5 scrollbar-thin')}>                    <div className="mx-auto max-w-[1600px]">
+                    <Outlet /> {/*load ingest or taxonomy page */}
+                  </div>
                   </div>
                 )}
               </Suspense>

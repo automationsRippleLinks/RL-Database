@@ -11,6 +11,14 @@ export class ApiError extends Error {
   readonly code: AuthErrorCode | string | null;
   readonly path: string;
   readonly retryAfterSeconds: number | null;
+  /**
+   * The error body when the backend sent an object instead of a string, e.g. the
+   * edit routes' `{ code, message, holder }` (423 locked) or `{ code, message,
+   * current_version }` (409 stale). null for plain errors.
+   */
+  readonly info: Record<string, unknown> | null;
+  /** Per-field messages from a 422 validation error, keyed by the field name. */
+  readonly fields: Record<string, string>;
 
   constructor(opts: {
     status: number;
@@ -18,6 +26,8 @@ export class ApiError extends Error {
     code?: string | null;
     path: string;
     retryAfterSeconds?: number | null;
+    info?: Record<string, unknown> | null;
+    fields?: Record<string, string>;
   }) {
     super(opts.detail);
     this.name = 'ApiError';
@@ -26,6 +36,8 @@ export class ApiError extends Error {
     this.code = opts.code ?? null;
     this.path = opts.path;
     this.retryAfterSeconds = opts.retryAfterSeconds ?? null;
+    this.info = opts.info ?? null;
+    this.fields = opts.fields ?? {};
   }
 
   get isRateLimited(): boolean {
@@ -178,10 +190,15 @@ export async function apiRequest<T>(
   if (!response.ok) {
     logApiFailure(path, method, response.status, startedAt);
 
+    const parsed = await extractDetail(response);
     throw new ApiError({
       status: response.status,
-      detail: await extractDetail(response),
-      code: response.headers.get('X-Error-Code'),
+      detail: parsed.message,
+      code:
+        response.headers.get('X-Error-Code') ??
+        (typeof parsed.info?.code === 'string' ? parsed.info.code : null),
+      info: parsed.info,
+      fields: parsed.fields,
       path,
       retryAfterSeconds: parseRetryAfter(
         response.headers.get('Retry-After'),
@@ -216,40 +233,60 @@ export function parseRetryAfter(raw: string | null): number | null {
   return Math.max(0, Math.round((retryDate - Date.now()) / 1000));
 }
 
-// Read the backend error message for display in the application.
+// Read the backend error for display in the application.
 // Our Faro helper does not send this response content.
-async function extractDetail(response: Response): Promise<string> {
+interface ParsedError {
+  message: string;
+  info: Record<string, unknown> | null;
+  fields: Record<string, string>;
+}
+
+async function extractDetail(response: Response): Promise<ParsedError> {
+  const fallback = (): ParsedError => ({
+    message: response.statusText || `Request failed with status ${response.status}`,
+    info: null,
+    fields: {},
+  });
+
   try {
     const data: unknown = await response.json();
 
-    if (typeof data === 'string') return data;
+    if (typeof data === 'string') return { message: data, info: null, fields: {} };
 
     if (data && typeof data === 'object' && 'detail' in data) {
       const detail = (data as { detail: unknown }).detail;
 
-      if (typeof detail === 'string') return detail;
+      if (typeof detail === 'string') return { message: detail, info: null, fields: {} };
+
+      // The edit routes send { code, message, ...extras }.
+      if (detail && typeof detail === 'object' && !Array.isArray(detail)) {
+        const info = detail as Record<string, unknown>;
+        return {
+          message: typeof info.message === 'string' ? info.message : fallback().message,
+          info,
+          fields: {},
+        };
+      }
 
       // FastAPI may return several validation messages.
       if (Array.isArray(detail)) {
-        return detail
-          .map((item) =>
-            item && typeof item === 'object' && 'msg' in item
-              ? String((item as { msg: unknown }).msg)
-              : JSON.stringify(item),
-          )
-          .join('; ');
+        const fields: Record<string, string> = {};
+        const messages = detail.map((item) => {
+          if (!item || typeof item !== 'object' || !('msg' in item)) return JSON.stringify(item);
+          const { msg, loc } = item as { msg: unknown; loc?: unknown };
+          // loc looks like ["body", "emails", 0]: the field is the second part.
+          if (Array.isArray(loc) && typeof loc[1] === 'string' && !(loc[1] in fields)) {
+            fields[loc[1]] = String(msg);
+          }
+          return String(msg);
+        });
+        return { message: messages.join('; '), info: null, fields };
       }
     }
 
-    return (
-      response.statusText ||
-      `Request failed with status ${response.status}`
-    );
+    return fallback();
   } catch {
-    return (
-      response.statusText ||
-      `Request failed with status ${response.status}`
-    );
+    return fallback();
   }
 }
 

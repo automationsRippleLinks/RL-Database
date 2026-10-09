@@ -1,0 +1,6385 @@
+{
+ "_meta": {
+  "provisional": true,
+  "note": "Fictional mock data shaped after the RL-Database models. Not an export. Not backend-compatible.",
+  "as_of": "2026-10-02",
+  "generator": "scripts/generate_provisional_data.py (seed 7)"
+ },
+ "companies": [
+  {
+   "id": 1,
+   "name": "Lumen Holdings"
+  },
+  {
+   "id": 2,
+   "name": "Harbor Holdings"
+  },
+  {
+   "id": 3,
+   "name": "Saffron Holdings"
+  },
+  {
+   "id": 4,
+   "name": "Orbit Holdings"
+  },
+  {
+   "id": 5,
+   "name": "Maple Holdings"
+  },
+  {
+   "id": 6,
+   "name": "Tidal Holdings"
+  },
+  {
+   "id": 7,
+   "name": "Aster Holdings"
+  },
+  {
+   "id": 8,
+   "name": "Cobalt Holdings"
+  },
+  {
+   "id": 9,
+   "name": "Juniper Holdings"
+  },
+  {
+   "id": 10,
+   "name": "Nimbus Holdings"
+  },
+  {
+   "id": 11,
+   "name": "Quartz Holdings"
+  },
+  {
+   "id": 12,
+   "name": "Velvet Holdings"
+  },
+  {
+   "id": 13,
+   "name": "Basil Holdings"
+  },
+  {
+   "id": 14,
+   "name": "Ember Holdings"
+  }
+ ],
+ "brands": [
+  {
+   "id": 1,
+   "name": "saffron labs",
+   "display_name": "Saffron Labs",
+   "gstin": null,
+   "company_id": 13
+  },
+  {
+   "id": 2,
+   "name": "lumen studio",
+   "display_name": "Lumen Studio",
+   "gstin": "25NBVCY6140K6ZT",
+   "company_id": 13
+  },
+  {
+   "id": 3,
+   "name": "saffron studio",
+   "display_name": "Saffron Studio",
+   "gstin": "36CIPWV2064B5ZU",
+   "company_id": 11
+  },
+  {
+   "id": 4,
+   "name": "cobalt wear",
+   "display_name": "Cobalt Wear",
+   "gstin": "19WMVLA8564L3ZT",
+   "company_id": null
+  },
+  {
+   "id": 5,
+   "name": "aster home",
+   "display_name": "Aster Home",
+   "gstin": null,
+   "company_id": 3
+  },
+  {
+   "id": 6,
+   "name": "harbor home",
+   "display_name": "Harbor Home",
+   "gstin": "22MPCFO7580R5ZE",
+   "company_id": 14
+  },
+  {
+   "id": 7,
+   "name": "cobalt skincare",
+   "display_name": "Cobalt Skincare",
+   "gstin": "32NLVMH3472C3ZE",
+   "company_id": null
+  },
+  {
+   "id": 8,
+   "name": "nimbus wear",
+   "display_name": "Nimbus Wear",
+   "gstin": "",
+   "company_id": 10
+  },
+  {
+   "id": 9,
+   "name": "maple home",
+   "display_name": "Maple Home",
+   "gstin": null,
+   "company_id": 3
+  },
+  {
+   "id": 10,
+   "name": "aster studio",
+   "display_name": "Aster Studio",
+   "gstin": "21TSKEW9445T1ZO",
+   "company_id": 13
+  },
+  {
+   "id": 11,
+   "name": "aster wear",
+   "display_name": "Aster Wear",
+   "gstin": "31ZRMMM7457D8ZU",
+   "company_id": 4
+  },
+  {
+   "id": 12,
+   "name": "aster labs",
+   "display_name": "Aster Labs",
+   "gstin": null,
+   "company_id": null
+  },
+  {
+   "id": 13,
+   "name": "juniper skincare",
+   "display_name": "Juniper Skincare",
+   "gstin": null,
+   "company_id": 1
+  },
+  {
+   "id": 14,
+   "name": "cobalt home",
+   "display_name": "Cobalt Home",
+   "gstin": null,
+   "company_id": 9
+  },
+  {
+   "id": 15,
+   "name": "harbor foods",
+   "display_name": "Harbor Foods",
+   "gstin": null,
+   "company_id": 1
+  },
+  {
+   "id": 16,
+   "name": "nimbus foods",
+   "display_name": "Nimbus Foods",
+   "gstin": null,
+   "company_id": null
+  },
+  {
+   "id": 17,
+   "name": "tidal home",
+   "display_name": "Tidal Home",
+   "gstin": "30ILTLP3012D8ZO",
+   "company_id": 5
+  },
+  {
+   "id": 18,
+   "name": "orbit home",
+   "display_name": "Orbit Home",
+   "gstin": null,
+   "company_id": null
+  },
+  {
+   "id": 19,
+   "name": "saffron skincare",
+   "display_name": "Saffron Skincare",
+   "gstin": "18PWFQA4362Q6ZE",
+   "company_id": 1
+  },
+  {
+   "id": 20,
+   "name": "orbit skincare",
+   "display_name": "Orbit Skincare",
+   "gstin": "19UCWIQ7008F6ZY",
+   "company_id": null
+  },
+  {
+   "id": 21,
+   "name": "cobalt labs",
+   "display_name": "Cobalt Labs",
+   "gstin": "26KUHTZ4197Z4ZM",
+   "company_id": 4
+  },
+  {
+   "id": 22,
+   "name": "tidal skincare",
+   "display_name": "Tidal Skincare",
+   "gstin": null,
+   "company_id": 12
+  },
+  {
+   "id": 23,
+   "name": "orbit audio",
+   "display_name": "Orbit Audio",
+   "gstin": null,
+   "company_id": null
+  },
+  {
+   "id": 24,
+   "name": "juniper foods",
+   "display_name": "Juniper Foods",
+   "gstin": "   ",
+   "company_id": 12
+  },
+  {
+   "id": 25,
+   "name": "nimbus audio",
+   "display_name": "Nimbus Audio",
+   "gstin": "21OZXLL2319H2ZH",
+   "company_id": 6
+  },
+  {
+   "id": 26,
+   "name": "lumen foods",
+   "display_name": "Lumen Foods",
+   "gstin": "",
+   "company_id": 10
+  },
+  {
+   "id": 27,
+   "name": "maple foods",
+   "display_name": "Maple Foods",
+   "gstin": "25ULZUC2964M4ZP",
+   "company_id": 7
+  },
+  {
+   "id": 28,
+   "name": "lumen wear",
+   "display_name": "Lumen Wear",
+   "gstin": "20CZXMO7576X2ZX",
+   "company_id": null
+  },
+  {
+   "id": 29,
+   "name": "tidal labs",
+   "display_name": "Tidal Labs",
+   "gstin": "10ESOZU3394T8ZV",
+   "company_id": 3
+  },
+  {
+   "id": 30,
+   "name": "maple skincare",
+   "display_name": "Maple Skincare",
+   "gstin": "14AAZXU2683Q3ZN",
+   "company_id": 4
+  },
+  {
+   "id": 31,
+   "name": "lumen skincare",
+   "display_name": "Lumen Skincare",
+   "gstin": "16AIGJQ4940Y6ZI",
+   "company_id": 14
+  },
+  {
+   "id": 32,
+   "name": "tidal audio",
+   "display_name": "Tidal Audio",
+   "gstin": null,
+   "company_id": 6
+  },
+  {
+   "id": 33,
+   "name": "orbit wear",
+   "display_name": "Orbit Wear",
+   "gstin": "31SQNQE9713E9ZQ",
+   "company_id": null
+  },
+  {
+   "id": 34,
+   "name": "harbor labs",
+   "display_name": "Harbor Labs",
+   "gstin": "15TAYZE3823E8ZT",
+   "company_id": 9
+  },
+  {
+   "id": 35,
+   "name": "saffron home",
+   "display_name": "Saffron Home",
+   "gstin": null,
+   "company_id": 9
+  },
+  {
+   "id": 36,
+   "name": "juniper labs",
+   "display_name": "Juniper Labs",
+   "gstin": "35YDRBH4134I1ZY",
+   "company_id": null
+  },
+  {
+   "id": 37,
+   "name": "maple audio",
+   "display_name": "Maple Audio",
+   "gstin": "10YCOKT9282T9ZG",
+   "company_id": 8
+  },
+  {
+   "id": 38,
+   "name": "nimbus mobility",
+   "display_name": "Nimbus Mobility",
+   "gstin": "35PQHWQ5253R4ZO",
+   "company_id": null
+  },
+  {
+   "id": 39,
+   "name": "harbor skincare",
+   "display_name": "Harbor Skincare",
+   "gstin": null,
+   "company_id": 2
+  },
+  {
+   "id": 40,
+   "name": "juniper audio",
+   "display_name": "Juniper Audio",
+   "gstin": "23CGVJZ3004Y3ZW",
+   "company_id": 6
+  }
+ ],
+ "brand_creator_links": [
+  {
+   "brand_id": 2,
+   "creator_id": "5733a37e-058e-4927-a2a2-fce3bb437398"
+  },
+  {
+   "brand_id": 2,
+   "creator_id": "7a0322b9-e92d-404b-af73-54fd6a2d12a3"
+  },
+  {
+   "brand_id": 2,
+   "creator_id": "ad1162e7-0227-41a2-b8fa-8c93f8804e7c"
+  },
+  {
+   "brand_id": 2,
+   "creator_id": "2031afb4-079f-422d-acb5-c04a99b26680"
+  },
+  {
+   "brand_id": 2,
+   "creator_id": "5242cc7a-34c9-4ab3-92a6-23d9d9c41b11"
+  },
+  {
+   "brand_id": 2,
+   "creator_id": "88d90914-a058-4de0-a36f-11e29be07be0"
+  },
+  {
+   "brand_id": 2,
+   "creator_id": "afc4bf56-4a3c-4a93-91c6-2b1b77339829"
+  },
+  {
+   "brand_id": 2,
+   "creator_id": "de20d533-073e-4be6-8014-cbf752c34787"
+  },
+  {
+   "brand_id": 3,
+   "creator_id": "d1078b3f-fed0-4961-ac68-ad16ebeb64a1"
+  },
+  {
+   "brand_id": 3,
+   "creator_id": "7ac298f0-e9b4-4fcc-93fd-da2c38ae940d"
+  },
+  {
+   "brand_id": 3,
+   "creator_id": "0a41a049-a238-4f7a-b20e-cd9f18a491ef"
+  },
+  {
+   "brand_id": 3,
+   "creator_id": "3e14ae77-8dca-4e7d-b0d6-7d66f93f8b1d"
+  },
+  {
+   "brand_id": 3,
+   "creator_id": "77b9402c-0b36-4034-91c4-f8227796de12"
+  },
+  {
+   "brand_id": 3,
+   "creator_id": "1b15f2eb-e795-42bb-9f5e-b4f45380811b"
+  },
+  {
+   "brand_id": 3,
+   "creator_id": "718d68c1-fb01-4448-99a8-8df1af7fb13a"
+  },
+  {
+   "brand_id": 5,
+   "creator_id": "11fa6664-9eef-453f-9aac-21b5afe7eb15"
+  },
+  {
+   "brand_id": 5,
+   "creator_id": "53ae2d04-18f5-4b28-a230-280df27c2612"
+  },
+  {
+   "brand_id": 5,
+   "creator_id": "e4d5a3d3-6b6c-46ea-82cb-37b5cefd4531"
+  },
+  {
+   "brand_id": 5,
+   "creator_id": "0dfc54bc-05e7-4ff5-9565-7f63433fc547"
+  },
+  {
+   "brand_id": 5,
+   "creator_id": "d49943b1-d13f-4a84-a66b-695af05f1f99"
+  },
+  {
+   "brand_id": 5,
+   "creator_id": "85bf11e7-12d1-49c4-98cc-dfa063ffd5d7"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "1d007dbc-d427-46fa-aa6e-6e1036b5844d"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "d1078b3f-fed0-4961-ac68-ad16ebeb64a1"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "2ab2d5a8-aa40-4563-9148-75013e4268f1"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "aa3aabc0-2339-4230-a2a7-7b627d60682a"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "4891c30e-9e5b-4414-9653-cc8b5bd51e5d"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "4857c178-7a5a-41d9-bbab-d0e21f393a34"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "2b055b4b-771b-4363-b357-a16732d5b39f"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "87dc96ee-a77e-44cd-8089-61b3b22bbad3"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "a89751be-8586-4ae4-8f72-b7ce9691798d"
+  },
+  {
+   "brand_id": 6,
+   "creator_id": "f1729fa0-dd83-49e5-832f-1ebea50922f8"
+  },
+  {
+   "brand_id": 7,
+   "creator_id": "a89751be-8586-4ae4-8f72-b7ce9691798d"
+  },
+  {
+   "brand_id": 7,
+   "creator_id": "a262d11d-d2dd-4d3b-b3ee-240606bec71f"
+  },
+  {
+   "brand_id": 7,
+   "creator_id": "29d8ea09-4765-4ee6-952f-83fd0a5c08f2"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "d5fecb75-89a1-4aba-ae5d-8aace20d0717"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "7ac298f0-e9b4-4fcc-93fd-da2c38ae940d"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "208421e2-743d-4125-a06e-c3064038d79e"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "f1657d1a-0c0b-4074-b8dd-e84a34cb2911"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "d1078b3f-fed0-4961-ac68-ad16ebeb64a1"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "c1ac4a7a-2d12-4795-9cb3-2e144e6fd885"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "84bd6199-b1bc-4efa-95a6-67b6330ac1af"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "05bc3049-4893-4cab-b051-035453953af5"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "4affaeb0-1be4-4b8c-b58c-53f7851bec0a"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "629f1f7f-db04-4c22-8bf3-3f52d8d65e46"
+  },
+  {
+   "brand_id": 8,
+   "creator_id": "085e4f37-8ef7-4883-86ec-55d3884bd7df"
+  },
+  {
+   "brand_id": 10,
+   "creator_id": "f4f58284-1b7e-41f1-9c52-1cedd6b5c135"
+  },
+  {
+   "brand_id": 10,
+   "creator_id": "c0d5f3fe-7628-459c-8f97-fc0401f82e5d"
+  },
+  {
+   "brand_id": 10,
+   "creator_id": "d49943b1-d13f-4a84-a66b-695af05f1f99"
+  },
+  {
+   "brand_id": 10,
+   "creator_id": "bb202aab-3e9a-49e9-9f9f-8726b8b02437"
+  },
+  {
+   "brand_id": 10,
+   "creator_id": "629f1f7f-db04-4c22-8bf3-3f52d8d65e46"
+  },
+  {
+   "brand_id": 10,
+   "creator_id": "d5fecb75-89a1-4aba-ae5d-8aace20d0717"
+  },
+  {
+   "brand_id": 10,
+   "creator_id": "2b055b4b-771b-4363-b357-a16732d5b39f"
+  },
+  {
+   "brand_id": 11,
+   "creator_id": "0ad511cb-22f4-4186-b3dd-e6c2dd554a83"
+  },
+  {
+   "brand_id": 11,
+   "creator_id": "87dc96ee-a77e-44cd-8089-61b3b22bbad3"
+  },
+  {
+   "brand_id": 11,
+   "creator_id": "4eba0761-07a8-455c-9811-92ef46674794"
+  },
+  {
+   "brand_id": 11,
+   "creator_id": "959d9117-4f40-49e1-8d29-908924e71645"
+  },
+  {
+   "brand_id": 13,
+   "creator_id": "c0d5f3fe-7628-459c-8f97-fc0401f82e5d"
+  },
+  {
+   "brand_id": 13,
+   "creator_id": "90fa2e4e-cde5-47f0-b5ea-b704692cf6ea"
+  },
+  {
+   "brand_id": 13,
+   "creator_id": "29d8ea09-4765-4ee6-952f-83fd0a5c08f2"
+  },
+  {
+   "brand_id": 13,
+   "creator_id": "14e82eb6-2e87-42f4-98e6-119bdad2f264"
+  },
+  {
+   "brand_id": 13,
+   "creator_id": "3eb5191a-5ce5-4005-a5d9-297a0d6d83a8"
+  },
+  {
+   "brand_id": 13,
+   "creator_id": "3372fac7-5cf1-489f-a601-af565e3bf7ea"
+  },
+  {
+   "brand_id": 13,
+   "creator_id": "29052fdb-230c-4171-b474-0b667414b4ab"
+  },
+  {
+   "brand_id": 14,
+   "creator_id": "87dc96ee-a77e-44cd-8089-61b3b22bbad3"
+  },
+  {
+   "brand_id": 14,
+   "creator_id": "4cc81750-efa8-4978-b290-b736fc98cac9"
+  },
+  {
+   "brand_id": 14,
+   "creator_id": "adbcb87f-e0fa-444a-b03e-945cdeca18d1"
+  },
+  {
+   "brand_id": 15,
+   "creator_id": "5085ead4-6957-45f5-88b7-45ece8fc7dc5"
+  },
+  {
+   "brand_id": 15,
+   "creator_id": "6e399ad6-4510-427f-949a-a71a694a0c31"
+  },
+  {
+   "brand_id": 15,
+   "creator_id": "ce17553b-6d4c-4377-9e64-57dafe8bc5c8"
+  },
+  {
+   "brand_id": 15,
+   "creator_id": "b0bc81cd-464f-4f29-bd80-205b3e86c3aa"
+  },
+  {
+   "brand_id": 15,
+   "creator_id": "b40c1938-271f-4d10-baf6-4d9a1cf5cf37"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "3b1ec026-498b-4c08-9177-f0a8c141a445"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "a76ea2dd-5956-497a-a12e-26a5e1d88753"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "a89751be-8586-4ae4-8f72-b7ce9691798d"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "3713b8cb-084c-46ad-aeb4-9167ffae7b99"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "d49943b1-d13f-4a84-a66b-695af05f1f99"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "cf69b1ec-0a2b-4e0c-aec1-9727e4f4bca3"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "f809913e-9983-47b9-8da3-711165fc8139"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "ac6e3622-e895-4def-8f7f-7e5b0c4843d5"
+  },
+  {
+   "brand_id": 16,
+   "creator_id": "61e9dc90-2fed-42cc-b94f-1d567a0c278d"
+  },
+  {
+   "brand_id": 17,
+   "creator_id": "d1078b3f-fed0-4961-ac68-ad16ebeb64a1"
+  },
+  {
+   "brand_id": 17,
+   "creator_id": "6bf52b91-05f5-4fab-ad88-8c5e82f95c91"
+  },
+  {
+   "brand_id": 17,
+   "creator_id": "2fd20429-fd57-44a0-a2e9-7b912f2aa402"
+  },
+  {
+   "brand_id": 17,
+   "creator_id": "0692d65f-66d0-473b-b3d0-80178f1c249b"
+  },
+  {
+   "brand_id": 19,
+   "creator_id": "32f6912a-8c26-4589-a43c-20e200e2c9e2"
+  },
+  {
+   "brand_id": 19,
+   "creator_id": "84bd6199-b1bc-4efa-95a6-67b6330ac1af"
+  },
+  {
+   "brand_id": 19,
+   "creator_id": "ea4db1e5-5177-4892-a2d3-b72e9101c178"
+  },
+  {
+   "brand_id": 19,
+   "creator_id": "c9877827-1619-42ea-9b49-a582bdb8f87d"
+  },
+  {
+   "brand_id": 19,
+   "creator_id": "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42"
+  },
+  {
+   "brand_id": 19,
+   "creator_id": "6e399ad6-4510-427f-949a-a71a694a0c31"
+  },
+  {
+   "brand_id": 19,
+   "creator_id": "5be55600-10a6-4cc1-a797-32553e6d6703"
+  },
+  {
+   "brand_id": 20,
+   "creator_id": "958faf5f-15d6-47d3-9ad1-9a2e8ed7a7de"
+  },
+  {
+   "brand_id": 20,
+   "creator_id": "77b9402c-0b36-4034-91c4-f8227796de12"
+  },
+  {
+   "brand_id": 20,
+   "creator_id": "0dfc54bc-05e7-4ff5-9565-7f63433fc547"
+  },
+  {
+   "brand_id": 20,
+   "creator_id": "5e2cdc57-e139-425d-9936-1d56b67a495f"
+  },
+  {
+   "brand_id": 21,
+   "creator_id": "3713b8cb-084c-46ad-aeb4-9167ffae7b99"
+  },
+  {
+   "brand_id": 21,
+   "creator_id": "a172d65c-fdad-41d2-ad52-c42a82e53ab1"
+  },
+  {
+   "brand_id": 21,
+   "creator_id": "29d8ea09-4765-4ee6-952f-83fd0a5c08f2"
+  },
+  {
+   "brand_id": 21,
+   "creator_id": "ac6e3622-e895-4def-8f7f-7e5b0c4843d5"
+  },
+  {
+   "brand_id": 21,
+   "creator_id": "f4f58284-1b7e-41f1-9c52-1cedd6b5c135"
+  },
+  {
+   "brand_id": 21,
+   "creator_id": "5085ead4-6957-45f5-88b7-45ece8fc7dc5"
+  },
+  {
+   "brand_id": 21,
+   "creator_id": "6acd86ad-825f-463a-841f-123618482182"
+  },
+  {
+   "brand_id": 22,
+   "creator_id": "88d90914-a058-4de0-a36f-11e29be07be0"
+  },
+  {
+   "brand_id": 22,
+   "creator_id": "61bfdd9b-8d36-4916-a056-609e060881f2"
+  },
+  {
+   "brand_id": 22,
+   "creator_id": "2b055b4b-771b-4363-b357-a16732d5b39f"
+  },
+  {
+   "brand_id": 22,
+   "creator_id": "afc4bf56-4a3c-4a93-91c6-2b1b77339829"
+  },
+  {
+   "brand_id": 22,
+   "creator_id": "7e66fe22-a97a-437a-80dc-0a1784f42cd4"
+  },
+  {
+   "brand_id": 22,
+   "creator_id": "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42"
+  },
+  {
+   "brand_id": 22,
+   "creator_id": "0732f67c-f32d-4b30-bca9-213915e36f0f"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "2fd20429-fd57-44a0-a2e9-7b912f2aa402"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "5c6af802-3f71-4fcb-955d-50338e6c80e9"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "1d007dbc-d427-46fa-aa6e-6e1036b5844d"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "14e82eb6-2e87-42f4-98e6-119bdad2f264"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "53ae2d04-18f5-4b28-a230-280df27c2612"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "1848e618-f27e-434a-9e88-548958b02397"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "3ea7a45c-7b31-43c9-b756-bcb7dbe72989"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "c0d5f3fe-7628-459c-8f97-fc0401f82e5d"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "0692d65f-66d0-473b-b3d0-80178f1c249b"
+  },
+  {
+   "brand_id": 23,
+   "creator_id": "3dd71ad8-5e76-43bd-94ca-9ed188059ef2"
+  },
+  {
+   "brand_id": 24,
+   "creator_id": "40f6321d-d599-4235-94fe-3c67b3927917"
+  },
+  {
+   "brand_id": 24,
+   "creator_id": "79f03167-b06e-445f-8e45-99c20d68bc39"
+  },
+  {
+   "brand_id": 24,
+   "creator_id": "2fd20429-fd57-44a0-a2e9-7b912f2aa402"
+  },
+  {
+   "brand_id": 24,
+   "creator_id": "25eeefdf-41c9-4450-832d-06e0cb3c930e"
+  },
+  {
+   "brand_id": 24,
+   "creator_id": "92ff731c-ec70-41c3-b9e1-e4d21f6f0663"
+  },
+  {
+   "brand_id": 24,
+   "creator_id": "55b4c3a0-6fa6-40c2-8d76-c543b9ae3f96"
+  },
+  {
+   "brand_id": 25,
+   "creator_id": "7fb244a9-32fc-494f-b048-54b412b862bc"
+  },
+  {
+   "brand_id": 26,
+   "creator_id": "085e4f37-8ef7-4883-86ec-55d3884bd7df"
+  },
+  {
+   "brand_id": 26,
+   "creator_id": "cfc2b222-9b1c-4f8b-8417-c39ea97df38b"
+  },
+  {
+   "brand_id": 26,
+   "creator_id": "e7baa3bf-6e8a-4aa6-90e6-db126fc65f23"
+  },
+  {
+   "brand_id": 26,
+   "creator_id": "87486a72-1567-4ac0-a382-d3d83186de90"
+  },
+  {
+   "brand_id": 26,
+   "creator_id": "ca3ae744-86f2-4944-9eb5-84f474ff27e7"
+  },
+  {
+   "brand_id": 26,
+   "creator_id": "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42"
+  },
+  {
+   "brand_id": 26,
+   "creator_id": "d305ae78-e9d9-49a1-9954-674b3dc51598"
+  },
+  {
+   "brand_id": 26,
+   "creator_id": "4e88c6f6-5dad-44cc-b894-00779abb9c06"
+  },
+  {
+   "brand_id": 28,
+   "creator_id": "7226d33a-98fe-40f1-89aa-e2cf3244b314"
+  },
+  {
+   "brand_id": 28,
+   "creator_id": "221146c0-1406-4138-ba33-4f187d1f2df3"
+  },
+  {
+   "brand_id": 28,
+   "creator_id": "f1729fa0-dd83-49e5-832f-1ebea50922f8"
+  },
+  {
+   "brand_id": 29,
+   "creator_id": "69dde770-f1f4-4002-af48-8748caf52f36"
+  },
+  {
+   "brand_id": 29,
+   "creator_id": "ef012ea5-785b-4754-811b-2b613ac07d76"
+  },
+  {
+   "brand_id": 29,
+   "creator_id": "5bccc7fa-fe7e-44ad-8b01-f8aa6554afba"
+  },
+  {
+   "brand_id": 29,
+   "creator_id": "2b055b4b-771b-4363-b357-a16732d5b39f"
+  },
+  {
+   "brand_id": 29,
+   "creator_id": "146e795c-03e6-4118-aa57-fb14f0bdadb7"
+  },
+  {
+   "brand_id": 30,
+   "creator_id": "32f6912a-8c26-4589-a43c-20e200e2c9e2"
+  },
+  {
+   "brand_id": 30,
+   "creator_id": "484a67ea-1142-4d39-8915-1dadad3a4910"
+  },
+  {
+   "brand_id": 30,
+   "creator_id": "14a37fb8-ce9f-4ed4-810a-4bf2577d9601"
+  },
+  {
+   "brand_id": 31,
+   "creator_id": "51ff67dc-880d-4f31-8c83-87a4009cbd0e"
+  },
+  {
+   "brand_id": 31,
+   "creator_id": "84bd6199-b1bc-4efa-95a6-67b6330ac1af"
+  },
+  {
+   "brand_id": 31,
+   "creator_id": "208421e2-743d-4125-a06e-c3064038d79e"
+  },
+  {
+   "brand_id": 31,
+   "creator_id": "e7b57407-3c00-48ab-8f5d-a3f6edc02615"
+  },
+  {
+   "brand_id": 31,
+   "creator_id": "5cf54eca-7c4a-4179-9e34-46cbe0dfc0d8"
+  },
+  {
+   "brand_id": 31,
+   "creator_id": "7ea05a77-655d-4914-9cb9-340ca954485e"
+  },
+  {
+   "brand_id": 32,
+   "creator_id": "484a67ea-1142-4d39-8915-1dadad3a4910"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "d00ad1cc-d455-462b-b51f-d22af47a168a"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "61e9dc90-2fed-42cc-b94f-1d567a0c278d"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "05bc3049-4893-4cab-b051-035453953af5"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "e4f9338c-48a5-4349-8f8a-f04ecbb57e4a"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "3eb5191a-5ce5-4005-a5d9-297a0d6d83a8"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "81236a92-416c-4aad-9eaa-2377e4c0f14d"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "d2fd0fec-e11f-4218-bedc-845b24472b8f"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "d49943b1-d13f-4a84-a66b-695af05f1f99"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "b3899d79-c1f3-4579-9438-e8042434aebc"
+  },
+  {
+   "brand_id": 33,
+   "creator_id": "146e795c-03e6-4118-aa57-fb14f0bdadb7"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "aaee5b6c-ad50-4ef4-aa4a-1f7934d8b4ae"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "5c6af802-3f71-4fcb-955d-50338e6c80e9"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "2aa575aa-9717-4c58-ac4d-4b0cbe277082"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "4891c30e-9e5b-4414-9653-cc8b5bd51e5d"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "2b055b4b-771b-4363-b357-a16732d5b39f"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "2fecf770-f5de-4dac-ab2a-c87d045caddc"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "f1729fa0-dd83-49e5-832f-1ebea50922f8"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "a4b92047-dfa0-4a3c-b135-749cf4559f97"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "ca393a82-5b32-4086-9ea1-f7651cbb65de"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "36638c8a-fa13-4249-9f20-c38bd7a260da"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "4857c178-7a5a-41d9-bbab-d0e21f393a34"
+  },
+  {
+   "brand_id": 34,
+   "creator_id": "40e40b84-35c7-42a9-88aa-ba38667dd069"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "4cc81750-efa8-4978-b290-b736fc98cac9"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "5085ead4-6957-45f5-88b7-45ece8fc7dc5"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "d49943b1-d13f-4a84-a66b-695af05f1f99"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "ffe1cdde-df72-440d-a6a4-26735c00c7d7"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "aaee5b6c-ad50-4ef4-aa4a-1f7934d8b4ae"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "2fd20429-fd57-44a0-a2e9-7b912f2aa402"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "aa3c109e-d1cd-4a6c-9ac6-ee7408e0b6c3"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "87dc96ee-a77e-44cd-8089-61b3b22bbad3"
+  },
+  {
+   "brand_id": 35,
+   "creator_id": "3dd71ad8-5e76-43bd-94ca-9ed188059ef2"
+  },
+  {
+   "brand_id": 36,
+   "creator_id": "7a0322b9-e92d-404b-af73-54fd6a2d12a3"
+  },
+  {
+   "brand_id": 36,
+   "creator_id": "cfc2b222-9b1c-4f8b-8417-c39ea97df38b"
+  },
+  {
+   "brand_id": 37,
+   "creator_id": "32f6912a-8c26-4589-a43c-20e200e2c9e2"
+  },
+  {
+   "brand_id": 37,
+   "creator_id": "3eb5191a-5ce5-4005-a5d9-297a0d6d83a8"
+  },
+  {
+   "brand_id": 39,
+   "creator_id": "b42e629a-5200-44a6-9bf3-5a7bc71b95ea"
+  },
+  {
+   "brand_id": 39,
+   "creator_id": "87dc96ee-a77e-44cd-8089-61b3b22bbad3"
+  },
+  {
+   "brand_id": 39,
+   "creator_id": "e8f21c89-3e95-4e00-b46d-eccc3fbe0480"
+  },
+  {
+   "brand_id": 39,
+   "creator_id": "5e2cdc57-e139-425d-9936-1d56b67a495f"
+  },
+  {
+   "brand_id": 39,
+   "creator_id": "a262d11d-d2dd-4d3b-b3ee-240606bec71f"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "87380554-2b51-460a-b062-393aeef1a1c4"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "53ae2d04-18f5-4b28-a230-280df27c2612"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "84bd6199-b1bc-4efa-95a6-67b6330ac1af"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "7e66fe22-a97a-437a-80dc-0a1784f42cd4"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "b42e629a-5200-44a6-9bf3-5a7bc71b95ea"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "d43c92bb-fe31-4b98-917e-4d81e77e76cd"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "b3899d79-c1f3-4579-9438-e8042434aebc"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "4425f93c-a4a4-41e0-977f-af62878ba5f8"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "be7c0703-4a78-4c27-85d0-5014f90b8fa3"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "14e82eb6-2e87-42f4-98e6-119bdad2f264"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "9431ac22-2a9f-4400-98e3-be61ea2baccd"
+  },
+  {
+   "brand_id": 40,
+   "creator_id": "ef012ea5-785b-4754-811b-2b613ac07d76"
+  }
+ ],
+ "campaigns": [
+  {
+   "id": "117a13ae-ad2d-4c5f-82a8-3c34f2a991f8",
+   "campaign_code": "CMP-2026-001",
+   "month_name": "july",
+   "year": 2026,
+   "brand_id": 10,
+   "campaign_name": "Aster Studio Weekend Series",
+   "manager": "Diya Rao",
+   "member_names": [
+    "Dev Malhotra",
+    "Zoya Khan",
+    "Riya Sen",
+    "Naina Bose"
+   ],
+   "pitch_id": "7f6323a3-9004-4542-b225-8e5777cc40da",
+   "spreadsheet_id": "sheet-c001",
+   "report_id": "report-c001",
+   "status": "wip",
+   "expected_end_date": "2026-09-12",
+   "start_date": "2026-07-15",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "b10b43a1-57e1-4d4d-9660-060aff0200ae",
+   "campaign_code": "CMP-2026-002",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 15,
+   "campaign_name": "Harbor Foods Weekend Series",
+   "manager": "Tara Nair",
+   "member_names": [
+    "Vihaan Reddy",
+    "Ishaan Kapoor",
+    "Riya Sen"
+   ],
+   "pitch_id": "954c2fc1-d3f2-452d-b914-3ef599b9ede7",
+   "spreadsheet_id": "sheet-c002",
+   "report_id": "report-c002",
+   "status": "wip",
+   "expected_end_date": "2026-10-30",
+   "start_date": "2026-09-04",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "a18fda26-6bbf-4273-b8a7-d8c3e35d60a4",
+   "campaign_code": "CMP-2026-003",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": 33,
+   "campaign_name": "Orbit Wear Summer Reset",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Anaya Joshi",
+    "Naina Bose"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c003",
+   "report_id": "report-c003",
+   "status": "wip",
+   "expected_end_date": "2026-07-24",
+   "start_date": "2026-06-13",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "campaign_code": "CMP-2026-004",
+   "month_name": "october",
+   "year": 2026,
+   "brand_id": 18,
+   "campaign_name": "Orbit Home Festive Push",
+   "manager": "Kabir Shah",
+   "member_names": [],
+   "pitch_id": "f755edba-5c1a-4c01-9bb8-d36ba2e5c7d7",
+   "spreadsheet_id": "sheet-c004",
+   "report_id": "report-c004",
+   "status": "completed",
+   "expected_end_date": "2026-12-16",
+   "start_date": "2026-10-07",
+   "end_date": "2026-10-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-10-02"
+  },
+  {
+   "id": "a5956e2b-df02-4ac3-8419-ca8e9128a82e",
+   "campaign_code": "CMP-2026-005",
+   "month_name": "october",
+   "year": 2026,
+   "brand_id": 6,
+   "campaign_name": "Harbor Home Weekend Series",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Zoya Khan",
+    "Ishaan Kapoor",
+    "Naina Bose",
+    "Riya Sen"
+   ],
+   "pitch_id": "edb27a0f-66b9-4af9-985b-a6635b09b845",
+   "spreadsheet_id": "sheet-c005",
+   "report_id": "report-c005",
+   "status": "wip",
+   "expected_end_date": "2026-12-30",
+   "start_date": "2026-10-19",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "c544cb7d-af3f-4022-8332-a06aa66cf88b",
+   "campaign_code": "CMP-2026-006",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": 15,
+   "campaign_name": "Harbor Foods Always On",
+   "manager": "Kabir Shah",
+   "member_names": [
+    "Naina Bose",
+    "Ishaan Kapoor",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": "31f1160f-bd1e-40e8-b2ef-84f4ed22c330",
+   "spreadsheet_id": "sheet-c006",
+   "report_id": "report-c006",
+   "status": "completed",
+   "expected_end_date": "2026-08-29",
+   "start_date": "2026-06-12",
+   "end_date": "2026-09-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-09-04"
+  },
+  {
+   "id": "05011ece-62ba-441a-9fbe-a64073289c32",
+   "campaign_code": "CMP-2026-007",
+   "month_name": "may",
+   "year": 2026,
+   "brand_id": 13,
+   "campaign_name": "Juniper Skincare Festive Push",
+   "manager": "Diya Rao",
+   "member_names": [
+    "Anaya Joshi"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c007",
+   "report_id": "report-c007",
+   "status": "on hold",
+   "expected_end_date": "2026-06-20",
+   "start_date": "2026-05-15",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "50964e95-2c6c-4a0c-9ace-a33c964573f5",
+   "campaign_code": "CMP-2026-008",
+   "month_name": "october",
+   "year": 2026,
+   "brand_id": 23,
+   "campaign_name": "Orbit Audio Festive Push",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Ishaan Kapoor",
+    "Naina Bose",
+    "Anaya Joshi",
+    "Dev Malhotra"
+   ],
+   "pitch_id": "4f06e95a-d252-4617-84cb-a0385b4c0d73",
+   "spreadsheet_id": "sheet-c008",
+   "report_id": "report-c008",
+   "status": "wip",
+   "expected_end_date": "2026-12-17",
+   "start_date": "2026-10-09",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "2c685f56-1664-4602-be4e-dec5de432e5e",
+   "campaign_code": "CMP-2026-009",
+   "month_name": "july",
+   "year": 2026,
+   "brand_id": null,
+   "campaign_name": "Unassigned Summer Reset",
+   "manager": "Kabir Shah",
+   "member_names": [],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c009",
+   "report_id": "report-c009",
+   "status": "wip",
+   "expected_end_date": "2026-08-27",
+   "start_date": "2026-07-09",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "8dc88649-59eb-4c10-a9b9-ff16d36948f6",
+   "campaign_code": "CMP-2026-010",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 31,
+   "campaign_name": "Lumen Skincare Monsoon Edit",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Anaya Joshi",
+    "Ishaan Kapoor"
+   ],
+   "pitch_id": "8da9ec93-738d-4ccc-b6b6-a4d22e242fc8",
+   "spreadsheet_id": "sheet-c010",
+   "report_id": "report-c010",
+   "status": "completed",
+   "expected_end_date": "2026-10-03",
+   "start_date": "2026-08-09",
+   "end_date": "2026-09-25",
+   "report_status": "completed",
+   "report_completion_date": "2026-10-02"
+  },
+  {
+   "id": "8b7c5a45-4508-40a2-b240-78b217b6af7d",
+   "campaign_code": "CMP-2026-011",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 9,
+   "campaign_name": "Maple Home Summer Reset",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Naina Bose",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c011",
+   "report_id": "report-c011",
+   "status": "wip",
+   "expected_end_date": "2026-10-23",
+   "start_date": "2026-08-12",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "campaign_code": "CMP-2026-012",
+   "month_name": "july",
+   "year": 2026,
+   "brand_id": 31,
+   "campaign_name": "Lumen Skincare Creator Spotlight",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Zoya Khan",
+    "Naina Bose",
+    "Anaya Joshi"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c012",
+   "report_id": "report-c012",
+   "status": "completed",
+   "expected_end_date": "2026-09-05",
+   "start_date": "2026-07-24",
+   "end_date": "2026-09-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-09-14"
+  },
+  {
+   "id": "4539884c-da13-4667-8ae7-5d3f176a8b51",
+   "campaign_code": "CMP-2026-013",
+   "month_name": "may",
+   "year": 2026,
+   "brand_id": 33,
+   "campaign_name": "Orbit Wear Winter Drop",
+   "manager": "Aarav Menon",
+   "member_names": [
+    "Ishaan Kapoor",
+    "Anaya Joshi",
+    "Riya Sen"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c013",
+   "report_id": "report-c013",
+   "status": "wip",
+   "expected_end_date": "2026-07-21",
+   "start_date": "2026-05-20",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "10df8af2-315c-4fd1-8c05-7b32c22a0282",
+   "campaign_code": "CMP-2026-014",
+   "month_name": "april",
+   "year": 2026,
+   "brand_id": 35,
+   "campaign_name": "Saffron Home Creator Spotlight",
+   "manager": "Aarav Menon",
+   "member_names": [],
+   "pitch_id": "49d04ce5-33b8-43a5-8607-bfbf00552293",
+   "spreadsheet_id": "sheet-c014",
+   "report_id": "report-c014",
+   "status": "completed",
+   "expected_end_date": "2026-06-08",
+   "start_date": "2026-04-28",
+   "end_date": null,
+   "report_status": "completed",
+   "report_completion_date": "2026-06-18"
+  },
+  {
+   "id": "a0ed4ac2-e1fc-4c5c-a0c6-e70ec66630c7",
+   "campaign_code": "CMP-2026-015",
+   "month_name": "april",
+   "year": 2026,
+   "brand_id": 37,
+   "campaign_name": "Maple Audio Summer Reset",
+   "manager": "Kabir Shah",
+   "member_names": [
+    "Anaya Joshi",
+    "Ishaan Kapoor",
+    "Riya Sen"
+   ],
+   "pitch_id": "3c49fdbd-3ece-4f2c-af8c-6c083f5783ea",
+   "spreadsheet_id": "sheet-c015",
+   "report_id": "report-c015",
+   "status": "wip",
+   "expected_end_date": "2026-06-16",
+   "start_date": "2026-04-22",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "bbeaec5a-9be1-4820-a9a5-cb184558ee16",
+   "campaign_code": "CMP-2026-016",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 8,
+   "campaign_name": "Nimbus Wear Monsoon Edit",
+   "manager": "Tara Nair",
+   "member_names": [
+    "Anaya Joshi",
+    "Naina Bose"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c016",
+   "report_id": "report-c016",
+   "status": "wip",
+   "expected_end_date": "2026-10-14",
+   "start_date": "2026-08-20",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "91f659b6-3a47-4870-96e7-33f8908656cc",
+   "campaign_code": "CMP-2026-017",
+   "month_name": "april",
+   "year": 2026,
+   "brand_id": 12,
+   "campaign_name": "Aster Labs New Range",
+   "manager": "Tara Nair",
+   "member_names": [
+    "Ishaan Kapoor",
+    "Riya Sen",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c017",
+   "report_id": "report-c017",
+   "status": "wip",
+   "expected_end_date": "2026-05-31",
+   "start_date": "2026-04-12",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "6acfffb7-160d-407f-a9e4-b255bfe0ddc7",
+   "campaign_code": "CMP-2026-018",
+   "month_name": "october",
+   "year": 2026,
+   "brand_id": 4,
+   "campaign_name": "Cobalt Wear Winter Drop",
+   "manager": "Tara Nair",
+   "member_names": [
+    "Vihaan Reddy"
+   ],
+   "pitch_id": "38bd3c69-08a6-4b0f-bf43-3e0300755f64",
+   "spreadsheet_id": "sheet-c018",
+   "report_id": "report-c018",
+   "status": "completed",
+   "expected_end_date": "2026-12-18",
+   "start_date": "2026-10-12",
+   "end_date": "2026-10-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-10-02"
+  },
+  {
+   "id": "b2c0da1a-ad34-4f24-8de6-a4fd82376e64",
+   "campaign_code": "CMP-2026-019",
+   "month_name": "july",
+   "year": 2026,
+   "brand_id": 29,
+   "campaign_name": "Tidal Labs Monsoon Edit",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Anaya Joshi",
+    "Naina Bose"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c019",
+   "report_id": "report-c019",
+   "status": "scrapped",
+   "expected_end_date": "2026-09-02",
+   "start_date": "2026-07-06",
+   "end_date": null,
+   "report_status": "scrapped",
+   "report_completion_date": null
+  },
+  {
+   "id": "5b9a78bc-2b05-44e3-8f33-bb33f6aeedff",
+   "campaign_code": "CMP-2026-020",
+   "month_name": "october",
+   "year": 2026,
+   "brand_id": 12,
+   "campaign_name": "Aster Labs Back to Campus",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Naina Bose",
+    "Dev Malhotra"
+   ],
+   "pitch_id": "ff44abde-ec30-43c2-8b6a-8ad23f0dd583",
+   "spreadsheet_id": "sheet-c020",
+   "report_id": "report-c020",
+   "status": "completed",
+   "expected_end_date": "2026-12-24",
+   "start_date": "2026-10-11",
+   "end_date": "2026-10-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-10-02"
+  },
+  {
+   "id": "2452c6a7-b52c-44e5-a27a-bca0222670d0",
+   "campaign_code": "CMP-2026-021",
+   "month_name": "april",
+   "year": 2026,
+   "brand_id": 9,
+   "campaign_name": "Maple Home Always On",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Zoya Khan"
+   ],
+   "pitch_id": "627292f8-3f9a-4884-a594-09c145619fc0",
+   "spreadsheet_id": "sheet-c021",
+   "report_id": "report-c021",
+   "status": "completed",
+   "expected_end_date": "2026-06-25",
+   "start_date": "2026-04-25",
+   "end_date": "2026-07-05",
+   "report_status": "completed",
+   "report_completion_date": "2026-07-11"
+  },
+  {
+   "id": "d4c79ec8-67f6-47e5-8422-ff91d6e88d16",
+   "campaign_code": "CMP-2026-022",
+   "month_name": "july",
+   "year": 2026,
+   "brand_id": 30,
+   "campaign_name": "Maple Skincare Monsoon Edit",
+   "manager": "Aarav Menon",
+   "member_names": [],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c022",
+   "report_id": "report-c022",
+   "status": "scrapped",
+   "expected_end_date": "2026-09-22",
+   "start_date": "2026-07-06",
+   "end_date": null,
+   "report_status": "scrapped",
+   "report_completion_date": null
+  },
+  {
+   "id": "f67fa001-72b1-40d1-8f15-2945b39d9ec4",
+   "campaign_code": "CMP-2026-023",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": 8,
+   "campaign_name": "Nimbus Wear Launch Week",
+   "manager": "Diya Rao",
+   "member_names": [
+    "Vihaan Reddy",
+    "Naina Bose",
+    "Zoya Khan"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c023",
+   "report_id": "report-c023",
+   "status": "wip",
+   "expected_end_date": "2026-08-02",
+   "start_date": "2026-06-20",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "faef7b98-54eb-4f65-b796-92bbbf4e72cb",
+   "campaign_code": "CMP-2026-024",
+   "month_name": "october",
+   "year": 2026,
+   "brand_id": 6,
+   "campaign_name": "Harbor Home Always On",
+   "manager": "Kabir Shah",
+   "member_names": [
+    "Anaya Joshi",
+    "Naina Bose",
+    "Zoya Khan",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c024",
+   "report_id": "report-c024",
+   "status": "wip",
+   "expected_end_date": "2026-11-05",
+   "start_date": "2026-10-04",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "237eba59-1401-4c5a-bef9-19e0a72fc9b3",
+   "campaign_code": "CMP-2026-025",
+   "month_name": "october",
+   "year": 2026,
+   "brand_id": 17,
+   "campaign_name": "Tidal Home Festive Push",
+   "manager": "Aarav Menon",
+   "member_names": [
+    "Vihaan Reddy",
+    "Naina Bose",
+    "Zoya Khan"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c025",
+   "report_id": "report-c025",
+   "status": "on hold",
+   "expected_end_date": "2026-12-11",
+   "start_date": "2026-10-20",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "campaign_code": "CMP-2026-026",
+   "month_name": "march",
+   "year": 2026,
+   "brand_id": 40,
+   "campaign_name": "Juniper Audio Back to Campus",
+   "manager": "Kabir Shah",
+   "member_names": [],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c026",
+   "report_id": "report-c026",
+   "status": "wip",
+   "expected_end_date": "2026-06-01",
+   "start_date": "2026-03-20",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "fff89bea-d1da-4b4f-abcb-bc51a0d271d7",
+   "campaign_code": "CMP-2026-027",
+   "month_name": "july",
+   "year": 2026,
+   "brand_id": 5,
+   "campaign_name": "Aster Home Winter Drop",
+   "manager": "Aarav Menon",
+   "member_names": [
+    "Dev Malhotra",
+    "Naina Bose",
+    "Vihaan Reddy",
+    "Ishaan Kapoor"
+   ],
+   "pitch_id": "44ce4ab3-7c5d-42dc-8f87-7ae37b7fec4b",
+   "spreadsheet_id": "sheet-c027",
+   "report_id": "report-c027",
+   "status": "wip",
+   "expected_end_date": "2026-09-04",
+   "start_date": "2026-07-20",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "0a39b5c8-faa2-41a6-96f4-089066c13550",
+   "campaign_code": "CMP-2026-028",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 9,
+   "campaign_name": "Maple Home New Range",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Ishaan Kapoor"
+   ],
+   "pitch_id": "495125cc-86ce-425e-b192-ccb5d50dfdea",
+   "spreadsheet_id": "sheet-c028",
+   "report_id": "report-c028",
+   "status": "wip",
+   "expected_end_date": "2026-11-29",
+   "start_date": "2026-09-16",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "83be4390-0e28-46fc-a960-42fb126e3664",
+   "campaign_code": "CMP-2026-029",
+   "month_name": "march",
+   "year": 2026,
+   "brand_id": 19,
+   "campaign_name": "Saffron Skincare Winter Drop",
+   "manager": "Kabir Shah",
+   "member_names": [],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c029",
+   "report_id": "report-c029",
+   "status": "on hold",
+   "expected_end_date": "2026-05-29",
+   "start_date": "2026-03-21",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "acddefa4-9039-4d58-8ddd-a66c7172a558",
+   "campaign_code": "CMP-2026-030",
+   "month_name": "march",
+   "year": 2026,
+   "brand_id": 38,
+   "campaign_name": "Nimbus Mobility Back to Campus",
+   "manager": "Rohan Das",
+   "member_names": [],
+   "pitch_id": "67970ab1-eb2b-40b5-b21a-30cc93484239",
+   "spreadsheet_id": "sheet-c030",
+   "report_id": "report-c030",
+   "status": "on hold",
+   "expected_end_date": "2026-05-05",
+   "start_date": "2026-03-25",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "campaign_code": "CMP-2026-031",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 10,
+   "campaign_name": "Aster Studio Always On",
+   "manager": "Aarav Menon",
+   "member_names": [],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c031",
+   "report_id": "report-c031",
+   "status": "wip",
+   "expected_end_date": "2026-10-03",
+   "start_date": "2026-08-01",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "0720a1d1-a23d-4955-a296-2ee087c88f4e",
+   "campaign_code": "CMP-2026-032",
+   "month_name": "may",
+   "year": 2026,
+   "brand_id": 34,
+   "campaign_name": "Harbor Labs Monsoon Edit",
+   "manager": "Diya Rao",
+   "member_names": [
+    "Naina Bose"
+   ],
+   "pitch_id": "5d4b69e0-02f5-4c3b-a1f7-f5d6a9c22075",
+   "spreadsheet_id": "sheet-c032",
+   "report_id": "report-c032",
+   "status": "completed",
+   "expected_end_date": "2026-06-22",
+   "start_date": "2026-05-02",
+   "end_date": "2026-07-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-07-09"
+  },
+  {
+   "id": "70fd7c45-9097-475e-bd80-42cc87acab54",
+   "campaign_code": "CMP-2026-033",
+   "month_name": "may",
+   "year": 2026,
+   "brand_id": 7,
+   "campaign_name": "Cobalt Skincare Winter Drop",
+   "manager": "Kabir Shah",
+   "member_names": [
+    "Zoya Khan",
+    "Dev Malhotra"
+   ],
+   "pitch_id": "4c22b1f4-bbb9-4047-8d56-c5aecb7dc45a",
+   "spreadsheet_id": "sheet-c033",
+   "report_id": "report-c033",
+   "status": "wip",
+   "expected_end_date": "2026-07-12",
+   "start_date": "2026-05-06",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "b587728c-4065-4107-ab94-c66887e0eecb",
+   "campaign_code": "CMP-2026-034",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 29,
+   "campaign_name": "Tidal Labs New Range",
+   "manager": "Diya Rao",
+   "member_names": [
+    "Dev Malhotra"
+   ],
+   "pitch_id": "f1058667-1be0-4df0-ae9c-78bdf8cd9ec3",
+   "spreadsheet_id": "sheet-c034",
+   "report_id": "report-c034",
+   "status": "on hold",
+   "expected_end_date": "2026-11-07",
+   "start_date": "2026-09-24",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "c1c43b63-d6ab-4c89-b6f0-5dd481da248e",
+   "campaign_code": "CMP-2026-035",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": 9,
+   "campaign_name": "Maple Home Launch Week",
+   "manager": "Tara Nair",
+   "member_names": [
+    "Anaya Joshi"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c035",
+   "report_id": "report-c035",
+   "status": "completed",
+   "expected_end_date": "2026-08-19",
+   "start_date": "2026-06-13",
+   "end_date": "2026-08-26",
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "17d660d1-c665-46e3-b9a0-b6319022f514",
+   "campaign_code": "CMP-2026-036",
+   "month_name": "march",
+   "year": 2026,
+   "brand_id": 35,
+   "campaign_name": "Saffron Home Summer Reset",
+   "manager": "Kabir Shah",
+   "member_names": [],
+   "pitch_id": "3bdc2efd-b980-4a1e-b4a8-87536fed41d7",
+   "spreadsheet_id": "sheet-c036",
+   "report_id": "report-c036",
+   "status": "wip",
+   "expected_end_date": "2026-06-05",
+   "start_date": "2026-03-24",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "1edb8e3c-4cc8-4650-b5af-45a8368fee32",
+   "campaign_code": "CMP-2026-037",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 35,
+   "campaign_name": "Saffron Home Summer Reset",
+   "manager": "Meera Iyer",
+   "member_names": [],
+   "pitch_id": "1cf070c7-499b-48e5-8a17-5b0ef36bf211",
+   "spreadsheet_id": "sheet-c037",
+   "report_id": "report-c037",
+   "status": "wip",
+   "expected_end_date": "2026-09-25",
+   "start_date": "2026-08-23",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "cdda241f-5765-4f7c-976a-d77ebed4c56e",
+   "campaign_code": "CMP-2026-038",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 24,
+   "campaign_name": "Juniper Foods Festive Push",
+   "manager": "Kabir Shah",
+   "member_names": [
+    "Dev Malhotra",
+    "Anaya Joshi",
+    "Ishaan Kapoor"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c038",
+   "report_id": "report-c038",
+   "status": "wip",
+   "expected_end_date": "2026-11-06",
+   "start_date": "2026-09-01",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "ece43166-08bd-4271-9ceb-8f729a619e47",
+   "campaign_code": "CMP-2026-039",
+   "month_name": "march",
+   "year": 2026,
+   "brand_id": 39,
+   "campaign_name": "Harbor Skincare Monsoon Edit",
+   "manager": "Kabir Shah",
+   "member_names": [
+    "Riya Sen"
+   ],
+   "pitch_id": "52c602e2-bdf2-4077-8dc1-a43ea97f65bd",
+   "spreadsheet_id": "sheet-c039",
+   "report_id": "report-c039",
+   "status": "wip",
+   "expected_end_date": "2026-06-03",
+   "start_date": "2026-03-27",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "campaign_code": "CMP-2026-040",
+   "month_name": "may",
+   "year": 2026,
+   "brand_id": 20,
+   "campaign_name": "Orbit Skincare Weekend Series",
+   "manager": "Kabir Shah",
+   "member_names": [
+    "Zoya Khan",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": "a5acd341-aca9-4fd0-a285-6ec67f914286",
+   "spreadsheet_id": "sheet-c040",
+   "report_id": "report-c040",
+   "status": "wip",
+   "expected_end_date": "2026-07-24",
+   "start_date": "2026-05-27",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "13193d6a-0913-4536-964f-fe41ccea934d",
+   "campaign_code": "CMP-2026-041",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": null,
+   "campaign_name": "Unassigned Summer Reset",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Riya Sen",
+    "Anaya Joshi",
+    "Naina Bose",
+    "Dev Malhotra"
+   ],
+   "pitch_id": "bd5480a6-b5a8-433b-8369-e01ac94fc1ab",
+   "spreadsheet_id": "sheet-c041",
+   "report_id": "report-c041",
+   "status": "completed",
+   "expected_end_date": "2026-08-20",
+   "start_date": "2026-06-07",
+   "end_date": "2026-08-25",
+   "report_status": "completed",
+   "report_completion_date": "2026-08-27"
+  },
+  {
+   "id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "campaign_code": "CMP-2026-042",
+   "month_name": "july",
+   "year": 2026,
+   "brand_id": 22,
+   "campaign_name": "Tidal Skincare Summer Reset",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Dev Malhotra",
+    "Anaya Joshi",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c042",
+   "report_id": "report-c042",
+   "status": "on hold",
+   "expected_end_date": "2026-08-27",
+   "start_date": "2026-07-14",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "3a0392f2-5572-41ca-bbc2-93b49443efe9",
+   "campaign_code": "CMP-2026-043",
+   "month_name": "may",
+   "year": 2026,
+   "brand_id": null,
+   "campaign_name": "Unassigned Festive Push",
+   "manager": "Diya Rao",
+   "member_names": [
+    "Dev Malhotra"
+   ],
+   "pitch_id": "75fc74c4-5de7-418b-b5da-24688c6f5a9c",
+   "spreadsheet_id": "sheet-c043",
+   "report_id": "report-c043",
+   "status": "wip",
+   "expected_end_date": "2026-07-26",
+   "start_date": "2026-05-28",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "b2d80f0b-fdff-4cba-a39b-b65bf4fb5de4",
+   "campaign_code": "CMP-2026-044",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 11,
+   "campaign_name": "Aster Wear Festive Push",
+   "manager": "Rohan Das",
+   "member_names": [],
+   "pitch_id": "acdcdb5f-84ac-4e30-a8ca-cfe6dbc91d04",
+   "spreadsheet_id": "sheet-c044",
+   "report_id": "report-c044",
+   "status": "completed",
+   "expected_end_date": "2026-11-30",
+   "start_date": "2026-09-15",
+   "end_date": "2026-10-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-10-02"
+  },
+  {
+   "id": "cb99c882-cb04-4e6d-8815-dc26caba1bc4",
+   "campaign_code": "CMP-2026-045",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 39,
+   "campaign_name": "Harbor Skincare Monsoon Edit",
+   "manager": "Diya Rao",
+   "member_names": [
+    "Dev Malhotra",
+    "Vihaan Reddy",
+    "Zoya Khan"
+   ],
+   "pitch_id": "6e1656d0-da57-45e4-a872-f15c3e06571b",
+   "spreadsheet_id": "sheet-c045",
+   "report_id": "report-c045",
+   "status": "wip",
+   "expected_end_date": "2026-11-19",
+   "start_date": "2026-09-01",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "abf802e7-5653-4f0d-b448-17f20f799649",
+   "campaign_code": "CMP-2026-046",
+   "month_name": "march",
+   "year": 2026,
+   "brand_id": 22,
+   "campaign_name": "Tidal Skincare Back to Campus",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Vihaan Reddy",
+    "Naina Bose"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c046",
+   "report_id": "report-c046",
+   "status": "wip",
+   "expected_end_date": "2026-05-27",
+   "start_date": "2026-03-18",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "campaign_code": "CMP-2026-047",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 29,
+   "campaign_name": "Tidal Labs Summer Reset",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Vihaan Reddy",
+    "Dev Malhotra",
+    "Zoya Khan"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c047",
+   "report_id": "report-c047",
+   "status": "wip",
+   "expected_end_date": "2026-10-31",
+   "start_date": "2026-09-18",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "95bd82a0-147c-4a94-acbe-438695560de9",
+   "campaign_code": "CMP-2026-048",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": 15,
+   "campaign_name": "Harbor Foods Summer Reset",
+   "manager": "Kabir Shah",
+   "member_names": [
+    "Riya Sen",
+    "Dev Malhotra",
+    "Anaya Joshi"
+   ],
+   "pitch_id": "caaa8e50-0266-4c0a-804a-4a4c961d8bc0",
+   "spreadsheet_id": "sheet-c048",
+   "report_id": "report-c048",
+   "status": "scrapped",
+   "expected_end_date": "2026-08-14",
+   "start_date": "2026-06-03",
+   "end_date": null,
+   "report_status": "scrapped",
+   "report_completion_date": null
+  },
+  {
+   "id": "0c35b299-37e3-4148-8523-03a0b4533d4e",
+   "campaign_code": "CMP-2026-049",
+   "month_name": "april",
+   "year": 2026,
+   "brand_id": 8,
+   "campaign_name": "Nimbus Wear Winter Drop",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Naina Bose"
+   ],
+   "pitch_id": "9c461992-59d4-497f-9541-da5610c5ab83",
+   "spreadsheet_id": "sheet-c049",
+   "report_id": "report-c049",
+   "status": "completed",
+   "expected_end_date": "2026-05-25",
+   "start_date": "2026-04-21",
+   "end_date": "2026-05-20",
+   "report_status": "completed",
+   "report_completion_date": "2026-05-25"
+  },
+  {
+   "id": "e021d1dc-d0fd-47c9-8f39-6ff112cd4650",
+   "campaign_code": "CMP-2026-050",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 23,
+   "campaign_name": "Orbit Audio Always On",
+   "manager": "Kabir Shah",
+   "member_names": [],
+   "pitch_id": "0fc05531-0b43-46dd-801a-2fd3e74c00f4",
+   "spreadsheet_id": "sheet-c050",
+   "report_id": "report-c050",
+   "status": "wip",
+   "expected_end_date": "2026-11-06",
+   "start_date": "2026-08-22",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "56786908-cce5-4a93-add0-8f969c1afb6e",
+   "campaign_code": "CMP-2026-051",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": null,
+   "campaign_name": "Unassigned Summer Reset",
+   "manager": "Aarav Menon",
+   "member_names": [
+    "Dev Malhotra"
+   ],
+   "pitch_id": "600a6732-01a0-4d42-89d4-ff98b7245d1c",
+   "spreadsheet_id": "sheet-c051",
+   "report_id": "report-c051",
+   "status": "completed",
+   "expected_end_date": "2026-10-17",
+   "start_date": "2026-08-14",
+   "end_date": "2026-10-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-10-02"
+  },
+  {
+   "id": "a7729aa0-906b-4ef7-911f-d02eecdfbd22",
+   "campaign_code": "CMP-2026-052",
+   "month_name": "may",
+   "year": 2026,
+   "brand_id": 40,
+   "campaign_name": "Juniper Audio Back to Campus",
+   "manager": "Aarav Menon",
+   "member_names": [
+    "Naina Bose",
+    "Ishaan Kapoor",
+    "Dev Malhotra"
+   ],
+   "pitch_id": "09c9d592-4142-45c6-bff7-ba0d3437ccaa",
+   "spreadsheet_id": "sheet-c052",
+   "report_id": "report-c052",
+   "status": "completed",
+   "expected_end_date": "2026-07-09",
+   "start_date": "2026-05-19",
+   "end_date": "2026-06-29",
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "ae1e5049-89e5-4e62-9817-76416c58e587",
+   "campaign_code": "CMP-2026-053",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 24,
+   "campaign_name": "Juniper Foods Always On",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Naina Bose",
+    "Dev Malhotra",
+    "Zoya Khan"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c053",
+   "report_id": "report-c053",
+   "status": "wip",
+   "expected_end_date": "2026-10-26",
+   "start_date": "2026-09-13",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "fa35e494-8cab-433e-85c9-80f3a6d1ee17",
+   "campaign_code": "CMP-2026-054",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 13,
+   "campaign_name": "Juniper Skincare New Range",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Naina Bose",
+    "Vihaan Reddy",
+    "Ishaan Kapoor"
+   ],
+   "pitch_id": "8cd03260-74aa-4340-997a-20be63cc537b",
+   "spreadsheet_id": "sheet-c054",
+   "report_id": "report-c054",
+   "status": "wip",
+   "expected_end_date": "2026-10-31",
+   "start_date": "2026-08-17",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "campaign_code": "CMP-2026-055",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": 10,
+   "campaign_name": "Aster Studio Launch Week",
+   "manager": "Aarav Menon",
+   "member_names": [],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c055",
+   "report_id": "report-c055",
+   "status": "wip",
+   "expected_end_date": "2026-08-01",
+   "start_date": "2026-06-02",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "e721ab01-2639-4809-bcd3-21985d989343",
+   "campaign_code": "CMP-2026-056",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": 39,
+   "campaign_name": "Harbor Skincare Summer Reset",
+   "manager": "Tara Nair",
+   "member_names": [
+    "Vihaan Reddy"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c056",
+   "report_id": "report-c056",
+   "status": "wip",
+   "expected_end_date": "2026-08-06",
+   "start_date": "2026-06-05",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "75c90b8e-6397-4459-8cef-d1e2e6a9e369",
+   "campaign_code": "CMP-2026-057",
+   "month_name": "april",
+   "year": 2026,
+   "brand_id": 23,
+   "campaign_name": "Orbit Audio Monsoon Edit",
+   "manager": "Kabir Shah",
+   "member_names": [],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c057",
+   "report_id": "report-c057",
+   "status": "wip",
+   "expected_end_date": "2026-06-20",
+   "start_date": "2026-04-06",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "604101ec-906f-4b90-ba65-dbfc0f5b3637",
+   "campaign_code": "CMP-2026-058",
+   "month_name": "may",
+   "year": 2026,
+   "brand_id": 23,
+   "campaign_name": "Orbit Audio Winter Drop",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Ishaan Kapoor",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c058",
+   "report_id": "report-c058",
+   "status": "wip",
+   "expected_end_date": "2026-07-22",
+   "start_date": "2026-05-07",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "ca73cd73-91cc-46da-bb39-69ad3773b4d8",
+   "campaign_code": "CMP-2026-059",
+   "month_name": "october",
+   "year": 2026,
+   "brand_id": 17,
+   "campaign_name": "Tidal Home Summer Reset",
+   "manager": "Meera Iyer",
+   "member_names": [
+    "Riya Sen",
+    "Naina Bose",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": "edee65ef-2119-405c-aa1e-db8c36467838",
+   "spreadsheet_id": "sheet-c059",
+   "report_id": "report-c059",
+   "status": "completed",
+   "expected_end_date": "2026-12-02",
+   "start_date": "2026-10-17",
+   "end_date": "2026-10-02",
+   "report_status": "completed",
+   "report_completion_date": "2026-10-02"
+  },
+  {
+   "id": "9c39b3cd-aeca-4c2e-91dc-540b295e77b6",
+   "campaign_code": "CMP-2026-060",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 14,
+   "campaign_name": "Cobalt Home Always On",
+   "manager": "Meera Iyer",
+   "member_names": [],
+   "pitch_id": "74f806f2-f2ae-456f-bdfa-ea88690c9bf8",
+   "spreadsheet_id": "sheet-c060",
+   "report_id": "report-c060",
+   "status": "wip",
+   "expected_end_date": "2026-09-15",
+   "start_date": "2026-08-11",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "23c9d9ab-dd2c-4fb8-af4f-9cbd2eab07c9",
+   "campaign_code": "CMP-2026-061",
+   "month_name": "april",
+   "year": 2026,
+   "brand_id": 29,
+   "campaign_name": "Tidal Labs Creator Spotlight",
+   "manager": "",
+   "member_names": [
+    "Naina Bose"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c061",
+   "report_id": "report-c061",
+   "status": "on hold",
+   "expected_end_date": "2026-05-18",
+   "start_date": "2026-04-05",
+   "end_date": null,
+   "report_status": "wip",
+   "report_completion_date": null
+  },
+  {
+   "id": "55ee454c-e1c7-4fc4-a58c-8035b76325e2",
+   "campaign_code": "CMP-2026-062",
+   "month_name": "august",
+   "year": 2026,
+   "brand_id": 26,
+   "campaign_name": "Lumen Foods Festive Push",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Ishaan Kapoor"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c062",
+   "report_id": "report-c062",
+   "status": "completed",
+   "expected_end_date": "2026-09-14",
+   "start_date": "2026-08-06",
+   "end_date": null,
+   "report_status": "completed",
+   "report_completion_date": "2026-09-26"
+  },
+  {
+   "id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "campaign_code": "CMP-2026-063",
+   "month_name": "september",
+   "year": 2026,
+   "brand_id": 4,
+   "campaign_name": "Cobalt Wear Summer Reset",
+   "manager": "Rohan Das",
+   "member_names": [
+    "Dev Malhotra",
+    "Riya Sen"
+   ],
+   "pitch_id": null,
+   "spreadsheet_id": "sheet-c063",
+   "report_id": "report-c063",
+   "status": "completed",
+   "expected_end_date": "2026-11-19",
+   "start_date": "2026-09-18",
+   "end_date": "2026-10-02",
+   "report_status": "completed",
+   "report_completion_date": null
+  },
+  {
+   "id": "597500fe-13cb-4cbd-ab2f-59d7f50da545",
+   "campaign_code": "CMP-2026-064",
+   "month_name": "june",
+   "year": 2026,
+   "brand_id": 31,
+   "campaign_name": "Lumen Skincare Monsoon Edit",
+   "manager": "Diya Rao",
+   "member_names": [
+    "Ishaan Kapoor",
+    "Vihaan Reddy"
+   ],
+   "pitch_id": "9f316305-0f85-459b-87a7-fde04ad9f598",
+   "spreadsheet_id": "sheet-c064",
+   "report_id": "report-c064",
+   "status": "scrapped",
+   "expected_end_date": "2026-08-06",
+   "start_date": "2026-06-05",
+   "end_date": null,
+   "report_status": "scrapped",
+   "report_completion_date": null
+  }
+ ],
+ "pitches": [
+  {
+   "id": "44ce4ab3-7c5d-42dc-8f87-7ae37b7fec4b",
+   "pitch_code": "PIT-0001",
+   "org_type": "Brand_Core",
+   "brand_id": 5,
+   "campaign_name": "Aster Home Monsoon Edit",
+   "requirement": "media_plan",
+   "platform": [
+    "linkedin",
+    "youtube",
+    "instagram"
+   ],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Anaya Joshi",
+   "spreadsheet_id": "sheet-p0001",
+   "created_at": "2026-08-24T00:00:00Z",
+   "updated_at": "2026-09-17T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "81b1c025-d1e4-40a3-9393-2904757f1cba",
+   "pitch_code": "PIT-0002",
+   "org_type": "Retainer_Account",
+   "brand_id": 13,
+   "campaign_name": "Juniper Skincare Creator Spotlight",
+   "requirement": "content_buckets",
+   "platform": [
+    "linkedin"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Naina Bose",
+   "spreadsheet_id": "sheet-p0002",
+   "created_at": "2026-07-13T00:00:00Z",
+   "updated_at": "2026-07-21T00:00:00Z",
+   "creator_ids": [
+    "325dbda6-ca18-422e-887f-644606c656d1",
+    "ef012ea5-785b-4754-811b-2b613ac07d76",
+    "f81239ac-283a-4f30-85ca-4d7a772af4fc"
+   ]
+  },
+  {
+   "id": "7ddfcbc9-f330-4ce5-80eb-4e1128b88073",
+   "pitch_code": "PIT-0003",
+   "org_type": "Retainer_Account",
+   "brand_id": 8,
+   "campaign_name": "Nimbus Wear Creator Spotlight",
+   "requirement": "content_buckets_and_list",
+   "platform": [
+    "facebook",
+    "instagram"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0003",
+   "created_at": "2026-06-29T00:00:00Z",
+   "updated_at": "2026-06-29T00:00:00Z",
+   "creator_ids": [
+    "2031afb4-079f-422d-acb5-c04a99b26680",
+    "690d8f02-c591-416f-a938-cf95489da0ed",
+    "77b9402c-0b36-4034-91c4-f8227796de12",
+    "3689cdc2-647c-41ba-bca7-96bc2416f4e6",
+    "ac6e3622-e895-4def-8f7f-7e5b0c4843d5",
+    "6acd86ad-825f-463a-841f-123618482182"
+   ]
+  },
+  {
+   "id": "0c5b4c59-dab0-4929-8670-9312c172b298",
+   "pitch_code": "PIT-0004",
+   "org_type": "Brand_Core",
+   "brand_id": 24,
+   "campaign_name": "Juniper Foods Creator Spotlight",
+   "requirement": "list_and_plan",
+   "platform": [
+    "instagram",
+    "linkedin",
+    "youtube"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Anaya Joshi",
+   "spreadsheet_id": "sheet-p0004",
+   "created_at": "2026-09-14T00:00:00Z",
+   "updated_at": "2026-09-20T00:00:00Z",
+   "creator_ids": [
+    "2fecf770-f5de-4dac-ab2a-c87d045caddc",
+    "b0bc81cd-464f-4f29-bd80-205b3e86c3aa",
+    "ef012ea5-785b-4754-811b-2b613ac07d76",
+    "7226d33a-98fe-40f1-89aa-e2cf3244b314",
+    "11fa6664-9eef-453f-9aac-21b5afe7eb15",
+    "40f6321d-d599-4235-94fe-3c67b3927917",
+    "b40c1938-271f-4d10-baf6-4d9a1cf5cf37"
+   ]
+  },
+  {
+   "id": "2097798c-8cd3-4418-ad41-42bae9729f3f",
+   "pitch_code": "PIT-0005",
+   "org_type": "Retainer_Account",
+   "brand_id": 4,
+   "campaign_name": "Cobalt Wear Back to Campus",
+   "requirement": "media_plan",
+   "platform": [
+    "linkedin",
+    "facebook",
+    "instagram"
+   ],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0005",
+   "created_at": "2026-06-17T00:00:00Z",
+   "updated_at": "2026-07-07T00:00:00Z",
+   "creator_ids": [
+    "a60a1728-772c-4eb4-abb8-b295cd1ddcf2",
+    "0732f67c-f32d-4b30-bca9-213915e36f0f",
+    "c9877827-1619-42ea-9b49-a582bdb8f87d",
+    "690d8f02-c591-416f-a938-cf95489da0ed",
+    "0a60b851-1d59-4353-aa55-7abbcf88a72c",
+    "2aa575aa-9717-4c58-ac4d-4b0cbe277082",
+    "88d90914-a058-4de0-a36f-11e29be07be0",
+    "b42e629a-5200-44a6-9bf3-5a7bc71b95ea"
+   ]
+  },
+  {
+   "id": "173910e3-3e7c-4567-b141-97758c3ba859",
+   "pitch_code": "PIT-0006",
+   "org_type": "Brand_Core",
+   "brand_id": 32,
+   "campaign_name": "Tidal Audio Back to Campus",
+   "requirement": "media_plan",
+   "platform": [
+    "facebook",
+    "youtube"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0006",
+   "created_at": "2026-08-05T00:00:00Z",
+   "updated_at": "2026-08-18T00:00:00Z",
+   "creator_ids": [
+    "48de7daf-ab43-4859-8c46-60df114408bb",
+    "40e40b84-35c7-42a9-88aa-ba38667dd069",
+    "a89751be-8586-4ae4-8f72-b7ce9691798d",
+    "0a41a049-a238-4f7a-b20e-cd9f18a491ef",
+    "81236a92-416c-4aad-9eaa-2377e4c0f14d",
+    "5845655a-ed22-4112-8c3e-11ce485cba67",
+    "be54e141-5c77-434a-ae0f-ad60cd8445d0",
+    "085e4f37-8ef7-4883-86ec-55d3884bd7df",
+    "d18c77c7-9cb5-42e4-a7b9-7554f46e82d1"
+   ]
+  },
+  {
+   "id": "627292f8-3f9a-4884-a594-09c145619fc0",
+   "pitch_code": "PIT-0007",
+   "org_type": "Retainer_Account",
+   "brand_id": 9,
+   "campaign_name": "Maple Home Winter Drop",
+   "requirement": "list",
+   "platform": [
+    "instagram"
+   ],
+   "sales_lead": "  ",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0007",
+   "created_at": "2026-05-25T00:00:00Z",
+   "updated_at": "2026-06-12T00:00:00Z",
+   "creator_ids": [
+    "c9877827-1619-42ea-9b49-a582bdb8f87d",
+    "ce17553b-6d4c-4377-9e64-57dafe8bc5c8"
+   ]
+  },
+  {
+   "id": "f1058667-1be0-4df0-ae9c-78bdf8cd9ec3",
+   "pitch_code": "PIT-0008",
+   "org_type": "Retainer_Account",
+   "brand_id": 29,
+   "campaign_name": "Tidal Labs Launch Week",
+   "requirement": "list",
+   "platform": [
+    "others"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Naina Bose",
+   "spreadsheet_id": "sheet-p0008",
+   "created_at": "2026-07-29T00:00:00Z",
+   "updated_at": "2026-07-30T00:00:00Z",
+   "creator_ids": [
+    "905aaefe-4e2b-4ad4-856b-a49290a06a38",
+    "5085ead4-6957-45f5-88b7-45ece8fc7dc5",
+    "cf69b1ec-0a2b-4e0c-aec1-9727e4f4bca3",
+    "ce17553b-6d4c-4377-9e64-57dafe8bc5c8",
+    "bb202aab-3e9a-49e9-9f9f-8726b8b02437"
+   ]
+  },
+  {
+   "id": "004b7fd0-99df-409b-8a5d-5e7d393cbcdd",
+   "pitch_code": "PIT-0009",
+   "org_type": "NA",
+   "brand_id": 8,
+   "campaign_name": "Nimbus Wear Creator Spotlight",
+   "requirement": "media_plan",
+   "platform": [
+    "youtube",
+    "facebook",
+    "others"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Naina Bose",
+   "spreadsheet_id": "sheet-p0009",
+   "created_at": "2026-09-05T00:00:00Z",
+   "updated_at": "2026-09-12T00:00:00Z",
+   "creator_ids": [
+    "9ebf5447-c0f2-47b0-8154-1d8e6b413eb7"
+   ]
+  },
+  {
+   "id": "a5acd341-aca9-4fd0-a285-6ec67f914286",
+   "pitch_code": "PIT-0010",
+   "org_type": "Agency",
+   "brand_id": 20,
+   "campaign_name": "Orbit Skincare Monsoon Edit",
+   "requirement": "production",
+   "platform": [],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0010",
+   "created_at": "2026-09-16T00:00:00Z",
+   "updated_at": "2026-09-29T00:00:00Z",
+   "creator_ids": [
+    "77b9402c-0b36-4034-91c4-f8227796de12",
+    "4e88c6f6-5dad-44cc-b894-00779abb9c06",
+    "83a16eae-7f91-40a1-8a8e-145fdab25483",
+    "6acd86ad-825f-463a-841f-123618482182",
+    "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42",
+    "0ad511cb-22f4-4186-b3dd-e6c2dd554a83",
+    "b40c1938-271f-4d10-baf6-4d9a1cf5cf37"
+   ]
+  },
+  {
+   "id": "1be7f3cf-4b80-4828-a3ab-6283c2ae35d2",
+   "pitch_code": "PIT-0011",
+   "org_type": "Retainer_Account",
+   "brand_id": 13,
+   "campaign_name": "Juniper Skincare Always On",
+   "requirement": "content_buckets",
+   "platform": [
+    "youtube",
+    "linkedin"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "  ",
+   "spreadsheet_id": "sheet-p0011",
+   "created_at": "2026-07-13T00:00:00Z",
+   "updated_at": "2026-08-11T00:00:00Z",
+   "creator_ids": [
+    "abf7bfe6-35f2-4b87-b5a6-edbc96a1ec1b",
+    "14a37fb8-ce9f-4ed4-810a-4bf2577d9601",
+    "9411b4d0-0fad-4cf5-a0d6-72dfb9ea01c6",
+    "7ff875c9-71ac-4199-8f5b-88da9d529505"
+   ]
+  },
+  {
+   "id": "30d0a2b8-5449-40e1-aa66-f913ee7d0ae2",
+   "pitch_code": "PIT-0012",
+   "org_type": "Retainer_Account",
+   "brand_id": 4,
+   "campaign_name": "Cobalt Wear Festive Push",
+   "requirement": "content_buckets_and_list",
+   "platform": [
+    "instagram",
+    "others"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0012",
+   "created_at": "2026-08-14T00:00:00Z",
+   "updated_at": "2026-08-17T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "4f06e95a-d252-4617-84cb-a0385b4c0d73",
+   "pitch_code": "PIT-0013",
+   "org_type": "Retainer_Account",
+   "brand_id": 23,
+   "campaign_name": "Orbit Audio Launch Week",
+   "requirement": "NA",
+   "platform": [
+    "facebook"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0013",
+   "created_at": "2026-06-15T00:00:00Z",
+   "updated_at": "2026-06-21T00:00:00Z",
+   "creator_ids": [
+    "2fecf770-f5de-4dac-ab2a-c87d045caddc",
+    "ef012ea5-785b-4754-811b-2b613ac07d76",
+    "9ebf5447-c0f2-47b0-8154-1d8e6b413eb7",
+    "ca3ae744-86f2-4944-9eb5-84f474ff27e7",
+    "5085ead4-6957-45f5-88b7-45ece8fc7dc5",
+    "be7c0703-4a78-4c27-85d0-5014f90b8fa3",
+    "7ac298f0-e9b4-4fcc-93fd-da2c38ae940d",
+    "f1729fa0-dd83-49e5-832f-1ebea50922f8"
+   ]
+  },
+  {
+   "id": "5cebe213-56cd-42d2-9b09-ab55e6077d79",
+   "pitch_code": "PIT-0014",
+   "org_type": "Brand_Core",
+   "brand_id": 30,
+   "campaign_name": "Maple Skincare Creator Spotlight",
+   "requirement": "production",
+   "platform": [
+    "instagram"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0014",
+   "created_at": "2026-09-14T00:00:00Z",
+   "updated_at": "2026-10-13T00:00:00Z",
+   "creator_ids": [
+    "abf7bfe6-35f2-4b87-b5a6-edbc96a1ec1b",
+    "5bccc7fa-fe7e-44ad-8b01-f8aa6554afba"
+   ]
+  },
+  {
+   "id": "ee59b397-cd75-4e08-823a-80a22ed51b12",
+   "pitch_code": "PIT-0015",
+   "org_type": "Brand_Other",
+   "brand_id": 30,
+   "campaign_name": "Maple Skincare Always On",
+   "requirement": "production",
+   "platform": [
+    "youtube",
+    "facebook"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0015",
+   "created_at": "2026-06-24T00:00:00Z",
+   "updated_at": "2026-07-10T00:00:00Z",
+   "creator_ids": [
+    "ca3ae744-86f2-4944-9eb5-84f474ff27e7",
+    "cbea1658-7ed6-425f-84ae-b9a5889d89bb",
+    "2ab2d5a8-aa40-4563-9148-75013e4268f1"
+   ]
+  },
+  {
+   "id": "3555d6ae-1586-4ffb-9fe5-e39943cfeadf",
+   "pitch_code": "PIT-0016",
+   "org_type": "Retainer_Account",
+   "brand_id": 31,
+   "campaign_name": "Lumen Skincare New Range",
+   "requirement": "list_and_plan",
+   "platform": [
+    "instagram"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0016",
+   "created_at": "2026-07-09T00:00:00Z",
+   "updated_at": "2026-07-26T00:00:00Z",
+   "creator_ids": [
+    "d7169f21-ca75-4070-bdd2-d05ae4a958ad",
+    "1d007dbc-d427-46fa-aa6e-6e1036b5844d"
+   ]
+  },
+  {
+   "id": "3c49fdbd-3ece-4f2c-af8c-6c083f5783ea",
+   "pitch_code": "PIT-0017",
+   "org_type": "Brand_Other",
+   "brand_id": 37,
+   "campaign_name": "Maple Audio Back to Campus",
+   "requirement": "NA",
+   "platform": [
+    "facebook"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0017",
+   "created_at": "2026-07-24T00:00:00Z",
+   "updated_at": "2026-08-13T00:00:00Z",
+   "creator_ids": [
+    "f809913e-9983-47b9-8da3-711165fc8139",
+    "4857c178-7a5a-41d9-bbab-d0e21f393a34",
+    "4e88c6f6-5dad-44cc-b894-00779abb9c06",
+    "6bf52b91-05f5-4fab-ad88-8c5e82f95c91",
+    "5bccc7fa-fe7e-44ad-8b01-f8aa6554afba",
+    "0692d65f-66d0-473b-b3d0-80178f1c249b",
+    "af52bd42-a970-485e-a5d9-69fa597a2ec4",
+    "f1729fa0-dd83-49e5-832f-1ebea50922f8"
+   ]
+  },
+  {
+   "id": "954c2fc1-d3f2-452d-b914-3ef599b9ede7",
+   "pitch_code": "PIT-0018",
+   "org_type": "Brand_Core",
+   "brand_id": 15,
+   "campaign_name": "Harbor Foods Back to Campus",
+   "requirement": "list_and_plan",
+   "platform": [],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0018",
+   "created_at": "2026-08-31T00:00:00Z",
+   "updated_at": "2026-09-30T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "09c9d592-4142-45c6-bff7-ba0d3437ccaa",
+   "pitch_code": "PIT-0019",
+   "org_type": "Brand_Other",
+   "brand_id": 40,
+   "campaign_name": "Juniper Audio Festive Push",
+   "requirement": "content_buckets_and_list",
+   "platform": [
+    "instagram"
+   ],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0019",
+   "created_at": "2026-07-03T00:00:00Z",
+   "updated_at": "2026-07-09T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "29e78b06-a72e-4508-9755-c6de88b409c8",
+   "pitch_code": "PIT-0020",
+   "org_type": "Agency",
+   "brand_id": 31,
+   "campaign_name": "Lumen Skincare Winter Drop",
+   "requirement": "media_plan",
+   "platform": [
+    "others",
+    "youtube",
+    "linkedin"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0020",
+   "created_at": "2026-09-14T00:00:00Z",
+   "updated_at": "2026-10-12T00:00:00Z",
+   "creator_ids": [
+    "d49943b1-d13f-4a84-a66b-695af05f1f99",
+    "be7c0703-4a78-4c27-85d0-5014f90b8fa3",
+    "0c23b6d5-1064-4894-a95e-542cec17773d",
+    "2aa575aa-9717-4c58-ac4d-4b0cbe277082",
+    "77b9402c-0b36-4034-91c4-f8227796de12",
+    "c9877827-1619-42ea-9b49-a582bdb8f87d",
+    "5e2cdc57-e139-425d-9936-1d56b67a495f"
+   ]
+  },
+  {
+   "id": "75fdf37c-5d5e-41ad-a201-aafd93ea6a94",
+   "pitch_code": "PIT-0021",
+   "org_type": "Brand_Other",
+   "brand_id": 1,
+   "campaign_name": "Saffron Labs Festive Push",
+   "requirement": "NA",
+   "platform": [
+    "facebook"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Anaya Joshi",
+   "spreadsheet_id": "sheet-p0021",
+   "created_at": "2026-06-11T00:00:00Z",
+   "updated_at": "2026-06-30T00:00:00Z",
+   "creator_ids": [
+    "b2f79c96-207c-4c56-8ebf-5a3f14e46d7d",
+    "dfc6575b-ed93-487c-a204-6970de68a635",
+    "8c93f92e-ba52-4768-b607-17042c6d8a6c",
+    "e7b57407-3c00-48ab-8f5d-a3f6edc02615",
+    "88d90914-a058-4de0-a36f-11e29be07be0",
+    "3fb38611-2f7e-4cee-9f23-aec805982fdf",
+    "0ad511cb-22f4-4186-b3dd-e6c2dd554a83",
+    "a75d2580-0143-4f09-aa4f-6f323cf0891a",
+    "85bf11e7-12d1-49c4-98cc-dfa063ffd5d7"
+   ]
+  },
+  {
+   "id": "634d1952-a2e8-4ec0-ad19-557a9b8e9a82",
+   "pitch_code": "PIT-0022",
+   "org_type": "Brand_Other",
+   "brand_id": 13,
+   "campaign_name": "Juniper Skincare Monsoon Edit",
+   "requirement": "content_buckets",
+   "platform": [
+    "linkedin",
+    "instagram"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0022",
+   "created_at": "2026-07-15T00:00:00Z",
+   "updated_at": "2026-07-27T00:00:00Z",
+   "creator_ids": [
+    "85bf11e7-12d1-49c4-98cc-dfa063ffd5d7",
+    "1b15f2eb-e795-42bb-9f5e-b4f45380811b",
+    "4eba0761-07a8-455c-9811-92ef46674794"
+   ]
+  },
+  {
+   "id": "8cd03260-74aa-4340-997a-20be63cc537b",
+   "pitch_code": "PIT-0023",
+   "org_type": "Agency",
+   "brand_id": 13,
+   "campaign_name": "Juniper Skincare Winter Drop",
+   "requirement": "content_buckets",
+   "platform": [
+    "instagram",
+    "linkedin",
+    "others"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0023",
+   "created_at": "2026-09-20T00:00:00Z",
+   "updated_at": "2026-10-04T00:00:00Z",
+   "creator_ids": [
+    "7ea05a77-655d-4914-9cb9-340ca954485e"
+   ]
+  },
+  {
+   "id": "20e27c17-112e-41df-9b69-567e667cd60b",
+   "pitch_code": "PIT-0024",
+   "org_type": "Agency",
+   "brand_id": 30,
+   "campaign_name": "Maple Skincare Launch Week",
+   "requirement": "list",
+   "platform": [
+    "youtube",
+    "facebook"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0024",
+   "created_at": "2026-08-01T00:00:00Z",
+   "updated_at": "2026-08-11T00:00:00Z",
+   "creator_ids": [
+    "f5fd2223-f25f-4bec-8cfa-c597f9e06571",
+    "a172d65c-fdad-41d2-ad52-c42a82e53ab1",
+    "81236a92-416c-4aad-9eaa-2377e4c0f14d",
+    "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42",
+    "40e40b84-35c7-42a9-88aa-ba38667dd069",
+    "e7baa3bf-6e8a-4aa6-90e6-db126fc65f23",
+    "a4b92047-dfa0-4a3c-b135-749cf4559f97",
+    "abf7bfe6-35f2-4b87-b5a6-edbc96a1ec1b",
+    "2ab2d5a8-aa40-4563-9148-75013e4268f1"
+   ]
+  },
+  {
+   "id": "9c461992-59d4-497f-9541-da5610c5ab83",
+   "pitch_code": "PIT-0025",
+   "org_type": "Brand_Other",
+   "brand_id": 8,
+   "campaign_name": "Nimbus Wear Back to Campus",
+   "requirement": "media_plan",
+   "platform": [
+    "youtube",
+    "others"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0025",
+   "created_at": "2026-08-12T00:00:00Z",
+   "updated_at": "2026-09-10T00:00:00Z",
+   "creator_ids": [
+    "87dc96ee-a77e-44cd-8089-61b3b22bbad3",
+    "9431ac22-2a9f-4400-98e3-be61ea2baccd",
+    "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42",
+    "e8f21c89-3e95-4e00-b46d-eccc3fbe0480",
+    "718d68c1-fb01-4448-99a8-8df1af7fb13a",
+    "af52bd42-a970-485e-a5d9-69fa597a2ec4",
+    "f809913e-9983-47b9-8da3-711165fc8139",
+    "77b9402c-0b36-4034-91c4-f8227796de12",
+    "adbcb87f-e0fa-444a-b03e-945cdeca18d1",
+    "7ac298f0-e9b4-4fcc-93fd-da2c38ae940d"
+   ]
+  },
+  {
+   "id": "f755edba-5c1a-4c01-9bb8-d36ba2e5c7d7",
+   "pitch_code": "PIT-0026",
+   "org_type": "Brand_Core",
+   "brand_id": 18,
+   "campaign_name": "Orbit Home Creator Spotlight",
+   "requirement": "content_buckets_and_list",
+   "platform": [
+    "instagram",
+    "others"
+   ],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0026",
+   "created_at": "2026-07-09T00:00:00Z",
+   "updated_at": "2026-07-20T00:00:00Z",
+   "creator_ids": [
+    "48550e56-3710-4c4b-968d-418c3726989e",
+    "b31391c1-2864-49da-89f2-18c04e1cb352",
+    "f5fd2223-f25f-4bec-8cfa-c597f9e06571",
+    "c480e67f-0d8f-4248-9be4-21507a37e712",
+    "4891c30e-9e5b-4414-9653-cc8b5bd51e5d",
+    "a76ea2dd-5956-497a-a12e-26a5e1d88753"
+   ]
+  },
+  {
+   "id": "38bd3c69-08a6-4b0f-bf43-3e0300755f64",
+   "pitch_code": "PIT-0027",
+   "org_type": "Retainer_Account",
+   "brand_id": 4,
+   "campaign_name": "Cobalt Wear Winter Drop",
+   "requirement": "list",
+   "platform": [
+    "others",
+    "linkedin",
+    "facebook"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0027",
+   "created_at": "2026-07-17T00:00:00Z",
+   "updated_at": "2026-07-17T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "5dc18bce-3445-4d5b-a23b-e9e796ceb525",
+   "pitch_code": "PIT-0028",
+   "org_type": "Retainer_Account",
+   "brand_id": 20,
+   "campaign_name": "Orbit Skincare Summer Reset",
+   "requirement": "content_buckets",
+   "platform": [
+    "others",
+    "linkedin"
+   ],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0028",
+   "created_at": "2026-09-03T00:00:00Z",
+   "updated_at": "2026-09-07T00:00:00Z",
+   "creator_ids": [
+    "7226d33a-98fe-40f1-89aa-e2cf3244b314",
+    "87dc96ee-a77e-44cd-8089-61b3b22bbad3",
+    "5a1133c9-7ca3-45a1-a3b7-5ee126d193fc",
+    "61bfdd9b-8d36-4916-a056-609e060881f2",
+    "86c9b573-4622-4895-b28f-097d51d8d51e"
+   ]
+  },
+  {
+   "id": "0fc05531-0b43-46dd-801a-2fd3e74c00f4",
+   "pitch_code": "PIT-0029",
+   "org_type": "Retainer_Account",
+   "brand_id": 23,
+   "campaign_name": "Orbit Audio Summer Reset",
+   "requirement": "list",
+   "platform": [
+    "youtube",
+    "others"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0029",
+   "created_at": "2026-06-09T00:00:00Z",
+   "updated_at": "2026-07-09T00:00:00Z",
+   "creator_ids": [
+    "87486a72-1567-4ac0-a382-d3d83186de90",
+    "e340d350-6248-49b7-886b-327d6be868ce",
+    "62386e5e-c9aa-4342-bd57-64b9efc32247",
+    "2aa575aa-9717-4c58-ac4d-4b0cbe277082",
+    "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42",
+    "86c9b573-4622-4895-b28f-097d51d8d51e",
+    "7ff875c9-71ac-4199-8f5b-88da9d529505"
+   ]
+  },
+  {
+   "id": "600a6732-01a0-4d42-89d4-ff98b7245d1c",
+   "pitch_code": "PIT-0030",
+   "org_type": "Retainer_Account",
+   "brand_id": 12,
+   "campaign_name": "Aster Labs Launch Week",
+   "requirement": "demographics_data",
+   "platform": [
+    "facebook"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0030",
+   "created_at": "2026-05-23T00:00:00Z",
+   "updated_at": "2026-06-12T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "f71377dc-edb6-4e85-a45a-52094bad8e0e",
+   "pitch_code": "PIT-0031",
+   "org_type": "Brand_Core",
+   "brand_id": 17,
+   "campaign_name": "Tidal Home Weekend Series",
+   "requirement": "NA",
+   "platform": [
+    "others",
+    "linkedin"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0031",
+   "created_at": "2026-09-17T00:00:00Z",
+   "updated_at": "2026-10-17T00:00:00Z",
+   "creator_ids": [
+    "17b91ae3-1a8d-4caf-a7c9-9b8620f9dc8b",
+    "e55b2510-adb3-4226-bad8-f8837578e7ff",
+    "48550e56-3710-4c4b-968d-418c3726989e",
+    "54fdadd4-bdcd-431a-975e-fa8bb559fc24",
+    "29052fdb-230c-4171-b474-0b667414b4ab",
+    "7e66fe22-a97a-437a-80dc-0a1784f42cd4"
+   ]
+  },
+  {
+   "id": "3bdc2efd-b980-4a1e-b4a8-87536fed41d7",
+   "pitch_code": "PIT-0032",
+   "org_type": "Agency",
+   "brand_id": 35,
+   "campaign_name": "Saffron Home Monsoon Edit",
+   "requirement": "plan",
+   "platform": [
+    "instagram"
+   ],
+   "sales_lead": "Zoya Khan",
+   "list_lead": "",
+   "spreadsheet_id": "sheet-p0032",
+   "created_at": "2026-06-02T00:00:00Z",
+   "updated_at": "2026-06-21T00:00:00Z",
+   "creator_ids": [
+    "9411b4d0-0fad-4cf5-a0d6-72dfb9ea01c6",
+    "05bc3049-4893-4cab-b051-035453953af5",
+    "2fecf770-f5de-4dac-ab2a-c87d045caddc",
+    "f1729fa0-dd83-49e5-832f-1ebea50922f8",
+    "e4f9338c-48a5-4349-8f8a-f04ecbb57e4a",
+    "5c6af802-3f71-4fcb-955d-50338e6c80e9"
+   ]
+  },
+  {
+   "id": "e134f9f8-10e1-4ec9-aa06-9dd3e42af0ad",
+   "pitch_code": "PIT-0033",
+   "org_type": "Retainer_Account",
+   "brand_id": 3,
+   "campaign_name": "Saffron Studio Launch Week",
+   "requirement": "content_buckets",
+   "platform": [
+    "linkedin",
+    "youtube",
+    "others"
+   ],
+   "sales_lead": "  ",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0033",
+   "created_at": "2026-09-13T00:00:00Z",
+   "updated_at": "2026-09-15T00:00:00Z",
+   "creator_ids": [
+    "d43c92bb-fe31-4b98-917e-4d81e77e76cd",
+    "208d9959-136f-48b6-953a-6644da82d9f6",
+    "29d8ea09-4765-4ee6-952f-83fd0a5c08f2",
+    "a262d11d-d2dd-4d3b-b3ee-240606bec71f",
+    "86c9b573-4622-4895-b28f-097d51d8d51e"
+   ]
+  },
+  {
+   "id": "0c647801-4858-479e-ae1a-ddc841b73d54",
+   "pitch_code": "PIT-0034",
+   "org_type": "Agency",
+   "brand_id": 21,
+   "campaign_name": "Cobalt Labs Back to Campus",
+   "requirement": "demographics_data",
+   "platform": [
+    "NA"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "",
+   "spreadsheet_id": "sheet-p0034",
+   "created_at": "2026-07-06T00:00:00Z",
+   "updated_at": "2026-07-19T00:00:00Z",
+   "creator_ids": [
+    "3713b8cb-084c-46ad-aeb4-9167ffae7b99",
+    "f01e8467-1250-44f5-b3ed-0082323ac7a3"
+   ]
+  },
+  {
+   "id": "49d04ce5-33b8-43a5-8607-bfbf00552293",
+   "pitch_code": "PIT-0035",
+   "org_type": "Brand_Core",
+   "brand_id": 35,
+   "campaign_name": "Saffron Home Festive Push",
+   "requirement": "plan",
+   "platform": [
+    "linkedin",
+    "youtube",
+    "facebook"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0035",
+   "created_at": "2026-08-06T00:00:00Z",
+   "updated_at": "2026-08-21T00:00:00Z",
+   "creator_ids": [
+    "d5fecb75-89a1-4aba-ae5d-8aace20d0717",
+    "d18c77c7-9cb5-42e4-a7b9-7554f46e82d1",
+    "3ea7a45c-7b31-43c9-b756-bcb7dbe72989",
+    "e7b57407-3c00-48ab-8f5d-a3f6edc02615",
+    "53bd322d-95be-4bc9-8d2a-70d2cc82fda5",
+    "05bc3049-4893-4cab-b051-035453953af5",
+    "5bccc7fa-fe7e-44ad-8b01-f8aa6554afba",
+    "be54e141-5c77-434a-ae0f-ad60cd8445d0",
+    "0a60b851-1d59-4353-aa55-7abbcf88a72c"
+   ]
+  },
+  {
+   "id": "edb27a0f-66b9-4af9-985b-a6635b09b845",
+   "pitch_code": "PIT-0036",
+   "org_type": "Brand_Core",
+   "brand_id": 6,
+   "campaign_name": "Harbor Home Winter Drop",
+   "requirement": "list",
+   "platform": [
+    "linkedin"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0036",
+   "created_at": "2026-05-28T00:00:00Z",
+   "updated_at": "2026-06-14T00:00:00Z",
+   "creator_ids": [
+    "ef012ea5-785b-4754-811b-2b613ac07d76",
+    "5bccc7fa-fe7e-44ad-8b01-f8aa6554afba",
+    "53ae2d04-18f5-4b28-a230-280df27c2612",
+    "905aaefe-4e2b-4ad4-856b-a49290a06a38",
+    "ffe1cdde-df72-440d-a6a4-26735c00c7d7",
+    "14a37fb8-ce9f-4ed4-810a-4bf2577d9601",
+    "a262d11d-d2dd-4d3b-b3ee-240606bec71f"
+   ]
+  },
+  {
+   "id": "52c602e2-bdf2-4077-8dc1-a43ea97f65bd",
+   "pitch_code": "PIT-0037",
+   "org_type": "Retainer_Account",
+   "brand_id": 39,
+   "campaign_name": "Harbor Skincare Creator Spotlight",
+   "requirement": "list_and_plan",
+   "platform": [
+    "facebook"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0037",
+   "created_at": "2026-09-22T00:00:00Z",
+   "updated_at": "2026-09-28T00:00:00Z",
+   "creator_ids": [
+    "c1b79c66-7ead-4995-816d-5eb1510d36ec",
+    "5cf54eca-7c4a-4179-9e34-46cbe0dfc0d8",
+    "ca3ae744-86f2-4944-9eb5-84f474ff27e7",
+    "4affaeb0-1be4-4b8c-b58c-53f7851bec0a",
+    "325dbda6-ca18-422e-887f-644606c656d1",
+    "3fb38611-2f7e-4cee-9f23-aec805982fdf",
+    "8c93f92e-ba52-4768-b607-17042c6d8a6c",
+    "88d90914-a058-4de0-a36f-11e29be07be0",
+    "e8f21c89-3e95-4e00-b46d-eccc3fbe0480",
+    "c0d5cdc5-9624-4e23-8505-9af209f25952"
+   ]
+  },
+  {
+   "id": "4c22b1f4-bbb9-4047-8d56-c5aecb7dc45a",
+   "pitch_code": "PIT-0038",
+   "org_type": "Brand_Other",
+   "brand_id": 7,
+   "campaign_name": "Cobalt Skincare Launch Week",
+   "requirement": "plan",
+   "platform": [
+    "youtube",
+    "others"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Anaya Joshi",
+   "spreadsheet_id": "sheet-p0038",
+   "created_at": "2026-08-19T00:00:00Z",
+   "updated_at": "2026-08-19T00:00:00Z",
+   "creator_ids": [
+    "5c6af802-3f71-4fcb-955d-50338e6c80e9",
+    "5733a37e-058e-4927-a2a2-fce3bb437398",
+    "cfc2b222-9b1c-4f8b-8417-c39ea97df38b",
+    "ef012ea5-785b-4754-811b-2b613ac07d76",
+    "1d007dbc-d427-46fa-aa6e-6e1036b5844d",
+    "7b505a9e-367b-4818-9123-a8137d58e43b",
+    "bcb6518c-73b0-4588-8ff7-3ebbc75f9272"
+   ]
+  },
+  {
+   "id": "6e1656d0-da57-45e4-a872-f15c3e06571b",
+   "pitch_code": "PIT-0039",
+   "org_type": "Retainer_Account",
+   "brand_id": 39,
+   "campaign_name": "Harbor Skincare Monsoon Edit",
+   "requirement": "content_buckets",
+   "platform": [],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0039",
+   "created_at": "2026-06-19T00:00:00Z",
+   "updated_at": "2026-06-29T00:00:00Z",
+   "creator_ids": [
+    "3e14ae77-8dca-4e7d-b0d6-7d66f93f8b1d",
+    "2fd20429-fd57-44a0-a2e9-7b912f2aa402"
+   ]
+  },
+  {
+   "id": "acdcdb5f-84ac-4e30-a8ca-cfe6dbc91d04",
+   "pitch_code": "PIT-0040",
+   "org_type": "Brand_Other",
+   "brand_id": 11,
+   "campaign_name": "Aster Wear Back to Campus",
+   "requirement": "content_buckets_and_list",
+   "platform": [
+    "others"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "  ",
+   "spreadsheet_id": "sheet-p0040",
+   "created_at": "2026-07-28T00:00:00Z",
+   "updated_at": "2026-08-02T00:00:00Z",
+   "creator_ids": [
+    "e340d350-6248-49b7-886b-327d6be868ce",
+    "8c93f92e-ba52-4768-b607-17042c6d8a6c",
+    "208d9959-136f-48b6-953a-6644da82d9f6",
+    "d18c77c7-9cb5-42e4-a7b9-7554f46e82d1"
+   ]
+  },
+  {
+   "id": "74f806f2-f2ae-456f-bdfa-ea88690c9bf8",
+   "pitch_code": "PIT-0041",
+   "org_type": "Brand_Other",
+   "brand_id": 14,
+   "campaign_name": "Cobalt Home Winter Drop",
+   "requirement": "plan",
+   "platform": [
+    "others",
+    "linkedin"
+   ],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0041",
+   "created_at": "2026-06-01T00:00:00Z",
+   "updated_at": "2026-06-09T00:00:00Z",
+   "creator_ids": [
+    "5845655a-ed22-4112-8c3e-11ce485cba67",
+    "ac6e3622-e895-4def-8f7f-7e5b0c4843d5",
+    "b42e629a-5200-44a6-9bf3-5a7bc71b95ea",
+    "3e14ae77-8dca-4e7d-b0d6-7d66f93f8b1d",
+    "5085ead4-6957-45f5-88b7-45ece8fc7dc5",
+    "cdc2a311-2813-48d9-91eb-a56c244bd693",
+    "3b1ec026-498b-4c08-9177-f0a8c141a445"
+   ]
+  },
+  {
+   "id": "edee65ef-2119-405c-aa1e-db8c36467838",
+   "pitch_code": "PIT-0042",
+   "org_type": "Brand_Other",
+   "brand_id": 17,
+   "campaign_name": "Tidal Home New Range",
+   "requirement": "content_buckets",
+   "platform": [
+    "youtube",
+    "facebook",
+    "others"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0042",
+   "created_at": "2026-09-03T00:00:00Z",
+   "updated_at": "2026-09-29T00:00:00Z",
+   "creator_ids": [
+    "f3d0969f-2a64-41c0-b85b-eb85685eb274",
+    "1d007dbc-d427-46fa-aa6e-6e1036b5844d",
+    "b0bc81cd-464f-4f29-bd80-205b3e86c3aa",
+    "40f6321d-d599-4235-94fe-3c67b3927917",
+    "87380554-2b51-460a-b062-393aeef1a1c4",
+    "905aaefe-4e2b-4ad4-856b-a49290a06a38",
+    "d7169f21-ca75-4070-bdd2-d05ae4a958ad"
+   ]
+  },
+  {
+   "id": "b8c730cd-ce31-4752-80b0-9f637b481ae2",
+   "pitch_code": "PIT-0043",
+   "org_type": "Agency",
+   "brand_id": 23,
+   "campaign_name": "Orbit Audio Monsoon Edit",
+   "requirement": "production",
+   "platform": [
+    "facebook",
+    "youtube"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0043",
+   "created_at": "2026-08-03T00:00:00Z",
+   "updated_at": "2026-08-24T00:00:00Z",
+   "creator_ids": [
+    "69dde770-f1f4-4002-af48-8748caf52f36",
+    "85bf11e7-12d1-49c4-98cc-dfa063ffd5d7",
+    "61bfdd9b-8d36-4916-a056-609e060881f2"
+   ]
+  },
+  {
+   "id": "f3a71b00-35b2-4427-82f0-4abfa845063a",
+   "pitch_code": "PIT-0044",
+   "org_type": "NA",
+   "brand_id": 37,
+   "campaign_name": "Maple Audio Creator Spotlight",
+   "requirement": "plan",
+   "platform": [
+    "others",
+    "instagram"
+   ],
+   "sales_lead": "Zoya Khan",
+   "list_lead": "Naina Bose",
+   "spreadsheet_id": "sheet-p0044",
+   "created_at": "2026-07-09T00:00:00Z",
+   "updated_at": "2026-07-23T00:00:00Z",
+   "creator_ids": [
+    "48de7daf-ab43-4859-8c46-60df114408bb",
+    "7ac298f0-e9b4-4fcc-93fd-da2c38ae940d",
+    "ffe1cdde-df72-440d-a6a4-26735c00c7d7"
+   ]
+  },
+  {
+   "id": "14201d4d-87e2-4671-b68d-c5bfb15adcf2",
+   "pitch_code": "PIT-0045",
+   "org_type": "Retainer_Account",
+   "brand_id": 39,
+   "campaign_name": "Harbor Skincare Launch Week",
+   "requirement": "media_plan",
+   "platform": [
+    "linkedin",
+    "youtube",
+    "facebook"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Naina Bose",
+   "spreadsheet_id": "sheet-p0045",
+   "created_at": "2026-09-07T00:00:00Z",
+   "updated_at": "2026-09-24T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "7f6323a3-9004-4542-b225-8e5777cc40da",
+   "pitch_code": "PIT-0046",
+   "org_type": "Retainer_Account",
+   "brand_id": 10,
+   "campaign_name": "Aster Studio Back to Campus",
+   "requirement": "plan",
+   "platform": [
+    "instagram",
+    "youtube",
+    "facebook"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0046",
+   "created_at": "2026-05-28T00:00:00Z",
+   "updated_at": "2026-05-28T00:00:00Z",
+   "creator_ids": [
+    "ad1162e7-0227-41a2-b8fa-8c93f8804e7c",
+    "f81239ac-283a-4f30-85ca-4d7a772af4fc",
+    "4d5ef8b1-7062-4450-92ad-e47149e0b41e",
+    "5242cc7a-34c9-4ab3-92a6-23d9d9c41b11",
+    "a262d11d-d2dd-4d3b-b3ee-240606bec71f",
+    "9411b4d0-0fad-4cf5-a0d6-72dfb9ea01c6"
+   ]
+  },
+  {
+   "id": "c5445ce8-8ddb-4bc1-8689-a21ec74d5921",
+   "pitch_code": "PIT-0047",
+   "org_type": "Agency",
+   "brand_id": null,
+   "campaign_name": "Unassigned Winter Drop",
+   "requirement": "media_plan",
+   "platform": [
+    "linkedin",
+    "others",
+    "youtube"
+   ],
+   "sales_lead": "",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0047",
+   "created_at": "2026-06-16T00:00:00Z",
+   "updated_at": "2026-06-28T00:00:00Z",
+   "creator_ids": [
+    "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42",
+    "3713b8cb-084c-46ad-aeb4-9167ffae7b99",
+    "b40c1938-271f-4d10-baf6-4d9a1cf5cf37",
+    "e7baa3bf-6e8a-4aa6-90e6-db126fc65f23",
+    "84bd6199-b1bc-4efa-95a6-67b6330ac1af"
+   ]
+  },
+  {
+   "id": "67f186a2-e2b6-450c-8de6-3750b9015459",
+   "pitch_code": "PIT-0048",
+   "org_type": "Brand_Core",
+   "brand_id": 22,
+   "campaign_name": "Tidal Skincare Winter Drop",
+   "requirement": "list",
+   "platform": [
+    "instagram",
+    "others",
+    "youtube"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Anaya Joshi",
+   "spreadsheet_id": "sheet-p0048",
+   "created_at": "2026-08-12T00:00:00Z",
+   "updated_at": "2026-09-02T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "75379466-a233-4a67-aac0-a7800a1afaea",
+   "pitch_code": "PIT-0049",
+   "org_type": "Brand_Other",
+   "brand_id": 35,
+   "campaign_name": "Saffron Home Launch Week",
+   "requirement": "list",
+   "platform": [
+    "others",
+    "instagram",
+    "facebook"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "  ",
+   "spreadsheet_id": "sheet-p0049",
+   "created_at": "2026-06-26T00:00:00Z",
+   "updated_at": "2026-06-30T00:00:00Z",
+   "creator_ids": [
+    "3372fac7-5cf1-489f-a601-af565e3bf7ea",
+    "d5fecb75-89a1-4aba-ae5d-8aace20d0717",
+    "69dde770-f1f4-4002-af48-8748caf52f36",
+    "1848e618-f27e-434a-9e88-548958b02397",
+    "3e14ae77-8dca-4e7d-b0d6-7d66f93f8b1d",
+    "25eeefdf-41c9-4450-832d-06e0cb3c930e",
+    "718d68c1-fb01-4448-99a8-8df1af7fb13a",
+    "bcb6518c-73b0-4588-8ff7-3ebbc75f9272",
+    "80df3273-15f2-48d4-9337-d6b8e502ebce"
+   ]
+  },
+  {
+   "id": "67970ab1-eb2b-40b5-b21a-30cc93484239",
+   "pitch_code": "PIT-0050",
+   "org_type": "Brand_Core",
+   "brand_id": 38,
+   "campaign_name": "Nimbus Mobility Winter Drop",
+   "requirement": "list_and_plan",
+   "platform": [
+    "facebook"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0050",
+   "created_at": "2026-09-17T00:00:00Z",
+   "updated_at": "2026-10-07T00:00:00Z",
+   "creator_ids": [
+    "5085ead4-6957-45f5-88b7-45ece8fc7dc5",
+    "ac6e3622-e895-4def-8f7f-7e5b0c4843d5",
+    "d00ad1cc-d455-462b-b51f-d22af47a168a"
+   ]
+  },
+  {
+   "id": "46839f5b-048d-49c8-b8ea-bc3a21041428",
+   "pitch_code": "PIT-0051",
+   "org_type": "Brand_Other",
+   "brand_id": null,
+   "campaign_name": "Unassigned New Range",
+   "requirement": "list_and_plan",
+   "platform": [
+    "instagram"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0051",
+   "created_at": "2026-08-30T00:00:00Z",
+   "updated_at": "2026-09-26T00:00:00Z",
+   "creator_ids": [
+    "1d007dbc-d427-46fa-aa6e-6e1036b5844d",
+    "5085ead4-6957-45f5-88b7-45ece8fc7dc5"
+   ]
+  },
+  {
+   "id": "e2220a7f-03c5-4116-8f80-44a802eb2c86",
+   "pitch_code": "PIT-0052",
+   "org_type": "Brand_Core",
+   "brand_id": 32,
+   "campaign_name": "Tidal Audio Winter Drop",
+   "requirement": "list_and_plan",
+   "platform": [
+    "instagram"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "",
+   "spreadsheet_id": "sheet-p0052",
+   "created_at": "2026-06-05T00:00:00Z",
+   "updated_at": "2026-06-23T00:00:00Z",
+   "creator_ids": [
+    "c8a66fdf-1c67-420d-9b17-c21e7512f34a",
+    "0a60b851-1d59-4353-aa55-7abbcf88a72c",
+    "dfc6575b-ed93-487c-a204-6970de68a635",
+    "074d3f2a-4899-405d-b094-b9c0ea5ef90d",
+    "36638c8a-fa13-4249-9f20-c38bd7a260da",
+    "86c9b573-4622-4895-b28f-097d51d8d51e",
+    "88d90914-a058-4de0-a36f-11e29be07be0",
+    "ef012ea5-785b-4754-811b-2b613ac07d76"
+   ]
+  },
+  {
+   "id": "9f316305-0f85-459b-87a7-fde04ad9f598",
+   "pitch_code": "PIT-0053",
+   "org_type": "Agency",
+   "brand_id": 31,
+   "campaign_name": "Lumen Skincare Always On",
+   "requirement": "list",
+   "platform": [
+    "others",
+    "linkedin"
+   ],
+   "sales_lead": "Riya Sen",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0053",
+   "created_at": "2026-06-24T00:00:00Z",
+   "updated_at": "2026-07-07T00:00:00Z",
+   "creator_ids": [
+    "40e40b84-35c7-42a9-88aa-ba38667dd069",
+    "e55b2510-adb3-4226-bad8-f8837578e7ff",
+    "b3899d79-c1f3-4579-9438-e8042434aebc",
+    "325dbda6-ca18-422e-887f-644606c656d1"
+   ]
+  },
+  {
+   "id": "284387ee-6c28-4618-849d-27f94356e358",
+   "pitch_code": "PIT-0054",
+   "org_type": "Brand_Core",
+   "brand_id": 15,
+   "campaign_name": "Harbor Foods Creator Spotlight",
+   "requirement": "list_and_plan",
+   "platform": [
+    "NA"
+   ],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0054",
+   "created_at": "2026-06-07T00:00:00Z",
+   "updated_at": "2026-06-28T00:00:00Z",
+   "creator_ids": [
+    "3713b8cb-084c-46ad-aeb4-9167ffae7b99",
+    "ffe1cdde-df72-440d-a6a4-26735c00c7d7",
+    "2b055b4b-771b-4363-b357-a16732d5b39f",
+    "56a30a77-da91-4ff3-82f8-3f52db18bf4c",
+    "11fa6664-9eef-453f-9aac-21b5afe7eb15",
+    "5242cc7a-34c9-4ab3-92a6-23d9d9c41b11",
+    "7e66fe22-a97a-437a-80dc-0a1784f42cd4",
+    "87486a72-1567-4ac0-a382-d3d83186de90"
+   ]
+  },
+  {
+   "id": "caaa8e50-0266-4c0a-804a-4a4c961d8bc0",
+   "pitch_code": "PIT-0055",
+   "org_type": "Brand_Core",
+   "brand_id": 15,
+   "campaign_name": "Harbor Foods Weekend Series",
+   "requirement": "plan",
+   "platform": [
+    "youtube",
+    "linkedin"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0055",
+   "created_at": "2026-07-13T00:00:00Z",
+   "updated_at": "2026-08-10T00:00:00Z",
+   "creator_ids": [
+    "d43c92bb-fe31-4b98-917e-4d81e77e76cd",
+    "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42",
+    "221146c0-1406-4138-ba33-4f187d1f2df3",
+    "87486a72-1567-4ac0-a382-d3d83186de90",
+    "c0d5cdc5-9624-4e23-8505-9af209f25952",
+    "53bd322d-95be-4bc9-8d2a-70d2cc82fda5"
+   ]
+  },
+  {
+   "id": "ff44abde-ec30-43c2-8b6a-8ad23f0dd583",
+   "pitch_code": "PIT-0056",
+   "org_type": "Brand_Core",
+   "brand_id": 12,
+   "campaign_name": "Aster Labs Back to Campus",
+   "requirement": "plan",
+   "platform": [
+    "others",
+    "youtube"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0056",
+   "created_at": "2026-07-18T00:00:00Z",
+   "updated_at": "2026-08-03T00:00:00Z",
+   "creator_ids": [
+    "25eeefdf-41c9-4450-832d-06e0cb3c930e",
+    "b40c1938-271f-4d10-baf6-4d9a1cf5cf37"
+   ]
+  },
+  {
+   "id": "97d6b91b-c46a-4d88-b265-8833f24dcbf1",
+   "pitch_code": "PIT-0057",
+   "org_type": "Brand_Other",
+   "brand_id": 37,
+   "campaign_name": "Maple Audio Creator Spotlight",
+   "requirement": "production",
+   "platform": [
+    "facebook",
+    "instagram"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Anaya Joshi",
+   "spreadsheet_id": "sheet-p0057",
+   "created_at": "2026-05-29T00:00:00Z",
+   "updated_at": "2026-05-30T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "1eb2d125-ec12-4488-a5bb-c9f7a3ccb0a4",
+   "pitch_code": "PIT-0058",
+   "org_type": "Brand_Core",
+   "brand_id": 30,
+   "campaign_name": "Maple Skincare Creator Spotlight",
+   "requirement": "content_buckets",
+   "platform": [
+    "others"
+   ],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0058",
+   "created_at": "2026-05-29T00:00:00Z",
+   "updated_at": "2026-06-03T00:00:00Z",
+   "creator_ids": [
+    "a1a3e6e3-2baf-413f-be86-e8eafc97326e",
+    "e8f21c89-3e95-4e00-b46d-eccc3fbe0480",
+    "51ff67dc-880d-4f31-8c83-87a4009cbd0e"
+   ]
+  },
+  {
+   "id": "bd5480a6-b5a8-433b-8369-e01ac94fc1ab",
+   "pitch_code": "PIT-0059",
+   "org_type": "Retainer_Account",
+   "brand_id": 3,
+   "campaign_name": "Saffron Studio Festive Push",
+   "requirement": "production",
+   "platform": [
+    "instagram",
+    "others",
+    "youtube"
+   ],
+   "sales_lead": "",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0059",
+   "created_at": "2026-07-27T00:00:00Z",
+   "updated_at": "2026-08-14T00:00:00Z",
+   "creator_ids": [
+    "f01e8467-1250-44f5-b3ed-0082323ac7a3",
+    "79f03167-b06e-445f-8e45-99c20d68bc39"
+   ]
+  },
+  {
+   "id": "033aacd6-e465-4d35-ad79-fddcea0f7718",
+   "pitch_code": "PIT-0060",
+   "org_type": "Brand_Other",
+   "brand_id": 25,
+   "campaign_name": "Nimbus Audio Festive Push",
+   "requirement": "content_buckets",
+   "platform": [
+    "youtube",
+    "others"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Riya Sen",
+   "spreadsheet_id": "sheet-p0060",
+   "created_at": "2026-08-30T00:00:00Z",
+   "updated_at": "2026-09-22T00:00:00Z",
+   "creator_ids": [
+    "ad1162e7-0227-41a2-b8fa-8c93f8804e7c",
+    "85bf11e7-12d1-49c4-98cc-dfa063ffd5d7",
+    "bcb6518c-73b0-4588-8ff7-3ebbc75f9272",
+    "5085ead4-6957-45f5-88b7-45ece8fc7dc5",
+    "b42e629a-5200-44a6-9bf3-5a7bc71b95ea",
+    "6c070ff4-d8cc-4912-84cb-b2bd83169270",
+    "0a41a049-a238-4f7a-b20e-cd9f18a491ef",
+    "79f03167-b06e-445f-8e45-99c20d68bc39"
+   ]
+  },
+  {
+   "id": "8da9ec93-738d-4ccc-b6b6-a4d22e242fc8",
+   "pitch_code": "PIT-0061",
+   "org_type": "Retainer_Account",
+   "brand_id": 31,
+   "campaign_name": "Lumen Skincare Summer Reset",
+   "requirement": "content_buckets_and_list",
+   "platform": [
+    "instagram"
+   ],
+   "sales_lead": "Naina Bose",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0061",
+   "created_at": "2026-09-01T00:00:00Z",
+   "updated_at": "2026-09-10T00:00:00Z",
+   "creator_ids": [
+    "d5fecb75-89a1-4aba-ae5d-8aace20d0717",
+    "aa3c109e-d1cd-4a6c-9ac6-ee7408e0b6c3",
+    "a75d2580-0143-4f09-aa4f-6f323cf0891a"
+   ]
+  },
+  {
+   "id": "339d7cf8-c13d-47cf-81fe-bb341e832d72",
+   "pitch_code": "PIT-0062",
+   "org_type": "Retainer_Account",
+   "brand_id": 31,
+   "campaign_name": "Lumen Skincare Creator Spotlight",
+   "requirement": "content_buckets",
+   "platform": [
+    "youtube",
+    "facebook",
+    "others"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Anaya Joshi",
+   "spreadsheet_id": "sheet-p0062",
+   "created_at": "2026-09-01T00:00:00Z",
+   "updated_at": "2026-09-02T00:00:00Z",
+   "creator_ids": [
+    "9411b4d0-0fad-4cf5-a0d6-72dfb9ea01c6",
+    "ca393a82-5b32-4086-9ea1-f7651cbb65de",
+    "d49943b1-d13f-4a84-a66b-695af05f1f99",
+    "c480e67f-0d8f-4248-9be4-21507a37e712",
+    "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42"
+   ]
+  },
+  {
+   "id": "495125cc-86ce-425e-b192-ccb5d50dfdea",
+   "pitch_code": "PIT-0063",
+   "org_type": "Retainer_Account",
+   "brand_id": 9,
+   "campaign_name": "Maple Home Festive Push",
+   "requirement": "content_buckets",
+   "platform": [],
+   "sales_lead": "Vihaan Reddy",
+   "list_lead": "Naina Bose",
+   "spreadsheet_id": "sheet-p0063",
+   "created_at": "2026-06-09T00:00:00Z",
+   "updated_at": "2026-06-25T00:00:00Z",
+   "creator_ids": [
+    "77b9402c-0b36-4034-91c4-f8227796de12",
+    "54fdadd4-bdcd-431a-975e-fa8bb559fc24",
+    "f5fd2223-f25f-4bec-8cfa-c597f9e06571"
+   ]
+  },
+  {
+   "id": "cfc3f35a-a0e1-4fbd-b52f-9a2aab7e892d",
+   "pitch_code": "PIT-0064",
+   "org_type": "Agency",
+   "brand_id": 39,
+   "campaign_name": "Harbor Skincare Monsoon Edit",
+   "requirement": "NA",
+   "platform": [
+    "others"
+   ],
+   "sales_lead": "Dev Malhotra",
+   "list_lead": "Anaya Joshi",
+   "spreadsheet_id": "sheet-p0064",
+   "created_at": "2026-05-27T00:00:00Z",
+   "updated_at": "2026-06-25T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "7a0365db-c352-437e-a903-e9cd68d61743",
+   "pitch_code": "PIT-0065",
+   "org_type": "Agency",
+   "brand_id": 22,
+   "campaign_name": "Tidal Skincare Monsoon Edit",
+   "requirement": "production",
+   "platform": [
+    "instagram",
+    "others"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Vihaan Reddy",
+   "spreadsheet_id": "sheet-p0065",
+   "created_at": "2026-07-20T00:00:00Z",
+   "updated_at": "2026-08-16T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "61a2b7ab-de3b-4ddd-b610-5065c774b19e",
+   "pitch_code": "PIT-0066",
+   "org_type": "Brand_Core",
+   "brand_id": 29,
+   "campaign_name": "Tidal Labs Creator Spotlight",
+   "requirement": "demographics_data",
+   "platform": [
+    "linkedin"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Zoya Khan",
+   "spreadsheet_id": "sheet-p0066",
+   "created_at": "2026-05-21T00:00:00Z",
+   "updated_at": "2026-05-25T00:00:00Z",
+   "creator_ids": []
+  },
+  {
+   "id": "31f1160f-bd1e-40e8-b2ef-84f4ed22c330",
+   "pitch_code": "PIT-0067",
+   "org_type": "Retainer_Account",
+   "brand_id": 15,
+   "campaign_name": "Harbor Foods Weekend Series",
+   "requirement": "demographics_data",
+   "platform": [
+    "instagram",
+    "others",
+    "facebook"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0067",
+   "created_at": "2026-08-15T00:00:00Z",
+   "updated_at": "2026-08-16T00:00:00Z",
+   "creator_ids": [
+    "84bd6199-b1bc-4efa-95a6-67b6330ac1af",
+    "146e795c-03e6-4118-aa57-fb14f0bdadb7",
+    "cfc2b222-9b1c-4f8b-8417-c39ea97df38b",
+    "b0bc81cd-464f-4f29-bd80-205b3e86c3aa",
+    "085e4f37-8ef7-4883-86ec-55d3884bd7df",
+    "aa3aabc0-2339-4230-a2a7-7b627d60682a",
+    "4eba0761-07a8-455c-9811-92ef46674794",
+    "7ac298f0-e9b4-4fcc-93fd-da2c38ae940d"
+   ]
+  },
+  {
+   "id": "f0054e42-04bc-4e34-9375-a49ff2bcde3d",
+   "pitch_code": "PIT-0068",
+   "org_type": "Retainer_Account",
+   "brand_id": 35,
+   "campaign_name": "Saffron Home Always On",
+   "requirement": "list",
+   "platform": [
+    "facebook",
+    "others",
+    "instagram"
+   ],
+   "sales_lead": "Anaya Joshi",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0068",
+   "created_at": "2026-08-03T00:00:00Z",
+   "updated_at": "2026-08-13T00:00:00Z",
+   "creator_ids": [
+    "484a67ea-1142-4d39-8915-1dadad3a4910",
+    "b9958683-3b74-4147-8c2b-cd83eff14efd",
+    "23ced9f5-24c1-4d96-93ad-567591d37056",
+    "79f03167-b06e-445f-8e45-99c20d68bc39",
+    "7226d33a-98fe-40f1-89aa-e2cf3244b314",
+    "21b1019a-b0fd-41cb-b756-e4fda8674ce0"
+   ]
+  },
+  {
+   "id": "5d4b69e0-02f5-4c3b-a1f7-f5d6a9c22075",
+   "pitch_code": "PIT-0069",
+   "org_type": "Brand_Other",
+   "brand_id": 34,
+   "campaign_name": "Harbor Labs Launch Week",
+   "requirement": "content_buckets",
+   "platform": [
+    "facebook"
+   ],
+   "sales_lead": "Zoya Khan",
+   "list_lead": "Naina Bose",
+   "spreadsheet_id": "sheet-p0069",
+   "created_at": "2026-08-24T00:00:00Z",
+   "updated_at": "2026-09-05T00:00:00Z",
+   "creator_ids": [
+    "bb202aab-3e9a-49e9-9f9f-8726b8b02437",
+    "14e82eb6-2e87-42f4-98e6-119bdad2f264",
+    "f1729fa0-dd83-49e5-832f-1ebea50922f8",
+    "25eeefdf-41c9-4450-832d-06e0cb3c930e",
+    "2aa575aa-9717-4c58-ac4d-4b0cbe277082",
+    "7ea05a77-655d-4914-9cb9-340ca954485e",
+    "c0d5f3fe-7628-459c-8f97-fc0401f82e5d",
+    "c8a66fdf-1c67-420d-9b17-c21e7512f34a"
+   ]
+  },
+  {
+   "id": "1cf070c7-499b-48e5-8a17-5b0ef36bf211",
+   "pitch_code": "PIT-0070",
+   "org_type": "Brand_Other",
+   "brand_id": 35,
+   "campaign_name": "Saffron Home Launch Week",
+   "requirement": "NA",
+   "platform": [
+    "instagram",
+    "facebook",
+    "others"
+   ],
+   "sales_lead": "Zoya Khan",
+   "list_lead": "Ishaan Kapoor",
+   "spreadsheet_id": "sheet-p0070",
+   "created_at": "2026-09-21T00:00:00Z",
+   "updated_at": "2026-10-08T00:00:00Z",
+   "creator_ids": [
+    "4eba0761-07a8-455c-9811-92ef46674794",
+    "f81239ac-283a-4f30-85ca-4d7a772af4fc",
+    "29d8ea09-4765-4ee6-952f-83fd0a5c08f2",
+    "1d007dbc-d427-46fa-aa6e-6e1036b5844d",
+    "cbea1658-7ed6-425f-84ae-b9a5889d89bb",
+    "d18c77c7-9cb5-42e4-a7b9-7554f46e82d1",
+    "4425f93c-a4a4-41e0-977f-af62878ba5f8",
+    "0806eb05-a00b-4fe7-be29-ac82af757743"
+   ]
+  },
+  {
+   "id": "75fc74c4-5de7-418b-b5da-24688c6f5a9c",
+   "pitch_code": "PIT-0071",
+   "org_type": "Agency",
+   "brand_id": 6,
+   "campaign_name": "Harbor Home Always On",
+   "requirement": "media_plan",
+   "platform": [
+    "youtube",
+    "facebook",
+    "instagram"
+   ],
+   "sales_lead": "Ishaan Kapoor",
+   "list_lead": "Naina Bose",
+   "spreadsheet_id": "sheet-p0071",
+   "created_at": "2026-07-19T00:00:00Z",
+   "updated_at": "2026-08-05T00:00:00Z",
+   "creator_ids": [
+    "2031afb4-079f-422d-acb5-c04a99b26680",
+    "ac6e3622-e895-4def-8f7f-7e5b0c4843d5",
+    "de3d5266-6137-416b-be8e-157addb42e7e",
+    "88d90914-a058-4de0-a36f-11e29be07be0",
+    "29052fdb-230c-4171-b474-0b667414b4ab",
+    "79f03167-b06e-445f-8e45-99c20d68bc39",
+    "a60a1728-772c-4eb4-abb8-b295cd1ddcf2",
+    "4affaeb0-1be4-4b8c-b58c-53f7851bec0a",
+    "aa3c109e-d1cd-4a6c-9ac6-ee7408e0b6c3",
+    "a89751be-8586-4ae4-8f72-b7ce9691798d"
+   ]
+  },
+  {
+   "id": "1119ba30-8d16-4274-a897-d3720593c11a",
+   "pitch_code": "PIT-0072",
+   "org_type": "Agency",
+   "brand_id": 14,
+   "campaign_name": "Cobalt Home New Range",
+   "requirement": "content_buckets_and_list",
+   "platform": [],
+   "sales_lead": "Riya Sen",
+   "list_lead": "Dev Malhotra",
+   "spreadsheet_id": "sheet-p0072",
+   "created_at": "2026-07-17T00:00:00Z",
+   "updated_at": "2026-08-02T00:00:00Z",
+   "creator_ids": [
+    "7ff875c9-71ac-4199-8f5b-88da9d529505",
+    "0a41a049-a238-4f7a-b20e-cd9f18a491ef",
+    "0732f67c-f32d-4b30-bca9-213915e36f0f"
+   ]
+  }
+ ],
+ "campaign_creator_links": [
+  {
+   "campaign_id": "117a13ae-ad2d-4c5f-82a8-3c34f2a991f8",
+   "creator_id": "21b1019a-b0fd-41cb-b756-e4fda8674ce0",
+   "expected_views": 320000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "117a13ae-ad2d-4c5f-82a8-3c34f2a991f8",
+   "creator_id": "d7169f21-ca75-4070-bdd2-d05ae4a958ad",
+   "expected_views": 117000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "117a13ae-ad2d-4c5f-82a8-3c34f2a991f8",
+   "creator_id": "f3d0969f-2a64-41c0-b85b-eb85685eb274",
+   "expected_views": 114000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "117a13ae-ad2d-4c5f-82a8-3c34f2a991f8",
+   "creator_id": "6c070ff4-d8cc-4912-84cb-b2bd83169270",
+   "expected_views": 282000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "117a13ae-ad2d-4c5f-82a8-3c34f2a991f8",
+   "creator_id": "f81239ac-283a-4f30-85ca-4d7a772af4fc",
+   "expected_views": 263000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b10b43a1-57e1-4d4d-9660-060aff0200ae",
+   "creator_id": "9431ac22-2a9f-4400-98e3-be61ea2baccd",
+   "expected_views": 295000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b10b43a1-57e1-4d4d-9660-060aff0200ae",
+   "creator_id": "1848e618-f27e-434a-9e88-548958b02397",
+   "expected_views": 375000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b10b43a1-57e1-4d4d-9660-060aff0200ae",
+   "creator_id": "ad1162e7-0227-41a2-b8fa-8c93f8804e7c",
+   "expected_views": 344000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b10b43a1-57e1-4d4d-9660-060aff0200ae",
+   "creator_id": "0692d65f-66d0-473b-b3d0-80178f1c249b",
+   "expected_views": 41000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b10b43a1-57e1-4d4d-9660-060aff0200ae",
+   "creator_id": "69dde770-f1f4-4002-af48-8748caf52f36",
+   "expected_views": 324000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b10b43a1-57e1-4d4d-9660-060aff0200ae",
+   "creator_id": "9411b4d0-0fad-4cf5-a0d6-72dfb9ea01c6",
+   "expected_views": 222000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b10b43a1-57e1-4d4d-9660-060aff0200ae",
+   "creator_id": "9712327f-f0be-4823-9e40-ab6194eecc10",
+   "expected_views": 251000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a18fda26-6bbf-4273-b8a7-d8c3e35d60a4",
+   "creator_id": "6acd86ad-825f-463a-841f-123618482182",
+   "expected_views": 52000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a18fda26-6bbf-4273-b8a7-d8c3e35d60a4",
+   "creator_id": "9431ac22-2a9f-4400-98e3-be61ea2baccd",
+   "expected_views": 50000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a18fda26-6bbf-4273-b8a7-d8c3e35d60a4",
+   "creator_id": "87380554-2b51-460a-b062-393aeef1a1c4",
+   "expected_views": 38000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a18fda26-6bbf-4273-b8a7-d8c3e35d60a4",
+   "creator_id": "3ea7a45c-7b31-43c9-b756-bcb7dbe72989",
+   "expected_views": 117000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a18fda26-6bbf-4273-b8a7-d8c3e35d60a4",
+   "creator_id": "90fa2e4e-cde5-47f0-b5ea-b704692cf6ea",
+   "expected_views": 143000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a18fda26-6bbf-4273-b8a7-d8c3e35d60a4",
+   "creator_id": "ac6e3622-e895-4def-8f7f-7e5b0c4843d5",
+   "expected_views": 327000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a18fda26-6bbf-4273-b8a7-d8c3e35d60a4",
+   "creator_id": "ce17553b-6d4c-4377-9e64-57dafe8bc5c8",
+   "expected_views": 35000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "creator_id": "7b505a9e-367b-4818-9123-a8137d58e43b",
+   "expected_views": 170000,
+   "ig_reel_views": 129253,
+   "ig_story_views": 36455
+  },
+  {
+   "campaign_id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "creator_id": "4affaeb0-1be4-4b8c-b58c-53f7851bec0a",
+   "expected_views": 359000,
+   "ig_reel_views": 150997,
+   "ig_story_views": 42588
+  },
+  {
+   "campaign_id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "creator_id": "e4d5a3d3-6b6c-46ea-82cb-37b5cefd4531",
+   "expected_views": 355000,
+   "ig_reel_views": 205479,
+   "ig_story_views": 57955
+  },
+  {
+   "campaign_id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "creator_id": "e5e12f96-8c4d-416e-b9ee-e8b515c5a11f",
+   "expected_views": 302000,
+   "ig_reel_views": 352273,
+   "ig_story_views": 99359
+  },
+  {
+   "campaign_id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "creator_id": "77b9402c-0b36-4034-91c4-f8227796de12",
+   "expected_views": 62000,
+   "ig_reel_views": 57702,
+   "ig_story_views": 16275
+  },
+  {
+   "campaign_id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "creator_id": "e340d350-6248-49b7-886b-327d6be868ce",
+   "expected_views": 181000,
+   "ig_reel_views": 175894,
+   "ig_story_views": 49611
+  },
+  {
+   "campaign_id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "creator_id": "5bccc7fa-fe7e-44ad-8b01-f8aa6554afba",
+   "expected_views": 282000,
+   "ig_reel_views": 165737,
+   "ig_story_views": 46746
+  },
+  {
+   "campaign_id": "8d8cf9a8-b0d1-437a-b5ec-5c294e868ac3",
+   "creator_id": "ca393a82-5b32-4086-9ea1-f7651cbb65de",
+   "expected_views": 55000,
+   "ig_reel_views": 44671,
+   "ig_story_views": 12599
+  },
+  {
+   "campaign_id": "a5956e2b-df02-4ac3-8419-ca8e9128a82e",
+   "creator_id": "7226d33a-98fe-40f1-89aa-e2cf3244b314",
+   "expected_views": 168000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5956e2b-df02-4ac3-8419-ca8e9128a82e",
+   "creator_id": "a75d2580-0143-4f09-aa4f-6f323cf0891a",
+   "expected_views": 217000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "c544cb7d-af3f-4022-8332-a06aa66cf88b",
+   "creator_id": "d49943b1-d13f-4a84-a66b-695af05f1f99",
+   "expected_views": 20000,
+   "ig_reel_views": 10516,
+   "ig_story_views": 2966
+  },
+  {
+   "campaign_id": "c544cb7d-af3f-4022-8332-a06aa66cf88b",
+   "creator_id": "b3899d79-c1f3-4579-9438-e8042434aebc",
+   "expected_views": 46000,
+   "ig_reel_views": 33852,
+   "ig_story_views": 9548
+  },
+  {
+   "campaign_id": "05011ece-62ba-441a-9fbe-a64073289c32",
+   "creator_id": "2031afb4-079f-422d-acb5-c04a99b26680",
+   "expected_views": 365000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "05011ece-62ba-441a-9fbe-a64073289c32",
+   "creator_id": "3e14ae77-8dca-4e7d-b0d6-7d66f93f8b1d",
+   "expected_views": 158000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "05011ece-62ba-441a-9fbe-a64073289c32",
+   "creator_id": "f4f58284-1b7e-41f1-9c52-1cedd6b5c135",
+   "expected_views": 192000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "05011ece-62ba-441a-9fbe-a64073289c32",
+   "creator_id": "23ced9f5-24c1-4d96-93ad-567591d37056",
+   "expected_views": 64000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "05011ece-62ba-441a-9fbe-a64073289c32",
+   "creator_id": "ef012ea5-785b-4754-811b-2b613ac07d76",
+   "expected_views": 179000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "05011ece-62ba-441a-9fbe-a64073289c32",
+   "creator_id": "77b9402c-0b36-4034-91c4-f8227796de12",
+   "expected_views": 190000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "05011ece-62ba-441a-9fbe-a64073289c32",
+   "creator_id": "d7169f21-ca75-4070-bdd2-d05ae4a958ad",
+   "expected_views": 27000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "50964e95-2c6c-4a0c-9ace-a33c964573f5",
+   "creator_id": "b0bc81cd-464f-4f29-bd80-205b3e86c3aa",
+   "expected_views": 71000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "50964e95-2c6c-4a0c-9ace-a33c964573f5",
+   "creator_id": "690d8f02-c591-416f-a938-cf95489da0ed",
+   "expected_views": 25000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "50964e95-2c6c-4a0c-9ace-a33c964573f5",
+   "creator_id": "a4b92047-dfa0-4a3c-b135-749cf4559f97",
+   "expected_views": 50000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "50964e95-2c6c-4a0c-9ace-a33c964573f5",
+   "creator_id": "ca3ae744-86f2-4944-9eb5-84f474ff27e7",
+   "expected_views": 258000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "50964e95-2c6c-4a0c-9ace-a33c964573f5",
+   "creator_id": "0dfc54bc-05e7-4ff5-9565-7f63433fc547",
+   "expected_views": 269000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "2c685f56-1664-4602-be4e-dec5de432e5e",
+   "creator_id": "aaee5b6c-ad50-4ef4-aa4a-1f7934d8b4ae",
+   "expected_views": 249000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "2c685f56-1664-4602-be4e-dec5de432e5e",
+   "creator_id": "21b1019a-b0fd-41cb-b756-e4fda8674ce0",
+   "expected_views": 280000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "2c685f56-1664-4602-be4e-dec5de432e5e",
+   "creator_id": "c0d5cdc5-9624-4e23-8505-9af209f25952",
+   "expected_views": 117000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "8dc88649-59eb-4c10-a9b9-ff16d36948f6",
+   "creator_id": "be7c0703-4a78-4c27-85d0-5014f90b8fa3",
+   "expected_views": 235000,
+   "ig_reel_views": 273035,
+   "ig_story_views": 77009
+  },
+  {
+   "campaign_id": "8dc88649-59eb-4c10-a9b9-ff16d36948f6",
+   "creator_id": "29d8ea09-4765-4ee6-952f-83fd0a5c08f2",
+   "expected_views": 20000,
+   "ig_reel_views": 11438,
+   "ig_story_views": 3226
+  },
+  {
+   "campaign_id": "8dc88649-59eb-4c10-a9b9-ff16d36948f6",
+   "creator_id": "3e14ae77-8dca-4e7d-b0d6-7d66f93f8b1d",
+   "expected_views": 323000,
+   "ig_reel_views": 193830,
+   "ig_story_views": 54670
+  },
+  {
+   "campaign_id": "8dc88649-59eb-4c10-a9b9-ff16d36948f6",
+   "creator_id": "2aa575aa-9717-4c58-ac4d-4b0cbe277082",
+   "expected_views": 30000,
+   "ig_reel_views": 15706,
+   "ig_story_views": 4430
+  },
+  {
+   "campaign_id": "8dc88649-59eb-4c10-a9b9-ff16d36948f6",
+   "creator_id": "85bf11e7-12d1-49c4-98cc-dfa063ffd5d7",
+   "expected_views": 221000,
+   "ig_reel_views": 257815,
+   "ig_story_views": 72717
+  },
+  {
+   "campaign_id": "8dc88649-59eb-4c10-a9b9-ff16d36948f6",
+   "creator_id": "074d3f2a-4899-405d-b094-b9c0ea5ef90d",
+   "expected_views": 328000,
+   "ig_reel_views": 287545,
+   "ig_story_views": 81102
+  },
+  {
+   "campaign_id": "8dc88649-59eb-4c10-a9b9-ff16d36948f6",
+   "creator_id": "2031afb4-079f-422d-acb5-c04a99b26680",
+   "expected_views": 71000,
+   "ig_reel_views": 27369,
+   "ig_story_views": 7719
+  },
+  {
+   "campaign_id": "8b7c5a45-4508-40a2-b240-78b217b6af7d",
+   "creator_id": "53bd322d-95be-4bc9-8d2a-70d2cc82fda5",
+   "expected_views": 24000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "8b7c5a45-4508-40a2-b240-78b217b6af7d",
+   "creator_id": "c480e67f-0d8f-4248-9be4-21507a37e712",
+   "expected_views": 332000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "8b7c5a45-4508-40a2-b240-78b217b6af7d",
+   "creator_id": "d5fecb75-89a1-4aba-ae5d-8aace20d0717",
+   "expected_views": 188000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "creator_id": "1d007dbc-d427-46fa-aa6e-6e1036b5844d",
+   "expected_views": 144000,
+   "ig_reel_views": 52372,
+   "ig_story_views": 14771
+  },
+  {
+   "campaign_id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "creator_id": "85bf11e7-12d1-49c4-98cc-dfa063ffd5d7",
+   "expected_views": 208000,
+   "ig_reel_views": 136328,
+   "ig_story_views": 38451
+  },
+  {
+   "campaign_id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "creator_id": "f4f58284-1b7e-41f1-9c52-1cedd6b5c135",
+   "expected_views": 252000,
+   "ig_reel_views": 114708,
+   "ig_story_views": 32353
+  },
+  {
+   "campaign_id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "creator_id": "b42e629a-5200-44a6-9bf3-5a7bc71b95ea",
+   "expected_views": 320000,
+   "ig_reel_views": 239094,
+   "ig_story_views": 67436
+  },
+  {
+   "campaign_id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "creator_id": "9712327f-f0be-4823-9e40-ab6194eecc10",
+   "expected_views": 314000,
+   "ig_reel_views": 145120,
+   "ig_story_views": 40931
+  },
+  {
+   "campaign_id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "creator_id": "48de7daf-ab43-4859-8c46-60df114408bb",
+   "expected_views": 217000,
+   "ig_reel_views": 108659,
+   "ig_story_views": 30647
+  },
+  {
+   "campaign_id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "creator_id": "146e795c-03e6-4118-aa57-fb14f0bdadb7",
+   "expected_views": 98000,
+   "ig_reel_views": 59343,
+   "ig_story_views": 16738
+  },
+  {
+   "campaign_id": "ff77a417-b4db-4cf0-b12c-a00d21859a18",
+   "creator_id": "bb202aab-3e9a-49e9-9f9f-8726b8b02437",
+   "expected_views": 136000,
+   "ig_reel_views": 138825,
+   "ig_story_views": 39156
+  },
+  {
+   "campaign_id": "4539884c-da13-4667-8ae7-5d3f176a8b51",
+   "creator_id": "5cf54eca-7c4a-4179-9e34-46cbe0dfc0d8",
+   "expected_views": 398000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4539884c-da13-4667-8ae7-5d3f176a8b51",
+   "creator_id": "c0d5cdc5-9624-4e23-8505-9af209f25952",
+   "expected_views": 342000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4539884c-da13-4667-8ae7-5d3f176a8b51",
+   "creator_id": "3ea7a45c-7b31-43c9-b756-bcb7dbe72989",
+   "expected_views": 303000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "10df8af2-315c-4fd1-8c05-7b32c22a0282",
+   "creator_id": "b3899d79-c1f3-4579-9438-e8042434aebc",
+   "expected_views": 329000,
+   "ig_reel_views": 136630,
+   "ig_story_views": 38536
+  },
+  {
+   "campaign_id": "10df8af2-315c-4fd1-8c05-7b32c22a0282",
+   "creator_id": "e55b2510-adb3-4226-bad8-f8837578e7ff",
+   "expected_views": 44000,
+   "ig_reel_views": 19185,
+   "ig_story_views": 5411
+  },
+  {
+   "campaign_id": "10df8af2-315c-4fd1-8c05-7b32c22a0282",
+   "creator_id": "4d5ef8b1-7062-4450-92ad-e47149e0b41e",
+   "expected_views": 39000,
+   "ig_reel_views": 30053,
+   "ig_story_views": 8476
+  },
+  {
+   "campaign_id": "a0ed4ac2-e1fc-4c5c-a0c6-e70ec66630c7",
+   "creator_id": "29052fdb-230c-4171-b474-0b667414b4ab",
+   "expected_views": 151000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a0ed4ac2-e1fc-4c5c-a0c6-e70ec66630c7",
+   "creator_id": "6acd86ad-825f-463a-841f-123618482182",
+   "expected_views": 235000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a0ed4ac2-e1fc-4c5c-a0c6-e70ec66630c7",
+   "creator_id": "0dfc54bc-05e7-4ff5-9565-7f63433fc547",
+   "expected_views": 325000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a0ed4ac2-e1fc-4c5c-a0c6-e70ec66630c7",
+   "creator_id": "c9877827-1619-42ea-9b49-a582bdb8f87d",
+   "expected_views": 271000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "bbeaec5a-9be1-4820-a9a5-cb184558ee16",
+   "creator_id": "3fb38611-2f7e-4cee-9f23-aec805982fdf",
+   "expected_views": 84000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "bbeaec5a-9be1-4820-a9a5-cb184558ee16",
+   "creator_id": "3f6c0c22-6318-44a2-8c48-99623dca6714",
+   "expected_views": 136000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "bbeaec5a-9be1-4820-a9a5-cb184558ee16",
+   "creator_id": "51ff67dc-880d-4f31-8c83-87a4009cbd0e",
+   "expected_views": 265000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "bbeaec5a-9be1-4820-a9a5-cb184558ee16",
+   "creator_id": "0ad511cb-22f4-4186-b3dd-e6c2dd554a83",
+   "expected_views": 306000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "91f659b6-3a47-4870-96e7-33f8908656cc",
+   "creator_id": "9431ac22-2a9f-4400-98e3-be61ea2baccd",
+   "expected_views": 55000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "91f659b6-3a47-4870-96e7-33f8908656cc",
+   "creator_id": "f4f58284-1b7e-41f1-9c52-1cedd6b5c135",
+   "expected_views": 157000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "91f659b6-3a47-4870-96e7-33f8908656cc",
+   "creator_id": "085e4f37-8ef7-4883-86ec-55d3884bd7df",
+   "expected_views": 230000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "91f659b6-3a47-4870-96e7-33f8908656cc",
+   "creator_id": "53bd322d-95be-4bc9-8d2a-70d2cc82fda5",
+   "expected_views": 248000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "91f659b6-3a47-4870-96e7-33f8908656cc",
+   "creator_id": "b40c1938-271f-4d10-baf6-4d9a1cf5cf37",
+   "expected_views": 147000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "91f659b6-3a47-4870-96e7-33f8908656cc",
+   "creator_id": "7a0322b9-e92d-404b-af73-54fd6a2d12a3",
+   "expected_views": 50000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "91f659b6-3a47-4870-96e7-33f8908656cc",
+   "creator_id": "d49943b1-d13f-4a84-a66b-695af05f1f99",
+   "expected_views": 43000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "6acfffb7-160d-407f-a9e4-b255bfe0ddc7",
+   "creator_id": "e7b57407-3c00-48ab-8f5d-a3f6edc02615",
+   "expected_views": 312000,
+   "ig_reel_views": 358157,
+   "ig_story_views": 101018
+  },
+  {
+   "campaign_id": "6acfffb7-160d-407f-a9e4-b255bfe0ddc7",
+   "creator_id": "a1a3e6e3-2baf-413f-be86-e8eafc97326e",
+   "expected_views": 67000,
+   "ig_reel_views": 43388,
+   "ig_story_views": 12237
+  },
+  {
+   "campaign_id": "6acfffb7-160d-407f-a9e4-b255bfe0ddc7",
+   "creator_id": "ce17553b-6d4c-4377-9e64-57dafe8bc5c8",
+   "expected_views": 250000,
+   "ig_reel_views": 288505,
+   "ig_story_views": 81373
+  },
+  {
+   "campaign_id": "5b9a78bc-2b05-44e3-8f33-bb33f6aeedff",
+   "creator_id": "61e9dc90-2fed-42cc-b94f-1d567a0c278d",
+   "expected_views": 29000,
+   "ig_reel_views": 21455,
+   "ig_story_views": 6051
+  },
+  {
+   "campaign_id": "5b9a78bc-2b05-44e3-8f33-bb33f6aeedff",
+   "creator_id": "5be55600-10a6-4cc1-a797-32553e6d6703",
+   "expected_views": 203000,
+   "ig_reel_views": 187793,
+   "ig_story_views": 52967
+  },
+  {
+   "campaign_id": "5b9a78bc-2b05-44e3-8f33-bb33f6aeedff",
+   "creator_id": "3fb38611-2f7e-4cee-9f23-aec805982fdf",
+   "expected_views": 37000,
+   "ig_reel_views": 13630,
+   "ig_story_views": 3844
+  },
+  {
+   "campaign_id": "5b9a78bc-2b05-44e3-8f33-bb33f6aeedff",
+   "creator_id": "146e795c-03e6-4118-aa57-fb14f0bdadb7",
+   "expected_views": 345000,
+   "ig_reel_views": 142239,
+   "ig_story_views": 40118
+  },
+  {
+   "campaign_id": "5b9a78bc-2b05-44e3-8f33-bb33f6aeedff",
+   "creator_id": "e4f9338c-48a5-4349-8f8a-f04ecbb57e4a",
+   "expected_views": 54000,
+   "ig_reel_views": 51260,
+   "ig_story_views": 14458
+  },
+  {
+   "campaign_id": "5b9a78bc-2b05-44e3-8f33-bb33f6aeedff",
+   "creator_id": "e5e12f96-8c4d-416e-b9ee-e8b515c5a11f",
+   "expected_views": 183000,
+   "ig_reel_views": 84706,
+   "ig_story_views": 23891
+  },
+  {
+   "campaign_id": "5b9a78bc-2b05-44e3-8f33-bb33f6aeedff",
+   "creator_id": "25eeefdf-41c9-4450-832d-06e0cb3c930e",
+   "expected_views": 57000,
+   "ig_reel_views": 23520,
+   "ig_story_views": 6633
+  },
+  {
+   "campaign_id": "2452c6a7-b52c-44e5-a27a-bca0222670d0",
+   "creator_id": "a1a3e6e3-2baf-413f-be86-e8eafc97326e",
+   "expected_views": 200000,
+   "ig_reel_views": 84110,
+   "ig_story_views": 23723
+  },
+  {
+   "campaign_id": "2452c6a7-b52c-44e5-a27a-bca0222670d0",
+   "creator_id": "6710853d-b807-4be7-89af-ea6fce0dbbf2",
+   "expected_views": 262000,
+   "ig_reel_views": 285260,
+   "ig_story_views": 80458
+  },
+  {
+   "campaign_id": "2452c6a7-b52c-44e5-a27a-bca0222670d0",
+   "creator_id": "14e82eb6-2e87-42f4-98e6-119bdad2f264",
+   "expected_views": 233000,
+   "ig_reel_views": 261969,
+   "ig_story_views": 73888
+  },
+  {
+   "campaign_id": "2452c6a7-b52c-44e5-a27a-bca0222670d0",
+   "creator_id": "0dfc54bc-05e7-4ff5-9565-7f63433fc547",
+   "expected_views": 35000,
+   "ig_reel_views": 37035,
+   "ig_story_views": 10446
+  },
+  {
+   "campaign_id": "2452c6a7-b52c-44e5-a27a-bca0222670d0",
+   "creator_id": "29d8ea09-4765-4ee6-952f-83fd0a5c08f2",
+   "expected_views": 313000,
+   "ig_reel_views": 113588,
+   "ig_story_views": 32037
+  },
+  {
+   "campaign_id": "2452c6a7-b52c-44e5-a27a-bca0222670d0",
+   "creator_id": "958faf5f-15d6-47d3-9ad1-9a2e8ed7a7de",
+   "expected_views": 359000,
+   "ig_reel_views": 238422,
+   "ig_story_views": 67247
+  },
+  {
+   "campaign_id": "f67fa001-72b1-40d1-8f15-2945b39d9ec4",
+   "creator_id": "ac6e3622-e895-4def-8f7f-7e5b0c4843d5",
+   "expected_views": 79000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "f67fa001-72b1-40d1-8f15-2945b39d9ec4",
+   "creator_id": "62386e5e-c9aa-4342-bd57-64b9efc32247",
+   "expected_views": 151000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "f67fa001-72b1-40d1-8f15-2945b39d9ec4",
+   "creator_id": "f4f58284-1b7e-41f1-9c52-1cedd6b5c135",
+   "expected_views": 233000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "f67fa001-72b1-40d1-8f15-2945b39d9ec4",
+   "creator_id": "f5fd2223-f25f-4bec-8cfa-c597f9e06571",
+   "expected_views": 392000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "f67fa001-72b1-40d1-8f15-2945b39d9ec4",
+   "creator_id": "9712327f-f0be-4823-9e40-ab6194eecc10",
+   "expected_views": 189000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "f67fa001-72b1-40d1-8f15-2945b39d9ec4",
+   "creator_id": "ca393a82-5b32-4086-9ea1-f7651cbb65de",
+   "expected_views": 218000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "faef7b98-54eb-4f65-b796-92bbbf4e72cb",
+   "creator_id": "5c6af802-3f71-4fcb-955d-50338e6c80e9",
+   "expected_views": 285000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "faef7b98-54eb-4f65-b796-92bbbf4e72cb",
+   "creator_id": "897533e4-087f-4a0c-b183-ea07730ec792",
+   "expected_views": 283000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "faef7b98-54eb-4f65-b796-92bbbf4e72cb",
+   "creator_id": "53ae2d04-18f5-4b28-a230-280df27c2612",
+   "expected_views": 35000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "faef7b98-54eb-4f65-b796-92bbbf4e72cb",
+   "creator_id": "e4d5a3d3-6b6c-46ea-82cb-37b5cefd4531",
+   "expected_views": 178000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "faef7b98-54eb-4f65-b796-92bbbf4e72cb",
+   "creator_id": "7b505a9e-367b-4818-9123-a8137d58e43b",
+   "expected_views": 327000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "faef7b98-54eb-4f65-b796-92bbbf4e72cb",
+   "creator_id": "56a30a77-da91-4ff3-82f8-3f52db18bf4c",
+   "expected_views": 64000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "faef7b98-54eb-4f65-b796-92bbbf4e72cb",
+   "creator_id": "2b055b4b-771b-4363-b357-a16732d5b39f",
+   "expected_views": 266000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "237eba59-1401-4c5a-bef9-19e0a72fc9b3",
+   "creator_id": "4891c30e-9e5b-4414-9653-cc8b5bd51e5d",
+   "expected_views": 77000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "237eba59-1401-4c5a-bef9-19e0a72fc9b3",
+   "creator_id": "cdc2a311-2813-48d9-91eb-a56c244bd693",
+   "expected_views": 274000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "creator_id": "9431ac22-2a9f-4400-98e3-be61ea2baccd",
+   "expected_views": 367000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "creator_id": "32f6912a-8c26-4589-a43c-20e200e2c9e2",
+   "expected_views": 333000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "creator_id": "5242cc7a-34c9-4ab3-92a6-23d9d9c41b11",
+   "expected_views": 123000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "creator_id": "f4ae3e58-8cda-44b7-b2f7-9532256f2827",
+   "expected_views": 285000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "creator_id": "5a1133c9-7ca3-45a1-a3b7-5ee126d193fc",
+   "expected_views": 106000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "creator_id": "a1a3e6e3-2baf-413f-be86-e8eafc97326e",
+   "expected_views": 195000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "creator_id": "69dde770-f1f4-4002-af48-8748caf52f36",
+   "expected_views": 357000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "a5b5c856-2f3e-4319-a11e-c19f53a0df34",
+   "creator_id": "9411b4d0-0fad-4cf5-a0d6-72dfb9ea01c6",
+   "expected_views": 246000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "fff89bea-d1da-4b4f-abcb-bc51a0d271d7",
+   "creator_id": "29052fdb-230c-4171-b474-0b667414b4ab",
+   "expected_views": 121000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "fff89bea-d1da-4b4f-abcb-bc51a0d271d7",
+   "creator_id": "4affaeb0-1be4-4b8c-b58c-53f7851bec0a",
+   "expected_views": 344000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "fff89bea-d1da-4b4f-abcb-bc51a0d271d7",
+   "creator_id": "7ac298f0-e9b4-4fcc-93fd-da2c38ae940d",
+   "expected_views": 240000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "fff89bea-d1da-4b4f-abcb-bc51a0d271d7",
+   "creator_id": "afc4bf56-4a3c-4a93-91c6-2b1b77339829",
+   "expected_views": 122000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "fff89bea-d1da-4b4f-abcb-bc51a0d271d7",
+   "creator_id": "cf69b1ec-0a2b-4e0c-aec1-9727e4f4bca3",
+   "expected_views": 129000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "0a39b5c8-faa2-41a6-96f4-089066c13550",
+   "creator_id": "5733a37e-058e-4927-a2a2-fce3bb437398",
+   "expected_views": 88000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "0a39b5c8-faa2-41a6-96f4-089066c13550",
+   "creator_id": "146e795c-03e6-4118-aa57-fb14f0bdadb7",
+   "expected_views": 274000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "0a39b5c8-faa2-41a6-96f4-089066c13550",
+   "creator_id": "718d68c1-fb01-4448-99a8-8df1af7fb13a",
+   "expected_views": 199000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "0a39b5c8-faa2-41a6-96f4-089066c13550",
+   "creator_id": "48de7daf-ab43-4859-8c46-60df114408bb",
+   "expected_views": 40000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "0a39b5c8-faa2-41a6-96f4-089066c13550",
+   "creator_id": "a4b92047-dfa0-4a3c-b135-749cf4559f97",
+   "expected_views": 384000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "83be4390-0e28-46fc-a960-42fb126e3664",
+   "creator_id": "0806eb05-a00b-4fe7-be29-ac82af757743",
+   "expected_views": 77000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "83be4390-0e28-46fc-a960-42fb126e3664",
+   "creator_id": "b2f79c96-207c-4c56-8ebf-5a3f14e46d7d",
+   "expected_views": 250000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "acddefa4-9039-4d58-8ddd-a66c7172a558",
+   "creator_id": "0806eb05-a00b-4fe7-be29-ac82af757743",
+   "expected_views": 286000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "acddefa4-9039-4d58-8ddd-a66c7172a558",
+   "creator_id": "53bd322d-95be-4bc9-8d2a-70d2cc82fda5",
+   "expected_views": 272000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "acddefa4-9039-4d58-8ddd-a66c7172a558",
+   "creator_id": "9ebf5447-c0f2-47b0-8154-1d8e6b413eb7",
+   "expected_views": 364000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "acddefa4-9039-4d58-8ddd-a66c7172a558",
+   "creator_id": "7e66fe22-a97a-437a-80dc-0a1784f42cd4",
+   "expected_views": 181000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "acddefa4-9039-4d58-8ddd-a66c7172a558",
+   "creator_id": "5085ead4-6957-45f5-88b7-45ece8fc7dc5",
+   "expected_views": 386000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "creator_id": "90fa2e4e-cde5-47f0-b5ea-b704692cf6ea",
+   "expected_views": 367000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "creator_id": "6c070ff4-d8cc-4912-84cb-b2bd83169270",
+   "expected_views": 382000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "creator_id": "79f03167-b06e-445f-8e45-99c20d68bc39",
+   "expected_views": 163000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "creator_id": "b42e629a-5200-44a6-9bf3-5a7bc71b95ea",
+   "expected_views": 312000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "creator_id": "25eeefdf-41c9-4450-832d-06e0cb3c930e",
+   "expected_views": 201000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "creator_id": "085e4f37-8ef7-4883-86ec-55d3884bd7df",
+   "expected_views": 178000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "creator_id": "62386e5e-c9aa-4342-bd57-64b9efc32247",
+   "expected_views": 352000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9bec5c98-f639-4335-a6bf-fc83f9704198",
+   "creator_id": "f1729fa0-dd83-49e5-832f-1ebea50922f8",
+   "expected_views": 308000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "0720a1d1-a23d-4955-a296-2ee087c88f4e",
+   "creator_id": "2aa575aa-9717-4c58-ac4d-4b0cbe277082",
+   "expected_views": 227000,
+   "ig_reel_views": 164236,
+   "ig_story_views": 46322
+  },
+  {
+   "campaign_id": "0720a1d1-a23d-4955-a296-2ee087c88f4e",
+   "creator_id": "a4b92047-dfa0-4a3c-b135-749cf4559f97",
+   "expected_views": 32000,
+   "ig_reel_views": 31391,
+   "ig_story_views": 8853
+  },
+  {
+   "campaign_id": "70fd7c45-9097-475e-bd80-42cc87acab54",
+   "creator_id": "e8f21c89-3e95-4e00-b46d-eccc3fbe0480",
+   "expected_views": 342000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "70fd7c45-9097-475e-bd80-42cc87acab54",
+   "creator_id": "d7169f21-ca75-4070-bdd2-d05ae4a958ad",
+   "expected_views": 79000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "70fd7c45-9097-475e-bd80-42cc87acab54",
+   "creator_id": "9411b4d0-0fad-4cf5-a0d6-72dfb9ea01c6",
+   "expected_views": 248000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "70fd7c45-9097-475e-bd80-42cc87acab54",
+   "creator_id": "4cc81750-efa8-4978-b290-b736fc98cac9",
+   "expected_views": 75000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b587728c-4065-4107-ab94-c66887e0eecb",
+   "creator_id": "f1657d1a-0c0b-4074-b8dd-e84a34cb2911",
+   "expected_views": 122000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b587728c-4065-4107-ab94-c66887e0eecb",
+   "creator_id": "e7baa3bf-6e8a-4aa6-90e6-db126fc65f23",
+   "expected_views": 263000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b587728c-4065-4107-ab94-c66887e0eecb",
+   "creator_id": "ca393a82-5b32-4086-9ea1-f7651cbb65de",
+   "expected_views": 151000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b587728c-4065-4107-ab94-c66887e0eecb",
+   "creator_id": "a1a3e6e3-2baf-413f-be86-e8eafc97326e",
+   "expected_views": 111000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b587728c-4065-4107-ab94-c66887e0eecb",
+   "creator_id": "b42e629a-5200-44a6-9bf3-5a7bc71b95ea",
+   "expected_views": 385000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b587728c-4065-4107-ab94-c66887e0eecb",
+   "creator_id": "b3899d79-c1f3-4579-9438-e8042434aebc",
+   "expected_views": 25000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b587728c-4065-4107-ab94-c66887e0eecb",
+   "creator_id": "77b9402c-0b36-4034-91c4-f8227796de12",
+   "expected_views": 261000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "c1c43b63-d6ab-4c89-b6f0-5dd481da248e",
+   "creator_id": "3689cdc2-647c-41ba-bca7-96bc2416f4e6",
+   "expected_views": 197000,
+   "ig_reel_views": 156221,
+   "ig_story_views": 44062
+  },
+  {
+   "campaign_id": "c1c43b63-d6ab-4c89-b6f0-5dd481da248e",
+   "creator_id": "f809913e-9983-47b9-8da3-711165fc8139",
+   "expected_views": 286000,
+   "ig_reel_views": 217599,
+   "ig_story_views": 61374
+  },
+  {
+   "campaign_id": "c1c43b63-d6ab-4c89-b6f0-5dd481da248e",
+   "creator_id": "a76ea2dd-5956-497a-a12e-26a5e1d88753",
+   "expected_views": 101000,
+   "ig_reel_views": 68001,
+   "ig_story_views": 19180
+  },
+  {
+   "campaign_id": "c1c43b63-d6ab-4c89-b6f0-5dd481da248e",
+   "creator_id": "de20d533-073e-4be6-8014-cbf752c34787",
+   "expected_views": 378000,
+   "ig_reel_views": 413232,
+   "ig_story_views": 116552
+  },
+  {
+   "campaign_id": "c1c43b63-d6ab-4c89-b6f0-5dd481da248e",
+   "creator_id": "a89751be-8586-4ae4-8f72-b7ce9691798d",
+   "expected_views": 64000,
+   "ig_reel_views": 43979,
+   "ig_story_views": 12404
+  },
+  {
+   "campaign_id": "c1c43b63-d6ab-4c89-b6f0-5dd481da248e",
+   "creator_id": "d7169f21-ca75-4070-bdd2-d05ae4a958ad",
+   "expected_views": 389000,
+   "ig_reel_views": 260143,
+   "ig_story_views": 73373
+  },
+  {
+   "campaign_id": "17d660d1-c665-46e3-b9a0-b6319022f514",
+   "creator_id": "959d9117-4f40-49e1-8d29-908924e71645",
+   "expected_views": 301000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "17d660d1-c665-46e3-b9a0-b6319022f514",
+   "creator_id": "77b9402c-0b36-4034-91c4-f8227796de12",
+   "expected_views": 311000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "17d660d1-c665-46e3-b9a0-b6319022f514",
+   "creator_id": "5085ead4-6957-45f5-88b7-45ece8fc7dc5",
+   "expected_views": 354000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "17d660d1-c665-46e3-b9a0-b6319022f514",
+   "creator_id": "4e88c6f6-5dad-44cc-b894-00779abb9c06",
+   "expected_views": 277000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "17d660d1-c665-46e3-b9a0-b6319022f514",
+   "creator_id": "40e40b84-35c7-42a9-88aa-ba38667dd069",
+   "expected_views": 195000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "1edb8e3c-4cc8-4650-b5af-45a8368fee32",
+   "creator_id": "4affaeb0-1be4-4b8c-b58c-53f7851bec0a",
+   "expected_views": 348000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "1edb8e3c-4cc8-4650-b5af-45a8368fee32",
+   "creator_id": "87380554-2b51-460a-b062-393aeef1a1c4",
+   "expected_views": 387000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "1edb8e3c-4cc8-4650-b5af-45a8368fee32",
+   "creator_id": "b40c1938-271f-4d10-baf6-4d9a1cf5cf37",
+   "expected_views": 83000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "1edb8e3c-4cc8-4650-b5af-45a8368fee32",
+   "creator_id": "208d9959-136f-48b6-953a-6644da82d9f6",
+   "expected_views": 129000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "1edb8e3c-4cc8-4650-b5af-45a8368fee32",
+   "creator_id": "51ff67dc-880d-4f31-8c83-87a4009cbd0e",
+   "expected_views": 144000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "cdda241f-5765-4f7c-976a-d77ebed4c56e",
+   "creator_id": "629f1f7f-db04-4c22-8bf3-3f52d8d65e46",
+   "expected_views": 387000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "cdda241f-5765-4f7c-976a-d77ebed4c56e",
+   "creator_id": "92ff731c-ec70-41c3-b9e1-e4d21f6f0663",
+   "expected_views": 28000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "cdda241f-5765-4f7c-976a-d77ebed4c56e",
+   "creator_id": "f1657d1a-0c0b-4074-b8dd-e84a34cb2911",
+   "expected_views": 198000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "cdda241f-5765-4f7c-976a-d77ebed4c56e",
+   "creator_id": "79f03167-b06e-445f-8e45-99c20d68bc39",
+   "expected_views": 278000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "cdda241f-5765-4f7c-976a-d77ebed4c56e",
+   "creator_id": "87dc96ee-a77e-44cd-8089-61b3b22bbad3",
+   "expected_views": 62000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ece43166-08bd-4271-9ceb-8f729a619e47",
+   "creator_id": "e4d5a3d3-6b6c-46ea-82cb-37b5cefd4531",
+   "expected_views": 301000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ece43166-08bd-4271-9ceb-8f729a619e47",
+   "creator_id": "958faf5f-15d6-47d3-9ad1-9a2e8ed7a7de",
+   "expected_views": 235000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "creator_id": "0806eb05-a00b-4fe7-be29-ac82af757743",
+   "expected_views": 292000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "creator_id": "5242cc7a-34c9-4ab3-92a6-23d9d9c41b11",
+   "expected_views": 191000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "creator_id": "2fecf770-f5de-4dac-ab2a-c87d045caddc",
+   "expected_views": 371000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "creator_id": "55b4c3a0-6fa6-40c2-8d76-c543b9ae3f96",
+   "expected_views": 91000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "creator_id": "2ab2d5a8-aa40-4563-9148-75013e4268f1",
+   "expected_views": 260000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "creator_id": "d00ad1cc-d455-462b-b51f-d22af47a168a",
+   "expected_views": 96000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "creator_id": "25eeefdf-41c9-4450-832d-06e0cb3c930e",
+   "expected_views": 284000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "267671b4-2f6d-46a6-8227-ef62ccfa3368",
+   "creator_id": "3f6c0c22-6318-44a2-8c48-99623dca6714",
+   "expected_views": 390000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "13193d6a-0913-4536-964f-fe41ccea934d",
+   "creator_id": "c8a66fdf-1c67-420d-9b17-c21e7512f34a",
+   "expected_views": 133000,
+   "ig_reel_views": 94547,
+   "ig_story_views": 26667
+  },
+  {
+   "campaign_id": "13193d6a-0913-4536-964f-fe41ccea934d",
+   "creator_id": "5be55600-10a6-4cc1-a797-32553e6d6703",
+   "expected_views": 306000,
+   "ig_reel_views": 180126,
+   "ig_story_views": 50804
+  },
+  {
+   "campaign_id": "13193d6a-0913-4536-964f-fe41ccea934d",
+   "creator_id": "e4d5a3d3-6b6c-46ea-82cb-37b5cefd4531",
+   "expected_views": 393000,
+   "ig_reel_views": 318680,
+   "ig_story_views": 89884
+  },
+  {
+   "campaign_id": "13193d6a-0913-4536-964f-fe41ccea934d",
+   "creator_id": "84bd6199-b1bc-4efa-95a6-67b6330ac1af",
+   "expected_views": 104000,
+   "ig_reel_views": 81031,
+   "ig_story_views": 22855
+  },
+  {
+   "campaign_id": "13193d6a-0913-4536-964f-fe41ccea934d",
+   "creator_id": "897533e4-087f-4a0c-b183-ea07730ec792",
+   "expected_views": 306000,
+   "ig_reel_views": 171691,
+   "ig_story_views": 48425
+  },
+  {
+   "campaign_id": "13193d6a-0913-4536-964f-fe41ccea934d",
+   "creator_id": "629f1f7f-db04-4c22-8bf3-3f52d8d65e46",
+   "expected_views": 363000,
+   "ig_reel_views": 240747,
+   "ig_story_views": 67903
+  },
+  {
+   "campaign_id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "creator_id": "286e7c75-16c4-450a-bed6-61029e4d2b74",
+   "expected_views": 274000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "creator_id": "48de7daf-ab43-4859-8c46-60df114408bb",
+   "expected_views": 122000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "creator_id": "69dde770-f1f4-4002-af48-8748caf52f36",
+   "expected_views": 230000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "creator_id": "9411b4d0-0fad-4cf5-a0d6-72dfb9ea01c6",
+   "expected_views": 294000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "creator_id": "ea4db1e5-5177-4892-a2d3-b72e9101c178",
+   "expected_views": 78000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "creator_id": "3eb5191a-5ce5-4005-a5d9-297a0d6d83a8",
+   "expected_views": 277000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "creator_id": "a89751be-8586-4ae4-8f72-b7ce9691798d",
+   "expected_views": 22000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e4dc2b23-4fae-4978-b760-60af873c0308",
+   "creator_id": "c1ac4a7a-2d12-4795-9cb3-2e144e6fd885",
+   "expected_views": 329000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "3a0392f2-5572-41ca-bbc2-93b49443efe9",
+   "creator_id": "2fecf770-f5de-4dac-ab2a-c87d045caddc",
+   "expected_views": 298000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "3a0392f2-5572-41ca-bbc2-93b49443efe9",
+   "creator_id": "f1657d1a-0c0b-4074-b8dd-e84a34cb2911",
+   "expected_views": 308000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "3a0392f2-5572-41ca-bbc2-93b49443efe9",
+   "creator_id": "14e82eb6-2e87-42f4-98e6-119bdad2f264",
+   "expected_views": 82000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "3a0392f2-5572-41ca-bbc2-93b49443efe9",
+   "creator_id": "e340d350-6248-49b7-886b-327d6be868ce",
+   "expected_views": 271000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "3a0392f2-5572-41ca-bbc2-93b49443efe9",
+   "creator_id": "7226d33a-98fe-40f1-89aa-e2cf3244b314",
+   "expected_views": 67000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "b2d80f0b-fdff-4cba-a39b-b65bf4fb5de4",
+   "creator_id": "0a60b851-1d59-4353-aa55-7abbcf88a72c",
+   "expected_views": 146000,
+   "ig_reel_views": 107823,
+   "ig_story_views": 30411
+  },
+  {
+   "campaign_id": "b2d80f0b-fdff-4cba-a39b-b65bf4fb5de4",
+   "creator_id": "2ab2d5a8-aa40-4563-9148-75013e4268f1",
+   "expected_views": 85000,
+   "ig_reel_views": 53481,
+   "ig_story_views": 15084
+  },
+  {
+   "campaign_id": "b2d80f0b-fdff-4cba-a39b-b65bf4fb5de4",
+   "creator_id": "f1657d1a-0c0b-4074-b8dd-e84a34cb2911",
+   "expected_views": 263000,
+   "ig_reel_views": 205391,
+   "ig_story_views": 57931
+  },
+  {
+   "campaign_id": "b2d80f0b-fdff-4cba-a39b-b65bf4fb5de4",
+   "creator_id": "53ae2d04-18f5-4b28-a230-280df27c2612",
+   "expected_views": 75000,
+   "ig_reel_views": 38084,
+   "ig_story_views": 10741
+  },
+  {
+   "campaign_id": "b2d80f0b-fdff-4cba-a39b-b65bf4fb5de4",
+   "creator_id": "9ebf5447-c0f2-47b0-8154-1d8e6b413eb7",
+   "expected_views": 336000,
+   "ig_reel_views": 126030,
+   "ig_story_views": 35546
+  },
+  {
+   "campaign_id": "b2d80f0b-fdff-4cba-a39b-b65bf4fb5de4",
+   "creator_id": "7ac298f0-e9b4-4fcc-93fd-da2c38ae940d",
+   "expected_views": 153000,
+   "ig_reel_views": 69924,
+   "ig_story_views": 19722
+  },
+  {
+   "campaign_id": "b2d80f0b-fdff-4cba-a39b-b65bf4fb5de4",
+   "creator_id": "c0d5f3fe-7628-459c-8f97-fc0401f82e5d",
+   "expected_views": 31000,
+   "ig_reel_views": 11785,
+   "ig_story_views": 3323
+  },
+  {
+   "campaign_id": "cb99c882-cb04-4e6d-8815-dc26caba1bc4",
+   "creator_id": "4891c30e-9e5b-4414-9653-cc8b5bd51e5d",
+   "expected_views": 165000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "cb99c882-cb04-4e6d-8815-dc26caba1bc4",
+   "creator_id": "ac6e3622-e895-4def-8f7f-7e5b0c4843d5",
+   "expected_views": 184000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "cb99c882-cb04-4e6d-8815-dc26caba1bc4",
+   "creator_id": "b3899d79-c1f3-4579-9438-e8042434aebc",
+   "expected_views": 390000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "abf802e7-5653-4f0d-b448-17f20f799649",
+   "creator_id": "2fd20429-fd57-44a0-a2e9-7b912f2aa402",
+   "expected_views": 275000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "abf802e7-5653-4f0d-b448-17f20f799649",
+   "creator_id": "7ea05a77-655d-4914-9cb9-340ca954485e",
+   "expected_views": 394000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "abf802e7-5653-4f0d-b448-17f20f799649",
+   "creator_id": "be54e141-5c77-434a-ae0f-ad60cd8445d0",
+   "expected_views": 318000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "abf802e7-5653-4f0d-b448-17f20f799649",
+   "creator_id": "4857c178-7a5a-41d9-bbab-d0e21f393a34",
+   "expected_views": 82000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "creator_id": "f81239ac-283a-4f30-85ca-4d7a772af4fc",
+   "expected_views": 31000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "creator_id": "90fa2e4e-cde5-47f0-b5ea-b704692cf6ea",
+   "expected_views": 212000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "creator_id": "cf69b1ec-0a2b-4e0c-aec1-9727e4f4bca3",
+   "expected_views": 344000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "creator_id": "484a67ea-1142-4d39-8915-1dadad3a4910",
+   "expected_views": 231000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "creator_id": "77b9402c-0b36-4034-91c4-f8227796de12",
+   "expected_views": 291000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "creator_id": "05bc3049-4893-4cab-b051-035453953af5",
+   "expected_views": 335000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "creator_id": "ce17553b-6d4c-4377-9e64-57dafe8bc5c8",
+   "expected_views": 101000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "4d6ac110-c5b8-44fa-9198-163065651e31",
+   "creator_id": "b9958683-3b74-4147-8c2b-cd83eff14efd",
+   "expected_views": 295000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "0c35b299-37e3-4148-8523-03a0b4533d4e",
+   "creator_id": "ef012ea5-785b-4754-811b-2b613ac07d76",
+   "expected_views": 131000,
+   "ig_reel_views": 102803,
+   "ig_story_views": 28995
+  },
+  {
+   "campaign_id": "0c35b299-37e3-4148-8523-03a0b4533d4e",
+   "creator_id": "ffe1cdde-df72-440d-a6a4-26735c00c7d7",
+   "expected_views": 297000,
+   "ig_reel_views": 253041,
+   "ig_story_views": 71370
+  },
+  {
+   "campaign_id": "0c35b299-37e3-4148-8523-03a0b4533d4e",
+   "creator_id": "ca393a82-5b32-4086-9ea1-f7651cbb65de",
+   "expected_views": 89000,
+   "ig_reel_views": 48196,
+   "ig_story_views": 13594
+  },
+  {
+   "campaign_id": "e021d1dc-d0fd-47c9-8f39-6ff112cd4650",
+   "creator_id": "5085ead4-6957-45f5-88b7-45ece8fc7dc5",
+   "expected_views": 119000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e021d1dc-d0fd-47c9-8f39-6ff112cd4650",
+   "creator_id": "3713b8cb-084c-46ad-aeb4-9167ffae7b99",
+   "expected_views": 69000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e021d1dc-d0fd-47c9-8f39-6ff112cd4650",
+   "creator_id": "adbcb87f-e0fa-444a-b03e-945cdeca18d1",
+   "expected_views": 88000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e021d1dc-d0fd-47c9-8f39-6ff112cd4650",
+   "creator_id": "4c3959aa-6629-488c-ba96-6d895801d07a",
+   "expected_views": 142000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e021d1dc-d0fd-47c9-8f39-6ff112cd4650",
+   "creator_id": "325dbda6-ca18-422e-887f-644606c656d1",
+   "expected_views": 87000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e021d1dc-d0fd-47c9-8f39-6ff112cd4650",
+   "creator_id": "17b91ae3-1a8d-4caf-a7c9-9b8620f9dc8b",
+   "expected_views": 392000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e021d1dc-d0fd-47c9-8f39-6ff112cd4650",
+   "creator_id": "55b4c3a0-6fa6-40c2-8d76-c543b9ae3f96",
+   "expected_views": 65000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "56786908-cce5-4a93-add0-8f969c1afb6e",
+   "creator_id": "e55b2510-adb3-4226-bad8-f8837578e7ff",
+   "expected_views": 298000,
+   "ig_reel_views": 297390,
+   "ig_story_views": 83879
+  },
+  {
+   "campaign_id": "56786908-cce5-4a93-add0-8f969c1afb6e",
+   "creator_id": "ad1162e7-0227-41a2-b8fa-8c93f8804e7c",
+   "expected_views": 84000,
+   "ig_reel_views": 43286,
+   "ig_story_views": 12209
+  },
+  {
+   "campaign_id": "56786908-cce5-4a93-add0-8f969c1afb6e",
+   "creator_id": "b9958683-3b74-4147-8c2b-cd83eff14efd",
+   "expected_views": 341000,
+   "ig_reel_views": 311056,
+   "ig_story_views": 87734
+  },
+  {
+   "campaign_id": "56786908-cce5-4a93-add0-8f969c1afb6e",
+   "creator_id": "3e14ae77-8dca-4e7d-b0d6-7d66f93f8b1d",
+   "expected_views": 29000,
+   "ig_reel_views": 12459,
+   "ig_story_views": 3514
+  },
+  {
+   "campaign_id": "a7729aa0-906b-4ef7-911f-d02eecdfbd22",
+   "creator_id": "aaee5b6c-ad50-4ef4-aa4a-1f7934d8b4ae",
+   "expected_views": 344000,
+   "ig_reel_views": 334343,
+   "ig_story_views": 94301
+  },
+  {
+   "campaign_id": "a7729aa0-906b-4ef7-911f-d02eecdfbd22",
+   "creator_id": "1b15f2eb-e795-42bb-9f5e-b4f45380811b",
+   "expected_views": 277000,
+   "ig_reel_views": 323768,
+   "ig_story_views": 91319
+  },
+  {
+   "campaign_id": "a7729aa0-906b-4ef7-911f-d02eecdfbd22",
+   "creator_id": "36638c8a-fa13-4249-9f20-c38bd7a260da",
+   "expected_views": 116000,
+   "ig_reel_views": 116989,
+   "ig_story_views": 32996
+  },
+  {
+   "campaign_id": "a7729aa0-906b-4ef7-911f-d02eecdfbd22",
+   "creator_id": "074d3f2a-4899-405d-b094-b9c0ea5ef90d",
+   "expected_views": 266000,
+   "ig_reel_views": 116496,
+   "ig_story_views": 32857
+  },
+  {
+   "campaign_id": "a7729aa0-906b-4ef7-911f-d02eecdfbd22",
+   "creator_id": "0dfc54bc-05e7-4ff5-9565-7f63433fc547",
+   "expected_views": 39000,
+   "ig_reel_views": 38027,
+   "ig_story_views": 10725
+  },
+  {
+   "campaign_id": "a7729aa0-906b-4ef7-911f-d02eecdfbd22",
+   "creator_id": "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42",
+   "expected_views": 334000,
+   "ig_reel_views": 258061,
+   "ig_story_views": 72786
+  },
+  {
+   "campaign_id": "ae1e5049-89e5-4e62-9817-76416c58e587",
+   "creator_id": "4d5ef8b1-7062-4450-92ad-e47149e0b41e",
+   "expected_views": 108000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ae1e5049-89e5-4e62-9817-76416c58e587",
+   "creator_id": "dfc6575b-ed93-487c-a204-6970de68a635",
+   "expected_views": 100000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ae1e5049-89e5-4e62-9817-76416c58e587",
+   "creator_id": "c0d5cdc5-9624-4e23-8505-9af209f25952",
+   "expected_views": 164000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ae1e5049-89e5-4e62-9817-76416c58e587",
+   "creator_id": "1848e618-f27e-434a-9e88-548958b02397",
+   "expected_views": 364000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ae1e5049-89e5-4e62-9817-76416c58e587",
+   "creator_id": "074d3f2a-4899-405d-b094-b9c0ea5ef90d",
+   "expected_views": 68000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ae1e5049-89e5-4e62-9817-76416c58e587",
+   "creator_id": "b40c1938-271f-4d10-baf6-4d9a1cf5cf37",
+   "expected_views": 316000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "fa35e494-8cab-433e-85c9-80f3a6d1ee17",
+   "creator_id": "a4b92047-dfa0-4a3c-b135-749cf4559f97",
+   "expected_views": 256000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "fa35e494-8cab-433e-85c9-80f3a6d1ee17",
+   "creator_id": "aaee5b6c-ad50-4ef4-aa4a-1f7934d8b4ae",
+   "expected_views": 59000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "creator_id": "ad1162e7-0227-41a2-b8fa-8c93f8804e7c",
+   "expected_views": 127000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "creator_id": "4affaeb0-1be4-4b8c-b58c-53f7851bec0a",
+   "expected_views": 327000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "creator_id": "c9877827-1619-42ea-9b49-a582bdb8f87d",
+   "expected_views": 211000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "creator_id": "f3d0969f-2a64-41c0-b85b-eb85685eb274",
+   "expected_views": 26000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "creator_id": "d00ad1cc-d455-462b-b51f-d22af47a168a",
+   "expected_views": 344000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "creator_id": "d1078b3f-fed0-4961-ac68-ad16ebeb64a1",
+   "expected_views": 378000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "creator_id": "de3d5266-6137-416b-be8e-157addb42e7e",
+   "expected_views": 40000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "669db894-3a69-41eb-a0ff-fd2efd51855f",
+   "creator_id": "80df3273-15f2-48d4-9337-d6b8e502ebce",
+   "expected_views": 122000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e721ab01-2639-4809-bcd3-21985d989343",
+   "creator_id": "cbea1658-7ed6-425f-84ae-b9a5889d89bb",
+   "expected_views": 398000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e721ab01-2639-4809-bcd3-21985d989343",
+   "creator_id": "959d9117-4f40-49e1-8d29-908924e71645",
+   "expected_views": 209000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "e721ab01-2639-4809-bcd3-21985d989343",
+   "creator_id": "36638c8a-fa13-4249-9f20-c38bd7a260da",
+   "expected_views": 227000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "75c90b8e-6397-4459-8cef-d1e2e6a9e369",
+   "creator_id": "325dbda6-ca18-422e-887f-644606c656d1",
+   "expected_views": 282000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "75c90b8e-6397-4459-8cef-d1e2e6a9e369",
+   "creator_id": "0a60b851-1d59-4353-aa55-7abbcf88a72c",
+   "expected_views": 27000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "75c90b8e-6397-4459-8cef-d1e2e6a9e369",
+   "creator_id": "ad1162e7-0227-41a2-b8fa-8c93f8804e7c",
+   "expected_views": 185000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "604101ec-906f-4b90-ba65-dbfc0f5b3637",
+   "creator_id": "0dfc54bc-05e7-4ff5-9565-7f63433fc547",
+   "expected_views": 227000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "604101ec-906f-4b90-ba65-dbfc0f5b3637",
+   "creator_id": "ef012ea5-785b-4754-811b-2b613ac07d76",
+   "expected_views": 311000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "ca73cd73-91cc-46da-bb39-69ad3773b4d8",
+   "creator_id": "c0d5cdc5-9624-4e23-8505-9af209f25952",
+   "expected_views": 163000,
+   "ig_reel_views": 178868,
+   "ig_story_views": 50449
+  },
+  {
+   "campaign_id": "ca73cd73-91cc-46da-bb39-69ad3773b4d8",
+   "creator_id": "d15d358a-0fe3-4ac2-9c7b-36ff69b1fc42",
+   "expected_views": 400000,
+   "ig_reel_views": 395268,
+   "ig_story_views": 111485
+  },
+  {
+   "campaign_id": "ca73cd73-91cc-46da-bb39-69ad3773b4d8",
+   "creator_id": "146e795c-03e6-4118-aa57-fb14f0bdadb7",
+   "expected_views": 227000,
+   "ig_reel_views": 104442,
+   "ig_story_views": 29458
+  },
+  {
+   "campaign_id": "ca73cd73-91cc-46da-bb39-69ad3773b4d8",
+   "creator_id": "958faf5f-15d6-47d3-9ad1-9a2e8ed7a7de",
+   "expected_views": 188000,
+   "ig_reel_views": 201458,
+   "ig_story_views": 56821
+  },
+  {
+   "campaign_id": "ca73cd73-91cc-46da-bb39-69ad3773b4d8",
+   "creator_id": "b31391c1-2864-49da-89f2-18c04e1cb352",
+   "expected_views": 375000,
+   "ig_reel_views": 245220,
+   "ig_story_views": 69164
+  },
+  {
+   "campaign_id": "ca73cd73-91cc-46da-bb39-69ad3773b4d8",
+   "creator_id": "d5fecb75-89a1-4aba-ae5d-8aace20d0717",
+   "expected_views": 241000,
+   "ig_reel_views": 235630,
+   "ig_story_views": 66460
+  },
+  {
+   "campaign_id": "9c39b3cd-aeca-4c2e-91dc-540b295e77b6",
+   "creator_id": "b40c1938-271f-4d10-baf6-4d9a1cf5cf37",
+   "expected_views": 174000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9c39b3cd-aeca-4c2e-91dc-540b295e77b6",
+   "creator_id": "51ff67dc-880d-4f31-8c83-87a4009cbd0e",
+   "expected_views": 260000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9c39b3cd-aeca-4c2e-91dc-540b295e77b6",
+   "creator_id": "1848e618-f27e-434a-9e88-548958b02397",
+   "expected_views": 71000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9c39b3cd-aeca-4c2e-91dc-540b295e77b6",
+   "creator_id": "f4f58284-1b7e-41f1-9c52-1cedd6b5c135",
+   "expected_views": 25000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "9c39b3cd-aeca-4c2e-91dc-540b295e77b6",
+   "creator_id": "958faf5f-15d6-47d3-9ad1-9a2e8ed7a7de",
+   "expected_views": 202000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "23c9d9ab-dd2c-4fb8-af4f-9cbd2eab07c9",
+   "creator_id": "90fa2e4e-cde5-47f0-b5ea-b704692cf6ea",
+   "expected_views": 130000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "23c9d9ab-dd2c-4fb8-af4f-9cbd2eab07c9",
+   "creator_id": "4cc81750-efa8-4978-b290-b736fc98cac9",
+   "expected_views": 357000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "23c9d9ab-dd2c-4fb8-af4f-9cbd2eab07c9",
+   "creator_id": "5bccc7fa-fe7e-44ad-8b01-f8aa6554afba",
+   "expected_views": 227000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "23c9d9ab-dd2c-4fb8-af4f-9cbd2eab07c9",
+   "creator_id": "a89751be-8586-4ae4-8f72-b7ce9691798d",
+   "expected_views": 311000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "23c9d9ab-dd2c-4fb8-af4f-9cbd2eab07c9",
+   "creator_id": "afc4bf56-4a3c-4a93-91c6-2b1b77339829",
+   "expected_views": 113000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "23c9d9ab-dd2c-4fb8-af4f-9cbd2eab07c9",
+   "creator_id": "15b3dd77-52f9-4d3c-ab25-c363fcc19c89",
+   "expected_views": 292000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "23c9d9ab-dd2c-4fb8-af4f-9cbd2eab07c9",
+   "creator_id": "0a41a049-a238-4f7a-b20e-cd9f18a491ef",
+   "expected_views": 59000,
+   "ig_reel_views": 0,
+   "ig_story_views": 0
+  },
+  {
+   "campaign_id": "55ee454c-e1c7-4fc4-a58c-8035b76325e2",
+   "creator_id": "d1078b3f-fed0-4961-ac68-ad16ebeb64a1",
+   "expected_views": 81000,
+   "ig_reel_views": 78963,
+   "ig_story_views": 22271
+  },
+  {
+   "campaign_id": "55ee454c-e1c7-4fc4-a58c-8035b76325e2",
+   "creator_id": "be54e141-5c77-434a-ae0f-ad60cd8445d0",
+   "expected_views": 314000,
+   "ig_reel_views": 116081,
+   "ig_story_views": 32741
+  },
+  {
+   "campaign_id": "55ee454c-e1c7-4fc4-a58c-8035b76325e2",
+   "creator_id": "2aa575aa-9717-4c58-ac4d-4b0cbe277082",
+   "expected_views": 335000,
+   "ig_reel_views": 147232,
+   "ig_story_views": 41526
+  },
+  {
+   "campaign_id": "55ee454c-e1c7-4fc4-a58c-8035b76325e2",
+   "creator_id": "53bd322d-95be-4bc9-8d2a-70d2cc82fda5",
+   "expected_views": 141000,
+   "ig_reel_views": 79126,
+   "ig_story_views": 22317
+  },
+  {
+   "campaign_id": "55ee454c-e1c7-4fc4-a58c-8035b76325e2",
+   "creator_id": "05bc3049-4893-4cab-b051-035453953af5",
+   "expected_views": 225000,
+   "ig_reel_views": 171989,
+   "ig_story_views": 48509
+  },
+  {
+   "campaign_id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "creator_id": "77b9402c-0b36-4034-91c4-f8227796de12",
+   "expected_views": 194000,
+   "ig_reel_views": 155489,
+   "ig_story_views": 43856
+  },
+  {
+   "campaign_id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "creator_id": "86c9b573-4622-4895-b28f-097d51d8d51e",
+   "expected_views": 280000,
+   "ig_reel_views": 193605,
+   "ig_story_views": 54606
+  },
+  {
+   "campaign_id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "creator_id": "40e40b84-35c7-42a9-88aa-ba38667dd069",
+   "expected_views": 286000,
+   "ig_reel_views": 233425,
+   "ig_story_views": 65837
+  },
+  {
+   "campaign_id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "creator_id": "5a1133c9-7ca3-45a1-a3b7-5ee126d193fc",
+   "expected_views": 71000,
+   "ig_reel_views": 62020,
+   "ig_story_views": 17492
+  },
+  {
+   "campaign_id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "creator_id": "208d9959-136f-48b6-953a-6644da82d9f6",
+   "expected_views": 350000,
+   "ig_reel_views": 144691,
+   "ig_story_views": 40810
+  },
+  {
+   "campaign_id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "creator_id": "d5fecb75-89a1-4aba-ae5d-8aace20d0717",
+   "expected_views": 325000,
+   "ig_reel_views": 291993,
+   "ig_story_views": 82357
+  },
+  {
+   "campaign_id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "creator_id": "cf69b1ec-0a2b-4e0c-aec1-9727e4f4bca3",
+   "expected_views": 43000,
+   "ig_reel_views": 28701,
+   "ig_story_views": 8095
+  },
+  {
+   "campaign_id": "7cc34d65-f508-42c7-9ed6-b41a1c3fc1db",
+   "creator_id": "0806eb05-a00b-4fe7-be29-ac82af757743",
+   "expected_views": 101000,
+   "ig_reel_views": 67371,
+   "ig_story_views": 19002
+  }
+ ]
+}

@@ -228,10 +228,14 @@ function ConvertedGlyph({ converted }: { converted: boolean }) {
 // ── PITCH SHEET LINK ───────────────────────────────────────────
 
 function SheetLink({ href }: { href: string | null }) {
+  const tipClass =
+    'pointer-events-none absolute right-0 bottom-full z-50 mb-0.5 border border-rp-muted bg-rp-surface px-2 py-0.5 text-[13px] font-normal whitespace-nowrap text-rp-text opacity-0 group-hover/tip:opacity-100';
+
   if (!href) {
     return (
-      <span title="Not on file" className="inline-flex text-rp-faint">
+      <span className="group/tip relative inline-flex text-rp-faint">
         <FileSpreadsheet className="size-3.75" />
+        <span className={tipClass}>Not on file</span>
       </span>
     );
   }
@@ -241,11 +245,12 @@ function SheetLink({ href }: { href: string | null }) {
       href={href}
       target="_blank"
       rel="noreferrer noopener"
-      title="Open sheet"
+      aria-label="Open sheet"
       onClick={(event) => event.stopPropagation()}
-      className="inline-flex text-rp-primary hover:text-rp-text"
+      className="group/tip relative inline-flex text-rp-primary hover:text-rp-text"
     >
       <FileSpreadsheet className="size-3.75" />
+      <span className={tipClass}>Open sheet</span>
     </a>
   );
 }

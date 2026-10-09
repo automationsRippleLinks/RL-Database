@@ -36,6 +36,8 @@ export const queryKeys = {
   campaignDetail: (id: string) => ['campaign', id] as const,
   pitchDetail: (id: string) => ['pitch', id] as const,
   taxonomy: (kind: string) => ['taxonomy', kind] as const,
+  /** Under 'analytics' so one invalidate refreshes every dashboard number after an edit. */
+  creatorSummary: (request: unknown) => ['analytics', 'creators', 'summary', request] as const,
   ingestSources: ['ingest', 'sources'] as const,
   ingestJobs: ['ingest', 'jobs'] as const,
   ingestJob: (jobId: string) => ['ingest', 'job', jobId] as const,

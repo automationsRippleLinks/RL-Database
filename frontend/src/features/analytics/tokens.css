@@ -1,0 +1,234 @@
+/* Shared by every Analytics page. Mapped to the app's Ripple Pulse tokens, so light and dark follow the app theme. */
+.cc-root {
+  /* Mapped to the app's Ripple Pulse tokens (index.css), so light and dark both follow the app theme. */
+  --page: var(--rp-bg);
+  --surface: var(--rp-surface);
+  --surface2: var(--rp-surface2);
+  --ink: var(--rp-text);
+  --ink2: color-mix(in oklab, var(--rp-text) 82%, var(--rp-muted));
+  --muted: var(--rp-muted);
+  --line: var(--rp-border);
+  --edge: var(--rp-border);
+  --axis: var(--rp-faint);
+  --hover: color-mix(in srgb, var(--rp-text) 7%, transparent);
+  --series: var(--rp-primary);
+  --series-fg: var(--rp-primary-fg);
+  --wash: var(--rp-primary-soft);
+  --wash2: color-mix(in srgb, var(--rp-primary) 9%, transparent);
+  --avail: var(--rp-primary);
+  --miss: oklch(0.62 0.17 50);
+  /* missing = orange (darker on light) */
+  --miss-wash: color-mix(in srgb, var(--miss) 14%, transparent);
+  --crit: var(--rp-danger);
+  --crit-wash: color-mix(in srgb, var(--rp-danger) 14%, transparent);
+  --good: var(--rp-success);
+  --shadow: var(--rp-shadow);
+  --track: color-mix(in srgb, var(--rp-text) 10%, var(--rp-surface));
+  --pale: oklch(0.78 0.09 260);
+  /* completed / secondary series */
+  --amber: oklch(0.72 0.15 75);
+  /* on hold */
+  --slate: oklch(0.6 0.02 260);
+  /* scrapped / none */
+  --font: inherit;
+  --mono: ui-monospace, Menlo, Consolas, monospace;
+}
+
+.dark .cc-root {
+  --miss: oklch(0.76 0.16 50);
+}
+
+.dark .cc-root {
+  --pale: oklch(0.85 0.07 260);
+  --amber: oklch(0.82 0.14 80);
+  --slate: oklch(0.55 0.02 260);
+}
+
+.cc-root {
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.45 var(--font);
+}
+
+.cc-root *,
+.cc-root *::before,
+.cc-root *::after {
+  box-sizing: border-box;
+}
+
+:where(.cc-root) button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+:where(.cc-root) button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+:where(.cc-root) :where(h1, h2, p) {
+  margin: 0;
+}
+
+:where(.cc-root) :focus-visible {
+  outline: 2px solid var(--series);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* shared page furniture */
+.cc-status {
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--ink2);
+}
+
+.cc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.cc-title {
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-top: 4px;
+  text-wrap: balance;
+}
+
+.cc-sub {
+  color: var(--ink2);
+  margin-top: 6px;
+  max-width: 62ch;
+}
+
+.cc-ghost {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--axis);
+  border-radius: 8px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.cc-ghost:hover {
+  background: var(--hover);
+}
+
+.cc-demo {
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  border: 1px dashed var(--axis);
+  border-radius: 8px;
+  background: var(--wash2);
+  color: var(--ink2);
+  font-size: 13px;
+}
+
+.cc-demo b {
+  color: var(--ink);
+}
+
+.cc-demo-note {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px dashed var(--axis);
+  border-radius: 8px;
+  background: var(--wash2);
+  color: var(--ink2);
+  font-size: 13px;
+}
+
+.cc-demo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cc-demo .cc-ghost {
+  min-height: 32px;
+  flex: none;
+}
+
+.cc-empty {
+  color: var(--muted);
+  padding: 28px 0;
+  text-align: center;
+}
+
+/* .cc-tip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 70;
+  pointer-events: none;
+  max-width: 280px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--page);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.22);
+  font-size: 12.5px;
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(3px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0s linear 0.12s;
+} */
+
+/* .cc-tip[data-show="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+} */
+
+.cc-tip b,
+.cc-tip span {
+  display: block;
+}
+
+.cc-tip b {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.cc-tip .cc-tip-hint {
+  margin-top: 5px;
+  font-size: 11.5px;
+  opacity: 0.65;
+}
+
+.dark .cc-tip {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--edge);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+.cc-toast {
+  position: fixed;
+  z-index: 80;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--page);
+  font-size: 13.5px;
+  box-shadow: var(--shadow);
+}

@@ -55,6 +55,7 @@ export function IconFilter({
             type="button"
             aria-label={option.label}
             disabled={option.disabled}
+            title={option.label}
 
             aria-pressed={isSelected}
             onClick={() => toggleValue(option.value)}

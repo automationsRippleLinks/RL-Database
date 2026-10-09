@@ -54,8 +54,18 @@ export interface SessionUser {
   email: string;
   is_verified: boolean;
   auth_provider: 'password' | 'google';
-  /** Backend-owned. The ingest UI is gated on can_ingest; the backend's 403 is authoritative. */
-  permissions: { can_ingest: boolean };
+  /**
+   * Backend-owned. The UI only follows these to show or hide buttons; the
+   * backend's 403 is authoritative.
+   */
+  permissions: {
+    can_ingest: boolean;
+    /** May change creator details (the dashboard's edit form). */
+    can_edit?: boolean;
+    /** Includes super admins. */
+    is_admin?: boolean;
+    is_superadmin?: boolean;
+  };
 }
 
 export interface LoginRequest {
@@ -138,12 +148,18 @@ export type CreatorSort =
   | 'avg_views_asc'
   | 'name_asc'
   | 'name_desc'
+  | 'campaigns_desc'
+  | 'package_cost_desc'
+  | 'package_cost_asc'
+  /** Most / fewest missing details first (the data-quality dashboard's table). */
+  | 'gaps_desc'
+  | 'gaps_asc';
+
   /**
    * Added for the redesign's Sort menu ("Most campaigns with us"). The backend
    * has to recognise it; an unknown sort falls back to relevance there, so the
    * failure mode is a wrongly-ordered page rather than an error.
    */
-  | 'campaigns_desc';
 
 /**
  * How a creator relates to the campaigns they appear on. `worked` excludes
@@ -192,6 +208,17 @@ export interface CreatorFilters {
   max_followers: number | null;
   min_avg_views: number | null;
   max_avg_views: number | null;
+  has_package: boolean;
+  min_package_cost: number | null;
+  max_package_cost: number | null;
+  /**
+   * Only creators missing this one detail, or `'any'` for creators missing at least
+   * one of the nine. Used by the data-quality dashboard. Optional so the main
+   * Creators page does not have to send it.
+   */
+  missing?: MissingField | 'any' | null;
+  /** true = active profiles only (the backend default), false = inactive only, null = both. */
+  is_active?: boolean | null;
 }
 
 export interface CreatorSearchRequest extends CreatorFilters, Paging {
@@ -233,6 +260,8 @@ export interface CreatorRow {
    * because the field is absent would be worse than admitting we don't know.
    */
   campaign_count?: number | null;
+  /** false = the profile is gone from the platform. Search hides these by default. */
+  is_active?: boolean;
   /**
    * Creator has no profile_url column. The backend should compute this from
    * platform + username; lib/format.ts derives the same value as a fallback so
@@ -777,3 +806,120 @@ export interface IngestJob {
 export interface IngestJobList {
   jobs: IngestJob[];
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Creator data-quality dashboard (Analytics > Creators)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The nine details the dashboard checks for gaps. These are also the names the
+ * backend uses for the `missing` filter and in the summary below.
+ */
+export type MissingField =
+  | 'followers'
+  | 'avg_views'
+  | 'emails'
+  | 'phones'
+  | 'gender'
+  | 'city'
+  | 'state'
+  | 'categories'
+  | 'languages';
+
+/** `__none__` in `categories` / `languages` means "creators with none". */
+export const NONE_VALUE = '__none__';
+
+/** POST /analytics/creators/summary */
+export interface CreatorSummaryRequest {
+  platforms: Platform[];
+  categories: string[];
+  languages: string[];
+  is_active?: boolean | null;
+}
+
+export interface MissingCell {
+  /** Creators this detail applies to (avg views only counts Instagram and YouTube). */
+  applicable: number;
+  missing: number;
+}
+
+export interface PlatformSummary {
+  platform: Platform;
+  total: number;
+  /** Creators on this platform missing at least one detail. */
+  with_gaps: number;
+  cells: Record<MissingField, MissingCell>;
+}
+
+export interface SummaryOption {
+  value: string;
+  count: number;
+}
+
+export interface CreatorSummary {
+  /**
+   * One row per platform, counted with the category and language filters but
+   * NOT the platform filter, so the heatmap keeps every platform visible.
+   */
+  platforms: PlatformSummary[];
+  /** Counted with all three filters: the three numbers and the bars. */
+  totals: { total: number; with_gaps: number };
+  fields: { key: MissingField; applicable: number; missing: number }[];
+  /** Counts for the dropdowns, each ignoring its own filter. */
+  options: {
+    platforms: SummaryOption[];
+    categories: SummaryOption[];
+    languages: SummaryOption[];
+  };
+}
+
+// ── Editing a creator (backend/app/schemas/edits.py) ───────────────────────
+
+export interface LockHolder {
+  user_id: number;
+  name: string;
+  since: string;
+  expires_at: string;
+}
+
+/** A row as the edit form needs it: raw column values, ids for linked terms. */
+export interface EditRecord {
+  kind: string;
+  id: string;
+  version: number;
+  data: {
+    followers: number | null;
+    avg_views: number | null;
+    emails: string[];
+    phones: string[];
+    city: string | null;
+    state: string | null;
+    gender: string | null;
+    /** Taxonomy ids, not names. */
+    categories: number[];
+    languages: number[];
+    [key: string]: unknown;
+  };
+}
+
+/** POST /creators/{id}/lock: the lock you now hold and the record to fill the form with. */
+export interface EditSession {
+  lock: LockHolder;
+  record: EditRecord;
+}
+
+/** PATCH /creators/{id}. Only what is sent changes; `version` is the one the form loaded. */
+export interface CreatorUpdate {
+  version?: number;
+  followers?: number | null;
+  avg_views?: number | null;
+  emails?: string[];
+  phones?: string[];
+  city?: string | null;
+  state?: string | null;
+  gender?: string | null;
+  /** Taxonomy ids. */
+  categories?: number[];
+  languages?: number[];
+}
+

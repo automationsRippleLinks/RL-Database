@@ -33,6 +33,21 @@ const PitchDetailPage = lazy(() =>
     default: m.PitchDetailPage,
   })),
 );
+const AnalyticsHomePage = lazy(() =>
+  import("./pages/analytics/AnalyticsHomePage").then((m) => ({
+    default: m.AnalyticsHomePage,
+  })),
+);
+const AnalyticsSectionPage = lazy(() =>
+  import("./pages/analytics/AnalyticsSectionPage").then((m) => ({
+    default: m.AnalyticsSectionPage,
+  })),
+);
+const CreatorAnalyticsPage = lazy(() =>
+  import("./pages/analytics/CreatorAnalyticsPage").then((m) => ({
+    default: m.CreatorAnalyticsPage,
+  })),
+);
 const IngestPage = lazy(() =>
   import("./pages/ingest/IngestPage").then((m) => ({ default: m.IngestPage })),
 );
@@ -121,6 +136,14 @@ export function AppRoutes() {
               </Page>
             }
           />
+
+          {/* Analytics: a four-card home. Creators is built; the other three follow. */}
+          <Route path="analytics">
+            <Route index element={<AnalyticsHomePage />} />
+            <Route path="creators" element={<CreatorAnalyticsPage />} />
+            {/* Brands, Campaigns, Pitches: "Coming soon" until their pages exist (see features/analytics/sections.ts). */}
+            <Route path=":section" element={<AnalyticsSectionPage />} />
+          </Route>
 
           {/* Editing the taxonomy decides which uploads are accepted at all, so
               it sits behind the same permission as ingest itself. */}

@@ -28,14 +28,15 @@ export function initializeObservability() {
         // Replace the dummy URL in .env when Grafana is ready.
         if (url.hostname.endsWith('.invalid')) return;
         // Save the initialized Faro instance.
-
+        const apiOrigin = new URL(import.meta.env.VITE_PROXY_TARGET + import.meta.env.VITE_API_BASE_URL).origin;
+        const escapedApi = apiOrigin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         faroClient = initializeFaro({
             // The real collector will receive the frontend telemetry here.
             url: collectorUrl,
 
             // Identifies this applicatpion inside Grafana.
             app: {
-                name: 'ripplepulse-web',
+                name: 'ripple-pulse-web',
                 version: import.meta.env.VITE_APP_VERSION || '0.1.0',
                 environment:
                     import.meta.env.VITE_APP_ENVIRONMENT || 'development',
@@ -48,7 +49,11 @@ export function initializeObservability() {
             // contain private application data.
             instrumentations: [
                 ...getWebInstrumentations({ captureConsole: false }),
-                new TracingInstrumentation(),
+                new TracingInstrumentation({
+                    instrumentationOptions: {
+                        propagateTraceHeaderCorsUrls: [new RegExp(`^${escapedApi}/`)],
+                    }
+                }),
             ],
 
             // Avoid exposing the Faro instance on window.
