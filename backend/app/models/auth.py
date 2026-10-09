@@ -48,6 +48,10 @@ class User(SQLModel, table=True):
         default=False, nullable=False, sa_column_kwargs={"server_default": "false"}
     )
 
+    can_edit: bool = Field(
+        default=False, nullable=False, sa_column_kwargs={"server_default": "false"}
+    )
+
     @field_validator("email", mode="after")
     @classmethod
     def lowercase_email(cls, v: str) -> str:

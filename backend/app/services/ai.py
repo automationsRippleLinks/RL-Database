@@ -249,7 +249,7 @@ async def _judge(
         flagged = {u["field"] for u in out.get("unmatched", [])}
         for cell, out_fields in spec.covers.items():
             value = inputs[row].get(cell)
-            filled = any(not _is_empty(out.get(f) for f in out_fields))
+            filled = any(not _is_empty(out.get(f)) for f in out_fields)
             if not _is_empty(value) and not filled and cell not in flagged:
                 result.errors.append(
                     RowError(

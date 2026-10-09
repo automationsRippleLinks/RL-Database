@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal, get_args
 from datetime import datetime, UTC
 from uuid import uuid4
 
@@ -23,21 +23,29 @@ from . import cells
 
 PACKAGE_NAME = "Standard"
 
-_DELIVERABLES = {
-    name: (f"{name}_count", f"{name}_cost")
-    for name in (
-        "reel",
-        "reel_story",
-        "video_story",
-        "static_carousel",
-        "short_form_videos",
-        "reshare_short_form_videos",
-        "dedicated_video",
-        "integrated_video",
-    )
-}
+DeliverableType = Literal[
+    "reel",
+    "reel_story",
+    "video_story",
+    "static_carousel",
+    "short_form_videos",
+    "reshare_short_form_videos",
+    "dedicated_video",
+    "integrated_video",
+    "rights",
+    "boosting",
+]
+
+#: every deliverable a package can list; the edit form offers the same set
+DELIVERABLE_TYPES: tuple[str, ...] = get_args(DeliverableType)
 
 _EXTRAS = ("rights", "boosting")
+
+_DELIVERABLES = {
+    name: (f"{name}_count", f"{name}_cost")
+    for name in DELIVERABLE_TYPES
+    if name not in _EXTRAS
+}
 
 _FILLABLE = (
     "name",

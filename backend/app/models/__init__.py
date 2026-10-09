@@ -19,6 +19,8 @@ from .ingest_job import IngestJob, IngestSource, JobStatus
 from .apify_run import ApifyRun, RunTrigger
 from .tag import Tag
 from .commercial_package import CommercialPackage, PackageDeliverables
+from .edit_log import EditLog
+from .versioned import Versioned
 
 # resolving forward references to avoid circular import error
 Pitch.model_rebuild()
@@ -52,4 +54,6 @@ __all__ = [
     "RunTrigger",
     "CommercialPackage",
     "PackageDeliverables",
+    "EditLog",
+    "Versioned",
 ]

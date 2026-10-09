@@ -101,6 +101,16 @@ def _validate_next(next_path: str | None) -> str:
     return next_path
 
 
+def _ensure_switched_on(user: User) -> None:
+    """An admin switched this account off: don't hand out a session that every request would then request"""
+    if not user.is_currently_employed:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account has been switched off. Ask an admin to turn it back on.",
+            headers={"X-Error-Code": "account_disabled"},
+        )
+
+
 def _error_redirect(code: str) -> RedirectResponse:
     return RedirectResponse(
         f"{settings.FRONTEND_URL}login?auth_error={code}",
@@ -157,6 +167,7 @@ async def login(
             headers={"X-Error-Code": "not_verified"},
         )
 
+    _ensure_switched_on(user)
     await _start_session(response, redis, user.id)
     return SessionUser.from_user(user)
 
@@ -274,6 +285,9 @@ async def google_callback(
 
     if not user.is_verified:
         return _error_redirect("not_verified")
+
+    if not user.is_currently_employed:
+        return _error_redirect("account_disabled")
 
     response = RedirectResponse(
         f"{settings.FRONTEND_URL}auth/callback?next={safe_next}",
@@ -461,6 +475,7 @@ async def reset_password(
             headers={"X-Error-Code": "invalid_token"},
         )
 
+    _ensure_switched_on(user)
     user.hashed_password = hash_password(body.password)
     session.add(user)
     await session.commit()

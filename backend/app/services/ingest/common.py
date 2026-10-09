@@ -64,7 +64,7 @@ def _base_type(annotation: Any) -> type:
 def read_columns(r: RowReader, model: type[SQLModel], skip: set[str]) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for column in model.__table__.columns:
-        if column.name in skip:
+        if column.name in skip or column.name == "version":
             continue
         kind = _base_type(model.model_fields[column.name].annotation)
         kw = {}

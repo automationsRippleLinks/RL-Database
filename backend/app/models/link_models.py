@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 from sqlmodel import SQLModel, Field, Relationship, text
 from sqlalchemy import Column, ARRAY, String
 
+from .versioned import Versioned
+
 
 class BrandCreatorLink(SQLModel, table=True):
     creator_id: Optional[UUID] = Field(
@@ -46,7 +48,7 @@ class TagCreatorLink(SQLModel, table=True):
     tag_id: Optional[int] = Field(default=None, foreign_key="tag.id", primary_key=True)
 
 
-class PitchCreatorLinkBase(SQLModel):
+class PitchCreatorLinkBase(Versioned):
     # deliverables count
 
     # IG
@@ -151,7 +153,7 @@ class PitchCreatorLink(PitchCreatorLinkBase, table=True):
     creator: "Creator" = Relationship(back_populates="affiliated_pitches")
 
 
-class CampaignCreatorLinkBase(SQLModel):
+class CampaignCreatorLinkBase(Versioned):
     is_dropped: bool = Field(
         default=False, sa_column_kwargs={"server_default": "false"}
     )

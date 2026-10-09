@@ -1,11 +1,12 @@
 from typing import Optional, TYPE_CHECKING
 
-from sqlmodel import SQLModel, Field, Relationship, Index
+from sqlmodel import Field, Relationship, Index
 from sqlalchemy import CheckConstraint
 from pydantic import field_validator, ConfigDict
 
 from app.core.config import settings
-from app.models.link_models import BrandCreatorLink
+from .link_models import BrandCreatorLink
+from .versioned import Versioned
 
 if TYPE_CHECKING:
     from .company import Company
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
     from .creator import Creator
 
 
-class Brand(SQLModel, table=True):
+class Brand(Versioned, table=True):
     model_config = ConfigDict(validate_assignment=True)
 
     __table_args__ = (

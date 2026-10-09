@@ -109,6 +109,10 @@ class Settings(BaseSettings):
 
     RATE_LIMIT_PREFIX: str = "ratelimit:"
 
+    # an open edit form holds its record for this long; the form renews it every minute
+    EDIT_LOCK_CACHE_PREFIX: str = "edit_lock:"
+    EDIT_LOCK_CACHE_TTL: int = 2 * 60
+
     # === Google OAuth settings ==============================================================================================================
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
@@ -123,15 +127,6 @@ class Settings(BaseSettings):
     SMTP_USER: str = "automations@ripplelinks.com"
     SMTP_PASSWORD: str
     SMTP_FROM: str = "Automation RL <automations@ripplelinks.com>"
-
-    @field_validator("ALLOWED_DOMAINS", "BACKEND_CORS_ORIGINS" "ALERT_EMAILS", mode="before")
-    @classmethod
-    def domain_parser(cls, v: Any) -> Any:
-        if v is None or v == "":
-            return list()
-        if isinstance(v, str):
-            return [d.strip().lower() for d in v.split(",") if d.strip()]
-        return v
 
     # === Apify settings ============================================================================================
     APIFY_API_TOKEN: str
@@ -160,7 +155,7 @@ class Settings(BaseSettings):
     GRAFANA_URL: str = "http://localhost:3000"
     GRAFANA_TOKEN: str = "" # service account token; empty = admin/admin (local otel-lgtm only)
     GRAFANA_PROMETHEUS_UID: str = ""
-    ALERT_EMAILS: Annotated[list[str], NoDecode]= "automations@ripplelinks.com"
+    ALERT_EMAILS: Annotated[list[str], NoDecode]= ["automations@ripplelinks.com"]
     ALERT_APIFY_OVERDUE_MINUTES: int = 60
     ALERT_WORKER_SILENT_MINUTES: int = 15
 
@@ -179,6 +174,15 @@ class Settings(BaseSettings):
     MAX_PAGE_SIZE: int = 500
     BRAND_DETAIL_LIMIT: int = 100
     TOP_CREATORS_LIMIT: int = 10
+
+    @field_validator("ALLOWED_DOMAINS", "BACKEND_CORS_ORIGINS", "ALERT_EMAILS", mode="before")
+    @classmethod
+    def domain_parser(cls, v: Any) -> Any:
+        if v is None or v == "":
+            return list()
+        if isinstance(v, str):
+            return [d.strip().lower() for d in v.split(",") if d.strip()]
+        return v
 
 
 settings = Settings()

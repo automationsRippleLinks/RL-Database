@@ -116,7 +116,7 @@ async def _run(
 
     with stage("parse") as span:
         records, errors = source.parse(rows)
-        span.set_attributes("ingest.errors", len(errors))
+        span.set_attribute("ingest.errors", len(errors))
 
     if errors:
         return await fail(errors, "reading the file")
@@ -125,7 +125,7 @@ async def _run(
         async with sf() as session:
             errors = await source.validate(session, records)
             taxonomy = await load_taxonomy(session)
-        span.set_attributes("ingest.errors", len(errors))
+        span.set_attribute("ingest.errors", len(errors))
     if errors:
         return await fail(errors, "checking against the database")
 
@@ -146,12 +146,12 @@ async def _run(
             outputs, errors, usage = result.outputs, result.errors, result.usage
         else:
             outputs, errors = {int(k): v for k, v in saved_ai.items()}, []
-            span.set_attributes("ingest.ai_reused", True)
+            span.set_attribute("ingest.ai_reused", True)
         for r in records:
             if r.row in outputs:
                 r.ai = outputs[r.row]
                 errors += _unmatched(r.row, r.ai)
-        span.set_attributes("ingest.errors", len(errors))
+        span.set_attribute("ingest.errors", len(errors))
     if errors:
         return await fail(errors, "running the AI step", ai_usage=usage)
     for r in records:

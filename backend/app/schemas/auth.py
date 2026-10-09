@@ -37,6 +37,9 @@ class SignUpRequest(BaseModel):
 
 class Permissions(BaseModel):
     can_ingest: bool
+    can_edit: bool = False
+    is_admin: bool = False
+    is_superadmin: bool = False
 
 
 class SessionUser(BaseModel):
@@ -55,7 +58,12 @@ class SessionUser(BaseModel):
             email=user.email,
             is_verified=user.is_verified,
             auth_provider=user.auth_provider,
-            permissions=Permissions(can_ingest=user.can_ingest),
+            permissions=Permissions(
+                can_ingest=user.can_ingest,
+                can_edit=user.can_edit,
+                is_admin=user.is_admin or user.is_superadmin,
+                is_superadmin=user.is_superadmin,
+            ),
         )
 
 
@@ -65,7 +73,9 @@ class VerifyEmailRequest(BaseModel):
 
 class EMailRequest(BaseModel):
     """Resend-verification and forgot-password: just an address, any domain."""
+
     email: Annotated[EmailStr, AfterValidator(lambda e: e.strip().lower())]
+
 
 class ResetPasswordRequest(BaseModel):
     token: str

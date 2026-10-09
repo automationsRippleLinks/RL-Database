@@ -2,7 +2,6 @@ from uuid import uuid4, UUID
 from typing import Optional, TYPE_CHECKING
 
 from sqlmodel import (
-    SQLModel,
     Field,
     Relationship,
     String,
@@ -22,6 +21,7 @@ from .link_models import (
     BrandCreatorLink,
 )
 from .enums import PlatformChoices, TierChoices
+from .versioned import Versioned
 
 if TYPE_CHECKING:
     from .category import Category
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from .commercial_package import CommercialPackage
 
 
-class Creator(SQLModel, table=True):
+class Creator(Versioned, table=True):
     model_config = ConfigDict(validate_assignment=True)
 
     id: Optional[UUID] = Field(
@@ -85,7 +85,16 @@ class Creator(SQLModel, table=True):
     )
 
     bio: Optional[str] = Field(default=None, nullable=True)
-    
+
+    # false = the profile is gone (deleted / deactivated on the platform). Kept for
+    # its pitch and campaign history, but left out of search and Apify refreshes.
+    is_active: bool = Field(
+        default=True,
+        nullable=False,
+        index=True,
+        sa_column_kwargs={"server_default": "true"},
+    )
+
     stats_refreshed_at: Optional[AwareDatetime] = Field(
         default=None, nullable=True, index=True
     )

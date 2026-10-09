@@ -1,4 +1,4 @@
-from typing import Generic, Literal, TypeVar, Optional, Any
+from typing import Generic, Literal, TypeVar, Optional, Any, Union
 from uuid import UUID
 from datetime import date, datetime
 
@@ -13,6 +13,7 @@ from app.models.enums import (
     PitchRequirementChoices,
 )
 from app.core.config import settings
+from app.schemas.analytics import MissingField
 
 RowT = TypeVar("RowT")
 
@@ -87,7 +88,14 @@ class CreatorSearchRequest(Paging):
     max_followers: Optional[int] = None
     min_avg_views: Optional[int] = None
     max_avg_views: Optional[int] = None
+    has_package: bool = False
+    min_package_cost: Optional[int] = Field(default=None, ge=0)
+    max_package_cost: Optional[int] = Field(default=None, ge=0)
+
+    # true = active profiles only (default), false = inactive only, null = both
+    is_active: Optional[bool] = True
     sort: str = "relevance"
+    missing: Optional[Union[MissingField, Literal["any"]]] = None
 
 
 _PROFILE_URL = {
@@ -114,6 +122,7 @@ class CreatorRow(BaseModel):
     languages: list[str] = []
     emails: list[str] = []
     phones: list[str] = []
+    is_active: bool = True
 
     @computed_field
     @property

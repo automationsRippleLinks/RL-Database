@@ -46,6 +46,7 @@ def tier_for(followers: int, raw_tier: Any = None) -> TierChoices:
         return TierChoices.NA
     return next((t for ceiling, t in _TIERS if followers < ceiling), TierChoices.MEGA)
 
+
 REGIONS = ("North", "South", "East", "West", "Central", "North-East")
 
 
@@ -313,7 +314,10 @@ class CampaignCreator(_CreatorSource):
             await session.exec(
                 stmnt.on_conflict_do_update(
                     index_elements=["creator_id", "campaign_id"],
-                    set_={k: getattr(stmnt.excluded, k) for k in mutable},
+                    set_={
+                        **{k: getattr(stmnt.excluded, k) for k in mutable},
+                        "version": CampaignCreatorLink.__table__.c.version + 1,
+                    },
                 )
             )
         return {"inserted": len(pairs) - updated, "updated": updated}

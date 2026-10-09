@@ -246,6 +246,7 @@ async def start_scheduled_refresh(sf: SessionFactory) -> Optional[ApifyRun]:
                 select(Creator.username)
                 .where(
                     Creator.platform == PlatformChoices.INSTAGRAM,
+                    col(Creator.is_active),
                     or_(
                         col(Creator.stats_refreshed_at).is_(None),
                         col(Creator.stats_refreshed_at) < cutoff,

@@ -72,7 +72,7 @@ app.add_middleware(
     allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "OPTIONS", "DELETE"],
-    allow_headers=["Content-Type", "Accept", "X-CSRF-Token"],
+    allow_headers=["Content-Type", "Accept", "X-CSRF-Token", "tracestate", "traceparent"],
     expose_headers=["X-Error-Code", "Retry-After"],
 )
 

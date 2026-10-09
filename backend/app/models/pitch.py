@@ -2,12 +2,13 @@ from uuid import uuid4, UUID
 from typing import TYPE_CHECKING, Optional
 from datetime import datetime, timezone
 
-from sqlmodel import SQLModel, Field, Relationship, func, DateTime
+from sqlmodel import Field, Relationship, func, DateTime
 from sqlalchemy import Enum as SaEnum, Column
 from sqlalchemy.dialects.postgresql import ARRAY
 from pydantic import ConfigDict
 
 from .enums import PlatformChoices, OrgTypeChoices, PitchRequirementChoices
+from .versioned import Versioned
 
 if TYPE_CHECKING:
     from .link_models import PitchCreatorLink
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from .campaign import Campaign
 
 
-class Pitch(SQLModel, table=True):
+class Pitch(Versioned, table=True):
     model_config = ConfigDict(validate_assignment=True)
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)

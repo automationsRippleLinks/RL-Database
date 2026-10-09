@@ -76,6 +76,15 @@ async def require_ingest(user: CurrentUser) -> User:
     return user
 
 
+async def require_edit(user: CurrentUser) -> User:
+    if not user.can_edit:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not permitted to edit",
+            headers={"X-Error-Code": "forbidden"},
+        )
+    return user
+
 async def require_superAdmin(user: CurrentUser) -> User:
     if not user.is_superadmin:
         raise HTTPException(
@@ -87,7 +96,7 @@ async def require_superAdmin(user: CurrentUser) -> User:
 
 
 async def require_admin(user: CurrentUser) -> User:
-    if not user.is_admin:
+    if not (user.is_admin or user.is_superadmin): # admin or higher permission
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not an admin",
@@ -97,5 +106,6 @@ async def require_admin(user: CurrentUser) -> User:
 
 
 IngestUser = Annotated[User, Depends(require_ingest)]
+EditUser = Annotated[User, Depends(require_edit)]
 SuperAdminUser = Annotated[User, Depends(require_superAdmin)]
 AdminUser = Annotated[User, Depends(require_admin)]

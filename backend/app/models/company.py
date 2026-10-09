@@ -1,17 +1,18 @@
 from typing import Optional, TYPE_CHECKING
 import re
 
-from sqlmodel import SQLModel, Field, text, Relationship
+from sqlmodel import Field, Relationship
 from sqlalchemy import CheckConstraint
 from pydantic import field_validator
 
 from app.core.config import settings
+from .versioned import Versioned
 
 if TYPE_CHECKING:
     from .brand import Brand
 
 
-class Company(SQLModel, table=True):
+class Company(Versioned, table=True):
 
     __table_args__ = (
         CheckConstraint(
@@ -30,7 +31,9 @@ class Company(SQLModel, table=True):
 
     @field_validator("gstin")
     @classmethod
-    def validate_gstin(cls, value: str) -> str:
+    def validate_gstin(cls, value: Optional[str]) -> str:
+        if value is None:
+            return None
         upper_val = value.upper().strip()
         if upper_val == "":
             return upper_val

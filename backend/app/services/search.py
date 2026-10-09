@@ -43,7 +43,10 @@ from app.models import (
     Pitch,
     PitchCreatorLink,
     Company,
+    CommercialPackage,
 )
+from app.services.ingest.direct import PACKAGE_NAME
+from app.services import creator_gaps
 from app.models.enums import PlatformChoices
 from app.services.profile_link import parse_profile_link, looks_like_link
 
@@ -85,7 +88,7 @@ async def _page(
     sub = stmnt.order_by(None).subquery()
     total = (await session.exec(select(func.count()).select_from(sub))).one()
     pages = max(1, (total + req.page_size - 1) // req.page_size)
-    page = min(page, pages)
+    page = min(req.page, pages)
     stmnt = (
         stmnt.order_by(*order).offset((page - 1) * req.page_size).limit(req.page_size)
     )
@@ -139,6 +142,23 @@ def _not_empty(array_column) -> ColumnElement:
     # cardinality, not IS NOT NULL: since arrays default to {} rather than NULL,
     # so basically check its length
     return func.cardinality(col(array_column)) > 0
+
+
+def _package_cost():
+    """The creator's current standard package cost; NULL when they have non.
+
+    At most one row can match: a unique index allows one open package per creator and name
+    """
+    return (
+        select(CommercialPackage.cost)
+        .where(
+            col(CommercialPackage.creator_id) == Creator.id,
+            col(CommercialPackage.name) == PACKAGE_NAME,
+            col(CommercialPackage.valid_to).is_(None),
+        )
+        .correlate(Creator)
+        .scalar_subquery()
+    )
 
 
 def _on_campaign(live_only: bool):
@@ -203,6 +223,7 @@ async def creators(
             stmnt = stmnt.where(tc)
 
     filters = [
+        col(Creator.is_active) == req.is_active if req.is_active is not None else None,
         col(Creator.platform).in_(req.platforms) if req.platforms else None,
         col(Creator.tier).in_(req.tiers) if req.tiers else None,
         col(Creator.gender).in_(req.genders) if req.genders else None,
@@ -211,9 +232,10 @@ async def creators(
             if req.cities
             else None
         ),
-        _has_any("category", req.categories),
-        _has_any("language", req.languages),
+        creator_gaps.term_filter("categories", req.categories),
+        creator_gaps.term_filter("languages", req.languages),
         _has_any("tag", req.tags),
+        creator_gaps.missing_filter(req.missing),
         (
             exists(
                 select(BrandCreatorLink.creator_id)
@@ -260,6 +282,17 @@ async def creators(
             if req.max_avg_views is not None
             else None
         ),
+        _package_cost().is_not(None) if req.has_package else None,
+        (
+            _package_cost() >= req.min_package_cost
+            if req.min_package_cost is not None
+            else None
+        ),
+        (
+            _package_cost() <= req.max_package_cost
+            if req.max_package_cost is not None
+            else None
+        ),
     ]
     stmnt = stmnt.where(*[f for f in filters if f is not None])
 
@@ -283,6 +316,10 @@ async def creators(
                 "avg_views_asc": col(Creator.avg_views).asc().nullsfirst(),
                 "name_desc": col(Creator.name).desc(),
                 "name_asc": col(Creator.name).asc(),
+                "package_cost_desc": _package_cost().desc().nullslast(),
+                "package_cost_asc": _package_cost().asc().nullslast(),
+                "gaps_desc": creator_gaps.gap_count().desc(),
+                "gaps_desc": creator_gaps.gap_count().asc(),
             }.get(sort, col(Creator.followers).desc().nullslast())
         ]
 
@@ -779,7 +816,8 @@ async def suggest(session: AsyncSession, q: str, limit: int) -> dict:
     stmnt = (
         select(Creator)
         .where(
-            or_(col(Creator.name).ilike(prefix), col(Creator.username).ilike(prefix))
+            col(Creator.is_active),
+            or_(col(Creator.name).ilike(prefix), col(Creator.username).ilike(prefix)),
         )
         .order_by(col(Creator.followers).desc().nullslast())
         .limit(per)
@@ -831,7 +869,7 @@ async def suggest(session: AsyncSession, q: str, limit: int) -> dict:
                 col(Pitch.pitch_code).ilike(prefix),
             )
         )
-        .order_by(col(Pitch.created_at).desc().nullslast)
+        .order_by(col(Pitch.created_at).desc().nullslast())
         .limit(per)
     )
     out += [

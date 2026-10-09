@@ -2,12 +2,13 @@ from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 from datetime import date
 
-from sqlmodel import SQLModel, Field, Relationship, text
+from sqlmodel import Field, Relationship, text
 from sqlalchemy import Enum as SaEnum, String, Column
 from sqlalchemy.dialects.postgresql import ARRAY
 from pydantic import ConfigDict
 
 from .enums import CampaignStatusChoices, MonthChoices
+from .versioned import Versioned
 
 if TYPE_CHECKING:
     from .pitch import Pitch
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from .brand import Brand
 
 
-class Campaign(SQLModel, table=True):
+class Campaign(Versioned, table=True):
     model_config = ConfigDict(validate_assignment=True)
 
     id: Optional[UUID] = Field(

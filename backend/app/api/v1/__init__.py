@@ -8,6 +8,9 @@ from .detail import router as detail_router
 from .taxonomy import router as taxonomy_router
 from .apify import router as apify_router
 from .admin import router as admin_router
+from .users import router as users_router
+from .edits import router as edits_router
+from .analytics import router as analytics_router
 
 router = APIRouter()
 
@@ -19,3 +22,6 @@ router.include_router(taxonomy_router, prefix="/taxonomy", tags=["Taxonomy"])
 router.include_router(detail_router, tags=["Detail"])
 router.include_router(apify_router, prefix="/apify", tags=["Apify"])
 router.include_router(admin_router, prefix="/admin", tags=["Admin"])
+router.include_router(users_router, prefix="/admin/users", tags=["Users"])
+router.include_router(edits_router, tags=["Editing"])
+router.include_router(analytics_router, prefix="/analytics", tags=["Aanlytics"])
