@@ -1,5 +1,9 @@
+"""API entry point: builds the FastAPI app, its DB/Redis pools and the task broker
++connection for the app's lifetime, and mounts the v1 routes."""
+
 from app import observability
 
+# before the other imports, so logging and telemetry are in place first
 observability.setup("ripple-pulse-api")
 
 from fastapi import FastAPI
@@ -13,6 +17,7 @@ from app.core.redis_client import create_redis, create_redis_pool
 from app.api.v1 import router as v1_router
 from app.worker import broker
 
+# wiped on every API start; this includes the rate-limit counters
 CACHE_REFRESH_PREFIX_LIST = [
     settings.FACETS_CACHE_PREFIX,
     settings.SEARCH_CACHE_PREFIX,
@@ -43,6 +48,7 @@ async def lifespan(app: FastAPI):
         redis_pool
     )  # redis client sharing the pool; each uses and returns connection when done with command/function
     try:
+        # open one connection so a bad DB config fails at startup, not on a request
         async with engine.connect():
             pass
         observability.instrument_clients(engine=engine, redis=app.state.redis)
@@ -83,4 +89,6 @@ observability.instrument_app(app=app)
 
 @app.get("/home")
 async def home_route():
+    """Fixed greeting, to check the API is reachable. No sign-in needed."""
+
     return {"message": "Connected to RL Database backend!!"}

@@ -1,9 +1,13 @@
+"""Shapes for the admin Users page."""
+
 from datetime import datetime
 
 from pydantic import BaseModel, Field, ConfigDict
 
 
 class UserAdminRow(BaseModel):
+    """A user as admins see them; `active_sessions` counts live sign-ins in Redis."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -19,6 +23,7 @@ class UserAdminRow(BaseModel):
     created_at: datetime
     last_activity_at: datetime
     active_sessions: int = 0
+
 
 class UserAdminUpdate(BaseModel):
     """Only what is sent changes. Admin and super admin rights: super admins only."""

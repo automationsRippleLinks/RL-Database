@@ -22,6 +22,8 @@ async def list_users(
         None, description="true = switched on, false = switched off"
     ),
 ):
+    """All users by name with their live session counts, optionally filtered."""
+
     return await users.listing(session, redis, q, employed)
 
 
@@ -29,6 +31,8 @@ async def list_users(
 async def get_user(
     user_id: int, session: SessionDep, redis: RedisDep, admin: AdminUser
 ):
+    """One user with their live session count, or 404."""
+
     return await users.row(redis, await users.get(session, user_id))
 
 
@@ -40,6 +44,11 @@ async def update_user(
     redis: RedisDep,
     admin: AdminUser,
 ):
+    """Change a user's name, permissions or on/off switch.
+    
+        Who may change what is in services/users.py; admin rights need a super admin.
+    """
+
     return await users.update(session, redis, admin, user_id, body)
 
 

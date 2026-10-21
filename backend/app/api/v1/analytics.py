@@ -13,5 +13,7 @@ router = APIRouter()
 async def creators_summary(
     req: CreatorSummaryRequest, session: SessionDep, user: CurrentUser
 ):
+    """Creators data dashboard: missing-field counts per platform, for the filters."""
+
     # Not cached on purpose: an edit should show on the dashboard straight away.
     return await creator_summary(session, req)

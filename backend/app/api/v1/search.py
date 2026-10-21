@@ -1,4 +1,4 @@
-"""Search routes: auth and caching around servics/searches.py"""
+"""Search routes: auth and caching around services/search.py"""
 
 from typing import Literal
 
@@ -27,6 +27,8 @@ router = APIRouter()
 async def search_creators(
     req: CreatorSearchRequest, session: SessionDep, user: CurrentUser
 ):
+    """One page of the Creators table for the text, filters and sort. Not cached."""
+
     return await search.creators(session, req)
 
 
@@ -34,6 +36,8 @@ async def search_creators(
 async def search_brands(
     req: BrandSearchRequest, session: SessionDep, user: CurrentUser
 ):
+    """One page of the Brands table. Not cached."""
+
     return await search.brands(session, req)
 
 
@@ -41,6 +45,8 @@ async def search_brands(
 async def search_campaigns(
     req: CampaignSearchRequest, session: SessionDep, user: CurrentUser
 ):
+    """One page of the Campaigns table. Not cached."""
+
     return await search.campaigns(session, req)
 
 
@@ -48,6 +54,8 @@ async def search_campaigns(
 async def search_pitches(
     req: PitchSearchRequest, session: SessionDep, user: CurrentUser
 ):
+    """One page of the Pitches table. Not cached."""
+
     return await search.pitches(session, req)
 
 
@@ -66,6 +74,11 @@ async def facets(
     redis: RedisDep,
     user: CurrentUser,
 ):
+    """Filter options for one table, cached for FACETS_CACHE_TTL.
+    
+        Edits drop this cache, so a change shows up straight away.
+    """
+
     return await cached(
         redis,
         cache_key(f"{settings.FACETS_CACHE_PREFIX}{kind}"),
@@ -82,6 +95,12 @@ async def global_search(
     q: str = Query(..., min_length=2),
     limit: int = Query(default=5, ge=1, le=20),
 ):
+    """The search box: top creators, brands, campaigns and pitches for `q`. Cached.
+    
+        Takes a session factory, not a session, because the four searches run
+        concurrently and each needs its own session.
+    """
+
     return await cached(
         redis,
         cache_key(
@@ -101,6 +120,8 @@ async def suggest(
     q: str = Query(..., min_length=1),
     limit: int = Query(default=8, ge=1, le=20),
 ):
+    """Autocomplete across creators, brands, campaigns and pitches. Cached."""
+
     return await cached(
         redis,
         cache_key(

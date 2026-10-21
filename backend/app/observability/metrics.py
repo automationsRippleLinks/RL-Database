@@ -1,3 +1,9 @@
+"""Business metrics. The alert rules in alerts.py query these by name.
+
+In Prometheus / Grafana Cloud the dots become underscores and counters gain
+_total: pulse.ingest.jobs -> pulse_ingest_jobs_total.
+"""
+
 from opentelemetry import metrics
 from opentelemetry.metrics import Observation
 
@@ -31,6 +37,13 @@ APIFY_OVERDUE = _meter.create_counter(
 
 
 def init_worker_metrics(sources: list[str], actors: list[str]) -> None:
+    """Start the worker heartbeat and export a 0 for every failure series alerted on.
+    
+        increase() can't see a counter's first increment if the series didn't exist
+        before it, so without these zeros the first failure of each kind would not
+        alert. `sources` are ingest sources, `actors` the Apify actors with handlers.
+    """
+
     _meter.create_observable_gauge(
         name="pulse.worker.up",
         callbacks=[lambda _: [Observation(1)]],

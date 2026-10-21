@@ -1,3 +1,9 @@
+"""An ingest job's status changes: claim it, finish it, and sweep up stuck ones.
+
+Each step opens its own short session, so a job's status is committed even if the
+work in between crashes.
+"""
+
 import logging
 from typing import Optional, Any
 from uuid import UUID
@@ -15,6 +21,11 @@ log = logging.getLogger(__name__)
 
 
 async def claim(sf: SessionFactory, job_id: UUID) -> Optional[IngestJob]:
+    """Move a queued job to running and return it; None if it isn't ours to run.
+    
+    None means the job is gone, already running or finished, or another worker is
+    claiming it this instant -- so a job enqueued twice still runs once.
+    """
     async with sf() as session:
         job = (
             await session.exec(
@@ -46,6 +57,14 @@ async def finish(
     ai_usage: Optional[dict[str, Any]] = None,
     system: bool = False
 ) -> None:
+    """Record a running job's outcome and count it in the metrics.
+    
+    Any error fails the whole job with all write counts at 0, since nothing was
+    written. An error on row 0 is about the whole file, so every row counts as
+    failed. Only the first MAX_STORED_ERRORS errors are kept. `system` marks the
+    failure as ours rather than the sheet's A job that is no longer running (the
+    sweep already failed it) is left alone.
+    """
     errors = sorted(errors, key=lambda e: (e.row, e.field or ""))
     kept = errors[: settings.MAX_STORED_ERRORS]
 
@@ -108,6 +127,11 @@ async def finish(
 
 
 async def sweep(sf: SessionFactory) -> list[UUID]:
+    """Fail jobs a dead worker left running; return queued ones nobody picked up.
+    
+    The worker's reconcile task re-enqueues the returned ids; `claim` makes a
+    duplicate harmless.
+    """
     now = datetime.now(UTC)
     async with sf() as session:
         stale_jobs = (
@@ -137,6 +161,7 @@ async def sweep(sf: SessionFactory) -> list[UUID]:
             )
             log.warning("ingest job %s abandoned by a dead worker", j.job_id)
 
+        # a queued job's started_at is still the time it was queued; claim resets it
         stuck = (
             await session.exec(
                 select(IngestJob.job_id).where(

@@ -1,3 +1,10 @@
+"""All runtime settings, read from the environment and `.env` into `settings`.
+
+Fields without a default (secrets, public URLs) must be set or the app won't start.
+List fields take a comma-separated string, e.g. ALLOWED_DOMAINS=a.com,b.com
+"""
+
+
 from typing import Any, Annotated, Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict, NoDecode
@@ -5,6 +12,7 @@ from pydantic import computed_field, PostgresDsn, RedisDsn, HttpUrl, field_valid
 
 
 class Settings(BaseSettings):
+    """Every setting the API, worker, migrations and alert script read."""
     model_config = SettingsConfigDict(
         env_file="./.env", env_ignore_empty=True, extra="ignore"
     )
@@ -42,6 +50,7 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def DB_URL_MIGRATION(self) -> PostgresDsn:
+        """Sync-driver (psycopg2) URL, for Alembic migrations."""
         return PostgresDsn.build(
             scheme=f"{self.DB_TYPE}+{self.DB_DRIVER_MIGRATION}",
             host=self.DB_HOST,
@@ -54,6 +63,7 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def DB_URL(self) -> PostgresDsn:
+        """Async-driver (asyncpg) URL, for the API and worker."""
         return PostgresDsn.build(
             scheme=f"{self.DB_TYPE}+{self.DB_DRIVER}",
             host=self.DB_HOST,
@@ -72,6 +82,7 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def REDIS_URL(self) -> RedisDsn:
+        """redis://host:port/<db number>; REDIS_PATH is the db number."""
         return RedisDsn.build(
             scheme="redis",
             host=self.REDIS_HOST,
@@ -79,7 +90,7 @@ class Settings(BaseSettings):
             path=self.REDIS_PATH,
         )
 
-    REDIS_CACHE_VERSION: str = "v1"
+    REDIS_CACHE_VERSION: str = "v1" # bump when a cached response changes shape
 
     OAUTH_STATE_CACHE_PREFIX: str = "oauth_state:"
     OAUTH_STATE_CACHE_TTL: int = 5 * 60
@@ -151,7 +162,7 @@ class Settings(BaseSettings):
     OTEL_EXPORTER_OTLP_HEADERS: str = "" # "Authorization=Basic <base64 of instanceId:token>", from grafana cloud
     OTEL_METRIC_INTERVAL_SECONDS: int = 60
 
-    # === Alerts: `python -m app.oversability.alerts` pushes these to Grafana ================================================================
+    # === Alerts: `python -m app.observability.alerts` pushes these to Grafana ================================================================
     GRAFANA_URL: str = "http://localhost:3000"
     GRAFANA_TOKEN: str = "" # service account token; empty = admin/admin (local otel-lgtm only)
     GRAFANA_PROMETHEUS_UID: str = ""
@@ -167,7 +178,7 @@ class Settings(BaseSettings):
     # === Ingestion pipeline settings =========================================================================================================
     MAX_UPLOAD_BYTES: int = 25 * 1024 * 1024
     MAX_STORED_ERRORS: int = 500
-    PG_MAX_PARAMS: int = 32767
+    PG_MAX_PARAMS: int = 32767  # asyncpg's limit on bind parameters per statement
     GSTIN_REGEX: str = r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
 
     # === Search related settings =============================================================================================================
@@ -178,6 +189,10 @@ class Settings(BaseSettings):
     @field_validator("ALLOWED_DOMAINS", "BACKEND_CORS_ORIGINS", "ALERT_EMAILS", mode="before")
     @classmethod
     def domain_parser(cls, v: Any) -> Any:
+        """Split a comma-separated env value into a trimmed, lowercased list.
+        
+        NoDecode on these fields stops pydantic-settings expecting JSON first.
+        """
         if v is None or v == "":
             return list()
         if isinstance(v, str):

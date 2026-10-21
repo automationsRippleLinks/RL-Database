@@ -1,7 +1,16 @@
+"""Fixed choices for the table columns.
+
+The columns store these as Postgres enums of the member NAMES ('MID_TIER'), while
+the API speaks the value ('mid-tier'), so renaming a member needs a migration.
+"NA" is what ingest stores when the sheet gives nothing usable.
+"""
+
 from enum import Enum
 
 
 class MonthChoices(str, Enum):
+    """The month a campaign is filed under (with its year)."""
+
     JANUARY = "january"
     FEBRUARY = "february"
     MARCH = "march"
@@ -17,13 +26,17 @@ class MonthChoices(str, Enum):
 
 
 class CampaignStatusChoices(str, Enum):
+    """Where a campaign, or separately its report, stands."""
+
     COMPLETED = "completed"
-    ON_HOlD = "on hold"
+    ON_HOLD = "on hold"
     SCRAPPED = "scrapped"
     WIP = "wip"
 
 
 class PlatformChoices(str, Enum):
+    """A creator profile's platform, or one of the platforms a pitch covers."""
+
     INSTAGRAM = "instagram"
     YOUTUBE = "youtube"
     LINKEDIN = "linkedin"
@@ -33,6 +46,8 @@ class PlatformChoices(str, Enum):
 
 
 class TierChoices(str, Enum):
+    """Creator size by followers (tier_for in ingest); celeb comes from the sheet."""
+
     NANO = "nano"
     MICRO = "micro"
     MID_TIER = "mid-tier"
@@ -43,6 +58,8 @@ class TierChoices(str, Enum):
 
 
 class OrgTypeChoices(str, Enum):
+    """What kind of client a pitch is for."""
+
     BRAND_CORE = "Brand_Core"
     BRAND_OTHER = "Brand_Other"
     AGENCY = "Agency"
@@ -51,6 +68,8 @@ class OrgTypeChoices(str, Enum):
 
 
 class PitchRequirementChoices(str, Enum):
+    """What the client asked for in a pitch."""
+
     LIST = "list"
     PLAN = "plan"
     LIST_AND_PLAN = "list_and_plan"

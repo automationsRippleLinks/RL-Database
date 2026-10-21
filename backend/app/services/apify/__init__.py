@@ -1,3 +1,11 @@
+"""Apify runs: start a scraper, then process its results when it finishes.
+
+Each run is started with a webhook back to /apify/webhook and recorded as an
+apify_run row. The webhook (or, if it never arrives, the worker's reconcile task)
+queues `process_run`, which reads the run's dataset and hands the items to the
+actor's handler in HANDLERS. A daily task refreshes Instagram stats the same way.
+"""
+
 from typing import Any, Optional, Callable, Awaitable
 import json
 from datetime import datetime, UTC, timedelta
@@ -21,6 +29,7 @@ from . import instagram
 
 log = logging.getLogger(__name__)
 
+# applies a finished run's items; returns (rows updated, problems, summary message)
 Handler = Callable[
     [SessionFactory, Redis, list[dict]], Awaitable[tuple[int, list[RowError], str]]
 ]
@@ -36,22 +45,33 @@ _EVENTS = [
     "ACTOR.RUN.ABORTED",
 ]
 
+# Apify's own statuses for a run that hasn't ended yet
 _UNFINISHED = {"READY", "RUNNING", "TIMING-OUT", "ABORTING"}
 
 
 class UnknownActor(Exception):
+    """No handler for this actor's results, so it isn't started (the API sends 400)."""
+
     pass
 
 
 def _client() -> ApifyClientAsync:
+    """A fresh Apify API client."""
     return ApifyClientAsync(token=settings.APIFY_API_TOKEN)
 
 
 def _webhook_url() -> str:
+    """Our public webhook URL, which Apify calls when a run ends."""
+
     return f"{str(settings.PUBLIC_API_URL).rstrip('/')}{settings.API_ROOT_PATH}/apify/webhook"
 
 
 async def _start(actor: str, run_input: dict[str, Any]):
+    """Start the actor on Apify with our webhook attached for every way a run ends.
+    
+        The secret travels as a header that the webhook route checks.
+    """
+
     return (
         await _client()
         .actor(actor)
@@ -77,6 +97,11 @@ async def start_run(
     trigger: RunTrigger,
     started_by: Optional[str],
 ) -> ApifyRun:
+    """Start an Apify run and record it; raises UnknownActor if we can't handle it.
+    
+        `started_by` is the user's email, or None for scheduled runs.
+    """
+
     if actor not in HANDLERS:
         raise UnknownActor(actor)
     with tracer.start_as_current_span(
@@ -98,6 +123,12 @@ async def start_run(
 
 
 async def _claim(sf: SessionFactory, run_id: str) -> Optional[ApifyRun]:
+    """Mark a running run as being processed by us; None if it isn't ours to process.
+    
+        None means it's finished, or another worker claimed it. A claim older than
+        STALE_RUNNING_MINUTES counts as abandoned (its worker died) and is taken over.
+    """
+
     stale = datetime.now(UTC) - timedelta(minutes=settings.STALE_RUNNING_MINUTES)
     async with sf() as session:
         row = (
@@ -125,6 +156,8 @@ async def _claim(sf: SessionFactory, run_id: str) -> Optional[ApifyRun]:
 
 
 async def _save(sf: SessionFactory, run_id: str, **values: Any) -> None:
+    """Update the run's row; a final status (success / failed) is also counted."""
+
     async with sf() as session:
         run = (
             await session.exec(select(ApifyRun).where(ApifyRun.run_id == run_id))
@@ -149,6 +182,8 @@ async def _save(sf: SessionFactory, run_id: str, **values: Any) -> None:
 
 
 async def process_run(sf: SessionFactory, redis: Redis, run_id: str) -> None:
+    """Worker task: fetch a finished run's results and apply them (traced)."""
+
     with tracer.start_as_current_span(
         "apify.process", attributes={"apify.run_id": run_id}
     ):
@@ -156,6 +191,12 @@ async def process_run(sf: SessionFactory, redis: Redis, run_id: str) -> None:
 
 
 async def _process(sf: SessionFactory, redis: Redis, run_id: str) -> None:
+    """Claim the run, ask Apify how it ended, and record the outcome.
+    
+        A run Apify still reports as unfinished is released for a later try. A
+        succeeded run's items go to the actor's handler; any crash fails the run.
+    """
+
     row = await _claim(sf, run_id)
     if row is None:
         return
@@ -212,6 +253,12 @@ async def _process(sf: SessionFactory, redis: Redis, run_id: str) -> None:
 
 
 async def unfinished_runs(sf: SessionFactory) -> list[str]:
+    """Runs still open APIFY_RECONCILE_AFTER_MINUTES after starting, to re-check.
+    
+        A missed webhook would otherwise leave them open forever. Runs past
+        ALERT_APIFY_OVERDUE_MINUTES are also counted and logged for alerting.
+    """
+
     overdue = datetime.now(UTC) - timedelta(
         minutes=settings.APIFY_RECONCILE_AFTER_MINUTES
     )
@@ -229,6 +276,13 @@ async def unfinished_runs(sf: SessionFactory) -> list[str]:
 
 
 async def start_scheduled_refresh(sf: SessionFactory) -> Optional[ApifyRun]:
+    """Scrape the active Instagram creators whose stats are oldest.
+    
+        Picks up to APIFY_REFRESH_BATCH creators never refreshed or last refreshed
+        over APIFY_REFRESH_AFTER_DAYS ago. Does nothing (None) while the previous
+        scheduled run is still open, or when nobody is due.
+    """
+
     actor = settings.APIFY_IG_PROFILE_ACTOR
     async with sf() as session:
         busy = await session.exec(

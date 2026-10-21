@@ -38,6 +38,8 @@ _TABLES = {
 
 
 def _tables(kind: TaxonomyKind) -> dict:
+    """The `_TABLES` tuple for `kind`: (term model, link model, fk name, label)."""
+
     return _TABLES[kind]
 
 
@@ -53,6 +55,8 @@ def _usage(link_model, fk_name: str, term_model):
 
 
 async def _get_or_404(session: AsyncSession, model, term_id: int, label: str):
+    """The term by id, or 404 "No such <label>"."""
+
     term = await session.get(model, term_id)
     if term is None:
         raise HTTPException(
@@ -88,6 +92,8 @@ async def _invalidate(redis) -> None:
 
 @router.get("/{kind}", response_model=TaxonomyList)
 async def list_terms(kind: TaxonomyKind, session: SessionDep, user: CurrentUser):
+    """Every term of the kind with its creator count, most used first, then A-Z."""
+
     model, link_model, fk_name, _ = _tables(kind)
     usage = _usage(link_model, fk_name, model).label("creator_count")
 
@@ -119,6 +125,11 @@ async def create_term(
     redis: RedisDep,
     user: IngestUser,
 ):
+    """Add a term so ingest will accept it; 409 if the name exists in any casing.
+    
+        Needs ingest permission.
+    """
+
     model, _, _, label = _tables(kind)
     await _reject_duplicate(session, model, body.name, label)
 
@@ -141,6 +152,11 @@ async def rename_term(
     redis: RedisDep,
     user: IngestUser,
 ):
+    """Rename a term; its creators keep it. 409 if another term has the name.
+    
+        Needs ingest permission.
+    """
+
     model, link_model, fk_name, label = _tables(kind)
     term = await _get_or_404(session, model, term_id, label)
     await _reject_duplicate(session, model, body.name, label, exclude_id=term_id)
@@ -175,6 +191,11 @@ async def delete_term(
     redis: RedisDep,
     user: IngestUser,
 ):
+    """Delete a term no creator uses; 409 with the count if any still do.
+    
+        Needs ingest permission.
+    """
+
     model, link_model, fk_name, label = _tables(kind)
     await _get_or_404(session, model, term_id, label)
 

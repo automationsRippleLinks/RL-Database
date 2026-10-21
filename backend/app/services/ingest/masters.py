@@ -1,3 +1,10 @@
+"""pitch_master and campaign_master: one row per pitch / campaign.
+
+Rows are insert-only: a pitch or campaign whose code already exists is skipped, not
+updated. Brands named in brand_name are created when new. A campaign must point at
+a pitch that is already ingested, so pitch_master goes first.
+"""
+
 from typing import Any, Literal, Optional
 from datetime import date, datetime, UTC
 import re
@@ -21,10 +28,20 @@ from . import cells
 
 
 def _choices(enum, drop=("NA",)) -> Any:
+    """Literal of the enum's values for an AI answer field, minus `drop`.
+    
+        NA is dropped by default: the AI answers null instead, and apply_ai maps it back.
+    """
+
     return Literal[tuple(m.value for m in enum if m.value not in drop)]
 
 
 def _pitch_code(r: RowReader, key: str, year: Optional[int]) -> Optional[str]:
+    """Upper-cased code from cell `key`, with "-<year>" appended when it has none.
+    
+        The year is the row's own, or the current year when the row has none.
+    """
+
     code = r.get(key, required=True)
     if not code:
         return None
@@ -35,11 +52,15 @@ def _pitch_code(r: RowReader, key: str, year: Optional[int]) -> Optional[str]:
 
 
 def _brand(r: RowReader) -> tuple[str, str] | None:
+    """(lower-cased name, name as typed) from brand_name, as brand_ids() wants it."""
+
     name = r.get("brand_name", required=True)
     return (name.lower(), name) if name else None
 
 
 class PitchMaster:
+    """The pitch_master source: one row per pitch sent to a client."""
+
     label = "Pitch Master"
     table = Pitch
     ai = AISpec(
@@ -66,6 +87,8 @@ youtube; "IG" is instagram).
     )
 
     def parse(self, rows: list[dict]) -> tuple[list[Record], list[RowError]]:
+        """Read each row; org type, requirement and platforms are left to the AI."""
+
         records, errors = [], []
         for i, raw in enumerate(rows, start=1):
             r = RowReader(raw, i, errors)
@@ -87,6 +110,8 @@ youtube; "IG" is instagram).
         return records, errors
 
     def apply_ai(self, rec: Record) -> None:
+        """Turn the AI's answers into enums; an empty answer becomes NA."""
+
         a = rec.ai
         rec.data["org_type"] = (
             OrgTypeChoices(a["org_type"]) if a["org_type"] else OrgTypeChoices.NA
@@ -103,6 +128,8 @@ youtube; "IG" is instagram).
     async def validate(
         self, session: AsyncSession, records: list[Record]
     ) -> list[RowError]:
+        """Repeated codes or spreadsheets, and spreadsheets owned by another pitch."""
+
         errors = duplicates(records, lambda r: r.data["pitch_code"], "pitch_code")
         errors += duplicates(
             records, lambda r: r.data["spreadsheet_id"], "spreadsheet_link"
@@ -128,6 +155,8 @@ youtube; "IG" is instagram).
     async def write(
         self, session: AsyncSession, records: list[Record], taxonomy
     ) -> tuple[dict, str]:
+        """Insert pitches with a new code, creating brands as needed; skip the rest."""
+
         codes = [r.data["pitch_code"] for r in records]
         existing = set(
             (
@@ -161,6 +190,8 @@ youtube; "IG" is instagram).
 
 
 class CampaignMaster:
+    """The campaign_master source: one row per running or finished campaign."""
+
     label = "Campaign Master"
     table = Campaign
     ai = AISpec(
@@ -177,6 +208,8 @@ class CampaignMaster:
     )
 
     def parse(self, rows: list[dict]) -> tuple[list[Record], list[RowError]]:
+        """Read each row; status and report status are left to the AI."""
+
         records, errors = [], []
         for i, raw in enumerate(rows, start=1):
             r = RowReader(raw, i, errors)
@@ -219,6 +252,11 @@ class CampaignMaster:
         return records, errors
 
     def apply_ai(self, rec: Record) -> None:
+        """Set status and report status from the AI's answers.
+
+        A blank status is wip. A blank report status is wip too, unless the campaign
+        was scrapped.
+        """
         status = CampaignStatusChoices(rec.ai["status"] or "wip")
         report = rec.ai["report_status"]
         rec.data["status"] = status
@@ -235,6 +273,8 @@ class CampaignMaster:
     async def validate(
         self, session: AsyncSession, records: list[Record]
     ) -> list[RowError]:
+        """Repeated codes or links, unknown pitch codes, links another campaign owns."""
+
         errors = duplicates(records, lambda r: r.data["campaign_code"], "campaign_code")
         errors += duplicates(
             records, lambda r: r.data["spreadsheet_id"], "spreadsheet_link"
@@ -284,6 +324,8 @@ class CampaignMaster:
     async def write(
         self, session: AsyncSession, records: list[Record], taxonomy
     ) -> tuple[dict, str]:
+        """Insert campaigns with a new code, adding brands as needed; skip the rest."""
+
         codes = [r.data["campaign_code"] for r in records]
         existing = set(
             (

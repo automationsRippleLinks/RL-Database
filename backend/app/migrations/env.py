@@ -1,3 +1,6 @@
+"""Alembic environment. Targets the SQLModel metadata from app.models and takes
++the DB URL (sync driver) from app settings instead of alembic.ini."""
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -28,6 +31,8 @@ target_metadata = SQLModel.metadata
 # ... etc.
 
 def get_url():
+    """Migration DB URL from settings; uses the sync driver, as Alembic runs sync."""
+
     return str(settings.DB_URL_MIGRATION)
 
 

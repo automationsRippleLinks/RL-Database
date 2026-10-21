@@ -1,3 +1,16 @@
+"""Alert rules and the email contact point, written to Grafana through its API.
+
+    python -m app.observability.alerts        # apply ALERT_EMAILS + the rules
+
+Safe to run any number of times: it creates or replaces the same folder,
+contact point and rule group. The admin routes call the same apply(), so the
+recipients can also be changed without a deploy. Grafana stores them -- there
+is no table for this in our database.
+
+Works against local otel-lgtm (admin/admin) and Grafana Cloud (service
+account token with the "Alerting: Editor" role, or Admin).
+"""
+
 from dataclasses import dataclass
 import httpx
 import asyncio
@@ -12,6 +25,12 @@ CONTACT_NAME = "Ripple Pulse email"
 
 @dataclass(frozen=True)
 class Rule:
+    """One alert: fires when the PromQL `expr` is `op` ("gt"/"lt") `threshold`.
+    
+        `window_seconds` is how far back the query looks; `no_data` is Grafana's
+        state when the query returns nothing.
+    """
+
     uid: str
     title: str
     expr: str
@@ -23,12 +42,15 @@ class Rule:
 
 
 def rules() -> list[Rule]:
+    """The rule set, scoped to this ENVIRONMENT's series."""
+
     env = f'deployment_environment_name="{settings.ENVIRONMENT.lower()}"'
     silent = settings.ALERT_WORKER_SILENT_MINUTES
     return [
         Rule(
             uid="pulse-ingest-failed",
             title="Ingest job failed",
+            # a dry run failing on bad sheet data is expected; only our failures alert
             expr=f'sum(increase(pulse_ingest_jobs_total{{{env},status="failed",dry_run="false"}}[10m]))'
             f' + sum(increase(pulse_ingest_jobs_total{{{env},status="failed",dry_run="true",reason="system"}}[10m]))',
             op="gt",
@@ -61,6 +83,7 @@ def rules() -> list[Rule]:
             1,
             f"No background worker has reported for {silent} minutes. Uploads and Apify results are not being processed.",
             window_seconds=silent * 60,
+            # a dead worker sends nothing at all, so missing data is the alert
             no_data="Alerting",
         ),
         Rule(
@@ -76,6 +99,8 @@ def rules() -> list[Rule]:
 
 
 def _client() -> httpx.AsyncClient:
+    """Grafana API client: GRAFANA_TOKEN if set, else local admin/admin."""
+
     if settings.GRAFANA_TOKEN:
         auth = {"headers": {"Authorization": f"Bearer {settings.GRAFANA_TOKEN}"}}
     else:
@@ -86,6 +111,12 @@ def _client() -> httpx.AsyncClient:
 
 
 async def _prometheus_uid(c: httpx.AsyncClient) -> str:
+    """UID of the Prometheus data source the rules query.
+    
+        GRAFANA_PROMETHEUS_UID if set; otherwise the default Prometheus source, then
+        one named "*-prom" (Grafana Cloud's naming). Raises if there is none.
+    """
+
     if settings.GRAFANA_PROMETHEUS_UID:
         return settings.GRAFANA_PROMETHEUS_UID
     r = await c.get("/api/datasources")
@@ -105,6 +136,7 @@ async def _prometheus_uid(c: httpx.AsyncClient) -> str:
 
 
 def _rule_json(rule: Rule, ds_uid: str) -> dict:
+    """Grafana provisioning JSON: query A, threshold B on it, mail our contact point."""
     return {
         "uid": rule.uid,
         "title": rule.title,
@@ -146,6 +178,8 @@ def _rule_json(rule: Rule, ds_uid: str) -> dict:
 
 
 async def _ensure_folder(c: httpx.AsyncClient) -> None:
+    """Create the "Ripple Pulse" alert folder if it isn't there yet."""
+
     if (await c.get(f"/api/folders/{FOLDER_UID}")).status_code == 404:
         (
             await c.post(
@@ -161,6 +195,7 @@ async def _put_contact_point(c: httpx.AsyncClient, emails: list[str]) -> None:
         "type": "email",
         "settings": {"addresses": ";".join(emails), "singleEmail": False},
     }
+    # without this Grafana marks the item provisioned and locks it in its UI
     headers = {"X-Disable-Provenance": "true"}
     existing = await c.get(
         "/api/v1/provisioning/contact-points", params={"name": CONTACT_NAME}
@@ -180,6 +215,8 @@ async def _put_contact_point(c: httpx.AsyncClient, emails: list[str]) -> None:
 
 
 async def apply(emails: list[str]) -> list[str]:
+    """Point every rule at these addresses. Returns the rule titles applied."""
+
     emails = [e.strip() for e in emails if e.strip()]
     if not emails:
         raise ValueError("At least one alert email is needed")
@@ -202,6 +239,8 @@ async def apply(emails: list[str]) -> list[str]:
     return [r.title for r in rules()]
 
 async def current_emails() -> list[str]:
+    """Addresses on the contact point now, or [] if apply() has never run."""
+
     async with _client() as c:
         r = await c.get("/api/v1/provisioning/contact-points", params={"name": CONTACT_NAME})
         r.raise_for_status()

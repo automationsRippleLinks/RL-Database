@@ -9,7 +9,23 @@ from collections import defaultdict
 import asyncio
 
 from sqlalchemy import ColumnElement
-from sqlmodel import and_, or_, select, func, col, exists, union
+from sqlmodel import (
+    and_,
+    or_,
+    select,
+    func,
+    col,
+    exists,
+    union,
+    case,
+    cast,
+    Integer,
+    String,
+    literal,
+    literal_column,
+    union_all,
+    Numeric,
+)
 from sqlmodel.sql.expression import Select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -43,9 +59,7 @@ from app.models import (
     Pitch,
     PitchCreatorLink,
     Company,
-    CommercialPackage,
 )
-from app.services.ingest.direct import PACKAGE_NAME
 from app.services import creator_gaps
 from app.models.enums import PlatformChoices
 from app.services.profile_link import parse_profile_link, looks_like_link
@@ -54,6 +68,7 @@ from app.services.profile_link import parse_profile_link, looks_like_link
 
 
 def tokens(text: Optional[str]) -> list[str]:
+    """The search text split on whitespace; [] for None or blank."""
     return [t for t in (text or "").split() if t]
 
 
@@ -78,6 +93,7 @@ def text_clause(
 
 
 def _starts_with(column, text: Optional[str]):
+    """ORDER BY term for "relevance": rows whose column starts with the text first."""
     return col(column).ilike(f"{' '.join(tokens(text))}%").desc()
 
 
@@ -98,6 +114,7 @@ async def _page(
 def _response(
     t0: float, total: int, page: int, pages: int, req: Paging, rows: list
 ) -> SearchResponse:
+    """Wrap a page of rows, with the time since `t0` as `took_ms`."""
     return SearchResponse(
         total=total,
         pages=pages,
@@ -117,6 +134,7 @@ _TERMS = {
 
 
 def _has_term(kind: str, predicate) -> ColumnElement:
+    """Creator is linked to at least one term of this kind matching `predicate`."""
     link, term, fk = _TERMS[kind]
     return exists(
         select(link.creator_id)
@@ -127,7 +145,7 @@ def _has_term(kind: str, predicate) -> ColumnElement:
 
 
 def _has_any(kind: str, names: Sequence[str]) -> Optional[ColumnElement]:
-    """Linked to at least one these names (case-sensitive)."""
+    """Linked to at least one of these names (case-insensitive)."""
     wanted = [n.strip().lower() for n in names if n and n.strip()]
     if not wanted:
         return None
@@ -135,30 +153,15 @@ def _has_any(kind: str, names: Sequence[str]) -> Optional[ColumnElement]:
 
 
 def _term_like(kind: str) -> Callable[[str], ColumnElement]:
+    """For text_clause's `extra`: a word also matches if a linked term contains it."""
     return lambda word: _has_term(kind, col(_TERMS[kind][1].name).ilike(f"%{word}%"))
 
 
 def _not_empty(array_column) -> ColumnElement:
+    """The array column has at least one item."""
     # cardinality, not IS NOT NULL: since arrays default to {} rather than NULL,
     # so basically check its length
     return func.cardinality(col(array_column)) > 0
-
-
-def _package_cost():
-    """The creator's current standard package cost; NULL when they have non.
-
-    At most one row can match: a unique index allows one open package per creator and name
-    """
-    return (
-        select(CommercialPackage.cost)
-        .where(
-            col(CommercialPackage.creator_id) == Creator.id,
-            col(CommercialPackage.name) == PACKAGE_NAME,
-            col(CommercialPackage.valid_to).is_(None),
-        )
-        .correlate(Creator)
-        .scalar_subquery()
-    )
 
 
 def _on_campaign(live_only: bool):
@@ -191,12 +194,189 @@ async def terms_for(
     return out
 
 
+# --- latest cost ------------------------------------------------------------
+# Latest = latest year, then latest month, then highest number (the number resets
+# every month), read from the pitch / campaign code. Pitches and campaigns rank
+# together; on an exact tie the campaign wins.
+# Pitch cost: final, else package. Campaign cost: final, else initial.
+# Dropped campaign links are skipped; 0 means 'not filled in'.
+# Written in SQL so the same rule filters (has_commercial, cpv) and fills the rows.
+
+_MONTHS = [
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC",
+]
+_MONTH_NO = {m: i for i, m in enumerate(_MONTHS, start=1)}
+
+# One pattern per part, each capturing only that part; codes are trimmed and
+# upper-cased first. Postgres substring(text, pattern) returns the captured group.
+_CODE_PARTS = {
+    "Pitch": {
+        "month": r"^PITCH-([A-Z]{3})-\d+-\d{4}$",
+        "number": r"^PITCH-[A-Z]{3}-(\d+)-\d{4}$",
+        "year": r"^PITCH-[A-Z]{3}-\d+-(\d{4})$",
+    },
+    "Campaign": {
+        "month": r"^CN\s*:\s*\d+\s+([A-Z]+)\s+\d{4}$",
+        "number": r"^CN\s*:\s*(\d+)\s+[A-Z]+\s+\d{4}$",
+        "year": r"^CN\s*:\s*\d+\s+[A-Z]+\s+(\d{4})$",
+    },
+}
+
+
+def _code_rank(kind: str, code) -> tuple[ColumnElement, ColumnElement, ColumnElement]:
+    """(year, month, number) read from a pitch or campaign code, in SQL; 0 where unreadable.
+
+    PITCH-MAR-12-2026 and CN : 12 March 2026 both give (2026, 3, 12).
+    """
+    code = func.upper(func.btrim(code))
+    part = {k: func.substring(code, p) for k, p in _CODE_PARTS[kind].items()}
+
+    def as_int(text):
+        return func.coalesce(cast(text, Integer), 0)
+
+    month = case(_MONTH_NO, value=func.left(part["month"], 3), else_=0)
+    return as_int(part["year"]), month, as_int(part["number"])
+
+
+def _cost_candidates(ids: Optional[list[UUID]] = None):
+    """Every cost a creator could show as latest, one row per link.
+
+    Columns: creator_id, cost, source, and the rank (year, month, number, tie).
+    With `ids` it covers those creators; without, it correlates to the outer Creator.
+    """
+
+    def branch(kind, tie, link, fallback_cost, fallback, code):
+        final = col(link.final_cost)
+        cost = func.coalesce(func.nullif(final, 0), func.nullif(col(fallback_cost), 0))
+        label = case((func.coalesce(final, 0) != 0, "final"), else_=fallback)
+        year, month, number = _code_rank(kind, code)
+        who = (
+            col(link.creator_id) == Creator.id
+            if ids is None
+            else col(link.creator_id).in_(ids)
+        )
+        return select(
+            col(link.creator_id).label("creator_id"),
+            cost.label("cost"),
+            (literal(f"{kind} ", String) + code + " · " + label + " cost").label(
+                "source"
+            ),
+            year.label("year"),
+            month.label("month"),
+            number.label("number"),
+            literal_column(str(tie), Integer).label(
+                "tie"
+            ),  # campaign (1) beats pitch (0)
+        ).where(who, cost.is_not(None))
+
+    from_pitches = branch(
+        "Pitch",
+        0,
+        PitchCreatorLink,
+        PitchCreatorLink.package_cost,
+        "package",
+        col(Pitch.pitch_code),
+    ).join(Pitch, col(Pitch.id) == col(PitchCreatorLink.pitch_id))
+    from_campaigns = (
+        branch(
+            "Campaign",
+            1,
+            CampaignCreatorLink,
+            CampaignCreatorLink.initial_cost,
+            "initial",
+            col(Campaign.campaign_code),
+        )
+        .join(Campaign, col(Campaign.id) == col(CampaignCreatorLink.campaign_id))
+        .where(col(CampaignCreatorLink.is_dropped).is_(False))
+    )
+    if ids is None:
+        from_pitches = from_pitches.correlate(Creator)
+        from_campaigns = from_campaigns.correlate(Creator)
+    return union_all(from_pitches, from_campaigns).subquery()
+
+
+def _newest_first(c) -> list:
+    # cost last only so a full tie is deterministic
+    return [
+        c.c.year.desc(),
+        c.c.month.desc(),
+        c.c.number.desc(),
+        c.c.tie.desc(),
+        c.c.cost.desc(),
+    ]
+
+
+def _latest_cost():
+    """The creator's latest cost as a correlated scalar; NULL when they have none."""
+    c = _cost_candidates()
+    return (
+        select(c.c.cost)
+        .order_by(*_newest_first(c))
+        .limit(1)
+        .correlate(Creator)
+        .scalar_subquery()
+    )
+
+
+def _cpv():
+    """Latest cost / avg views to 2 places, matching CreatorRow.cpv; NULL without both."""
+    return func.round(
+        cast(_latest_cost(), Numeric) / func.nullif(col(Creator.avg_views), 0), 2
+    )
+
+
+async def latest_costs(
+    session: AsyncSession, creator_ids: Iterable[UUID]
+) -> dict[UUID, dict[str, Any]]:
+    """Creator id -> its latest_st* fields, one query for the whole page.
+    Month and year come from the pitch / campaign code; None when it can't be read.
+    """
+    ids = list(creator_ids)
+    if not ids:
+        return {}
+    c = _cost_candidates(ids)
+    stmnt = (
+        select(c.c.creator_id, c.c.cost, c.c.source, c.c.month, c.c.year)
+        .distinct(c.c.creator_id)  # Postgres DISTINCT ON: first row per creator
+        .order_by(c.c.creator_id, *_newest_first(c))
+    )
+    return {
+        cid: {
+            "latest_cost": cost,
+            "latest_cost_source": src,
+            "latest_cost_month": month or None,
+            "latest_cost_year": year or None,
+        }
+        for cid, cost, src, month, year in (await session.exec(stmnt)).all()
+    }
+
+
 async def creator_rows(
     session: AsyncSession, creators: Sequence[Creator]
 ) -> list[CreatorRow]:
+    """Creators as table rows, with categories, languages and latest costs."""
     cats = await terms_for(session, (c.id for c in creators), "category")
     langs = await terms_for(session, (c.id for c in creators), "language")
-    return [CreatorRow.of(c, cats.get(c.id, []), langs.get(c.id, [])) for c in creators]
+    costs = await latest_costs(session, (c.id for c in creators))
+
+    return [
+        CreatorRow.of(
+            c,
+            cats.get(c.id, []), langs.get(c.id, []),
+        ).model_copy(update=costs.get(c.id, {}))
+        for c in creators
+    ]
 
 
 # === Four search endpoints logic =============================================================================
@@ -205,6 +385,11 @@ async def creator_rows(
 async def creators(
     session: AsyncSession, req: CreatorSearchRequest
 ) -> SearchResponse[CreatorRow]:
+    """The Creators table: text search plus filters, sorted and paged.
+
+    A pasted profile link with a readable handle becomes an exact username
+    (and platform) match instead of a text search.
+    """
     t0 = time.perf_counter()
     stmnt = select(Creator)
 
@@ -282,21 +467,24 @@ async def creators(
             if req.max_avg_views is not None
             else None
         ),
-        _package_cost().is_not(None) if req.has_package else None,
+        (_latest_cost().is_not(None) if req.has_commercial else None),
         (
-            _package_cost() >= req.min_package_cost
-            if req.min_package_cost is not None
+            _latest_cost() >= req.min_commercial_cost
+            if req.min_commercial_cost is not None
             else None
         ),
         (
-            _package_cost() <= req.max_package_cost
-            if req.max_package_cost is not None
+            _latest_cost() <= req.max_commercial_cost
+            if req.max_commercial_cost is not None
             else None
         ),
+        _cpv() >= req.min_cpv if req.min_cpv is not None else None,
+        _cpv() <= req.max_cpv if req.max_cpv is not None else None,
     ]
     stmnt = stmnt.where(*[f for f in filters if f is not None])
 
     sort = req.sort
+    # relevance ranks by the typed words; a link or empty text has none to rank by
     if sort == "relevance" and (link is not None or not tokens(req.text)):
         sort = "followers_desc"
     if sort == "relevance":
@@ -316,13 +504,14 @@ async def creators(
                 "avg_views_asc": col(Creator.avg_views).asc().nullsfirst(),
                 "name_desc": col(Creator.name).desc(),
                 "name_asc": col(Creator.name).asc(),
-                "package_cost_desc": _package_cost().desc().nullslast(),
-                "package_cost_asc": _package_cost().asc().nullslast(),
+                "package_cost_desc": _latest_cost().desc().nullslast(),
+                "package_cost_asc": _latest_cost().asc().nullslast(),
                 "gaps_desc": creator_gaps.gap_count().desc(),
-                "gaps_desc": creator_gaps.gap_count().asc(),
+                "gaps_asc": creator_gaps.gap_count().asc(),
             }.get(sort, col(Creator.followers).desc().nullslast())
         ]
 
+    # id breaks ties so rows with equal sort keys don't hop between pages
     total, page, pages, rows = await _page(session, stmnt, req, *order, col(Creator.id))
     return _response(t0, total, page, pages, req, await creator_rows(session, rows))
 
@@ -390,6 +579,7 @@ async def _brand_pitch_facts(
 async def brands(
     session: AsyncSession, req: BrandSearchRequest
 ) -> SearchResponse[BrandRow]:
+    """The Brands table, with pitch / campaign / creator counts and latest activity."""
     t0 = time.perf_counter()
     pitch_count, campaign_count, creator_count, latest = _brand_counts()
     stmnt = select(
@@ -402,6 +592,7 @@ async def brands(
     ).join(Company, col(Company.id) == col(Brand.company_id), isouter=True)
 
     def pitch_exists(clause):
+        """The brand has at least one pitch matching `clause`."""
         return exists(select(Pitch.id).where(col(Pitch.brand_id) == Brand.id, clause))
 
     filters = [
@@ -459,6 +650,7 @@ async def brands(
 async def campaigns(
     session: AsyncSession, req: CampaignSearchRequest
 ) -> SearchResponse[CampaignRow]:
+    """The Campaigns table, with each campaign's brand and creator-row count."""
     t0 = time.perf_counter()
     creator_count = (
         select(func.count())
@@ -521,6 +713,7 @@ async def campaigns(
 async def pitches(
     session: AsyncSession, req: PitchSearchRequest
 ) -> SearchResponse[PitchRow]:
+    """The Pitches table; `converted` means some campaign was made from the pitch."""
     t0 = time.perf_counter()
     creator_count = (
         select(func.count())
@@ -592,6 +785,7 @@ async def pitches(
 
 
 async def _distinct(session: AsyncSession, column, where=None) -> list:
+    """Sorted distinct non-NULL values of a column, for a filter dropdown."""
     stmnt = select(column).distinct().where(col(column).is_not(None)).order_by(column)
     if where is not None:
         stmnt = stmnt.where(where)
@@ -599,7 +793,7 @@ async def _distinct(session: AsyncSession, column, where=None) -> list:
 
 
 async def _terms_by_use(session: AsyncSession, kind: str) -> list[str]:
-    """Every term, most-used first (unused ones includes, at the end)"""
+    """Every term, most-used first (unused ones included, at the end)"""
     link, term, fk = _TERMS[kind]
     usage = func.count(col(link.creator_id))
     stmnt = (
@@ -612,6 +806,7 @@ async def _terms_by_use(session: AsyncSession, kind: str) -> list[str]:
 
 
 async def _brand_refs(session: AsyncSession, stmnt) -> list[dict]:
+    """Run a (brand id, display name) query and return BrandRef dicts."""
     return [
         BrandRef(id=i, name=n).model_dump()
         for i, n in (await session.exec(stmnt)).all()
@@ -619,10 +814,16 @@ async def _brand_refs(session: AsyncSession, stmnt) -> list[dict]:
 
 
 async def _count(session: AsyncSession, model) -> int:
+    """Rows in the table, unfiltered."""
     return (await session.exec(select(func.count()).select_from(model))).one()
 
 
 async def facets_creators(session: AsyncSession) -> dict:
+    """Options for the Creators table's filters.
+
+    Taxonomy and tags come most-used first; brands are only those linked to a
+    creator, most-linked first.
+    """
     usage = func.count(col(BrandCreatorLink.creator_id))
     return {
         "platforms": await _distinct(session, Creator.platform),
@@ -646,6 +847,10 @@ async def facets_creators(session: AsyncSession) -> dict:
 
 
 async def _pitch_platforms(session: AsyncSession, where=None) -> list:
+    """Every platform named in any pitch's platform array, sorted.
+
+    Collected in Python because `Pitch.platform` is an array per pitch.
+    """
     stmnt = select(Pitch.platform)
     if where is not None:
         stmnt = stmnt.where(where)
@@ -656,6 +861,7 @@ async def _pitch_platforms(session: AsyncSession, where=None) -> list:
 
 
 async def facets_campaigns(session: AsyncSession) -> dict:
+    """Options for the Campaigns table's filters; years newest first."""
     return {
         "statuses": await _distinct(session, Campaign.status),
         "report_statuses": await _distinct(session, Campaign.report_status),
@@ -674,6 +880,7 @@ async def facets_campaigns(session: AsyncSession) -> dict:
 
 
 async def facets_brands(session: AsyncSession) -> dict:
+    """Brands filter options; org types and platforms come from pitches with a brand."""
     has_brand = col(Pitch.brand_id).is_not(None)
     return {
         "org_types": await _distinct(session, Pitch.org_type, where=has_brand),
@@ -683,6 +890,7 @@ async def facets_brands(session: AsyncSession) -> dict:
 
 
 async def facets_pitches(session: AsyncSession) -> dict:
+    """Options for the Pitches table's filters."""
     return {
         "org_types": await _distinct(session, Pitch.org_type),
         "requirements": await _distinct(session, Pitch.requirement),
@@ -728,6 +936,7 @@ async def creators_by_username(
 def _envelope(
     q: str, t0: float, groups: dict[str, tuple[int, list]], profile_link=None
 ) -> dict:
+    """Global search's response shape: one {total, items} group per entity type."""
     return {
         "query": q,
         "took_ms": int((time.perf_counter() - t0) * 1000),
@@ -740,6 +949,11 @@ def _envelope(
 
 
 async def global_search(sf: SessionFactory, q: str, limit: int) -> dict:
+    """Top `limit` creators, brands, campaigns and pitches for the seach box.
+
+    Runs the four table searches concurrently, sorted by relevance. A pasted
+    profile link searches creators by handle only and fills `profile_link`.
+    """
     t0 = time.perf_counter()
     empty = {"brands": (0, []), "campaigns": (0, []), "pitches": (0, [])}
 
@@ -765,6 +979,7 @@ async def global_search(sf: SessionFactory, q: str, limit: int) -> dict:
         return _envelope(q, t0, groups, profile_link=payload)
 
     async def run(search: Callable, req: Paging) -> SearchResponse:
+        """One table search in its own session."""
         async with sf() as session:  # one session each: a shared one would serialise them
             return await search(session, req)
 
@@ -787,10 +1002,17 @@ async def global_search(sf: SessionFactory, q: str, limit: int) -> dict:
 
 
 def _suggestion(kind: str, id_: Any, label: str, sublabel: Optional[str]) -> dict:
+    """One autocomplete entry: `kind` is the plural entity name, e.g. "creators"."""
     return {"type": kind, "id": str(id_), "label": label, "sublabel": sublabel}
 
 
 async def suggest(session: AsyncSession, q: str, limit: int) -> dict:
+    """Autocomplete: prefix matches across creators, brands, campaigns, pitches.
+
+    Each type gets a quarter of `limit` (at least one), in that order, and the
+    list is cut to `limit`. Only active creators are suggested, except when the
+    query is a profile link, which returns exact handle matches instead.
+    """
     if looks_like_link(q):
         link = parse_profile_link(q)
         rows = (

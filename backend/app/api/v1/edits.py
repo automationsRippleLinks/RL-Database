@@ -9,7 +9,7 @@ For each of creators, brands, companies, pitches, campaigns:
     GET     /{things}/{id}/history      who changed what, newest first
 
 Creator rows on a pitch or campaign get the same five under
-/{pitches|campaigns}/{id}/creators/{creator_id}, plues POST /{...}/{id}/creators to add one.
+/{pitches|campaigns}/{id}/creators/{creator_id}, plus POST /{...}/{id}/creators to add one.
 
 The form renews its lock by calling POST .../lock again every minute.
 """
@@ -44,6 +44,8 @@ router = APIRouter()
 
 
 def _force_ok(user: User, force: bool) -> None:
+    """403 if a non-admin passes `force` (clearing someone else's edit lock)."""
+
     if force and not (user.is_admin or user.is_superadmin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -52,6 +54,11 @@ def _force_ok(user: User, force: bool) -> None:
 
 
 def _record_routes(kind: Kind, plural: str, key_type: type) -> None:
+    """Register the five editing routes for one record kind under /{plural}/{id}.
+    
+        `key_type` is the id's type in the URL (UUID or int), so FastAPI validates it.
+    """
+
     path = f"/{plural}/{{record_id}}"
     label = kind.label
 
@@ -64,6 +71,8 @@ def _record_routes(kind: Kind, plural: str, key_type: type) -> None:
     async def open_form(
         record_id: key_type, session: SessionDep, redis: RedisDep, user: EditUser
     ):
+        """Claim or renew the edit lock and return the record; 423 if it's taken."""
+
         return await edits.open_form(session, redis, user, kind, (record_id,))
 
     @router.delete(
@@ -75,6 +84,8 @@ def _record_routes(kind: Kind, plural: str, key_type: type) -> None:
     async def close_form(
         record_id: key_type, redis: RedisDep, user: EditUser, force: bool = False
     ):
+        """Release the edit lock. `force` (admins only) clears someone else's."""
+
         _force_ok(user, force)
         await edits.close_form(redis, user, kind, (record_id,), force)
 
@@ -91,6 +102,8 @@ def _record_routes(kind: Kind, plural: str, key_type: type) -> None:
         redis: RedisDep,
         user: EditUser,
     ):
+        """Save changed fields and return the record as saved."""
+
         return await edits.save(session, redis, user, kind, (record_id,), body)
 
     @router.delete(
@@ -102,6 +115,8 @@ def _record_routes(kind: Kind, plural: str, key_type: type) -> None:
     async def remove(
         record_id: key_type, session: SessionDep, redis: RedisDep, user: EditUser
     ):
+        """Delete the record; 409 while anything still uses it."""
+
         await edits.remove(session, redis, user, kind, (record_id,))
 
     @router.get(
@@ -116,12 +131,17 @@ def _record_routes(kind: Kind, plural: str, key_type: type) -> None:
         before: Optional[int] = None,
         limit: int = Query(50, ge=1, le=200),
     ):
+        """The record's edit history, newest first; page back with `before`."""
+
         return await edits.history(
             session, kind.name, str(record_id), before=before, limit=limit
         )
 
 
 def _link_routes(kind: Kind, parent_plural: str, parent: type, add_body: type) -> None:
+    """Register the creator-row routes of a pitch or campaign: add, plus the same five
+        as a record, under /{parent_plural}/{parent_id}/creators/{creator_id}."""
+
     base = f"/{parent_plural}/{{parent_id}}/creators"
     path = f"{base}/{{creator_id}}"
 
@@ -139,6 +159,8 @@ def _link_routes(kind: Kind, parent_plural: str, parent: type, add_body: type) -
         redis: RedisDep,
         user: EditUser,
     ):
+        """Put an existing creator on the pitch or campaign; returns the new row."""
+
         return await edits.add_link(session, redis, user, kind, parent, parent_id, body)
 
     @router.post(
@@ -154,6 +176,8 @@ def _link_routes(kind: Kind, parent_plural: str, parent: type, add_body: type) -
         redis: RedisDep,
         user: EditUser,
     ):
+        """Claim or renew the creator row's edit lock and return the row."""
+
         return await edits.open_form(
             session, redis, user, kind, (parent_id, creator_id)
         )
@@ -171,6 +195,8 @@ def _link_routes(kind: Kind, parent_plural: str, parent: type, add_body: type) -
         user: EditUser,
         force: bool = False,
     ):
+        """Release the creator row's edit lock. `force` is admins only."""
+
         _force_ok(user, force)
         await edits.close_form(redis, user, kind, (parent_id, creator_id), force)
 
@@ -188,6 +214,8 @@ def _link_routes(kind: Kind, parent_plural: str, parent: type, add_body: type) -
         redis: RedisDep,
         user: EditUser,
     ):
+        """Save changed fields of the creator row and return it as saved."""
+
         return await edits.save(session, redis, user, kind, (parent_id, creator_id), body)
 
     @router.delete(
@@ -203,6 +231,8 @@ def _link_routes(kind: Kind, parent_plural: str, parent: type, add_body: type) -
         redis: RedisDep,
         user: EditUser,
     ):
+        """Take the creator off the pitch or campaign (the creator itself stays)."""
+
         await edits.remove(session, redis, user, kind, (parent_id, creator_id))
 
     @router.get(
@@ -218,6 +248,8 @@ def _link_routes(kind: Kind, parent_plural: str, parent: type, add_body: type) -
         before: Optional[int] = None,
         limit: int = Query(50, ge=1, le=200),
     ):
+        """The creator row's edit history, newest first; page back with `before`."""
+
         return await edits.history(
             session, kind.name, f"{parent_id}/{creator_id}", before=before, limit=limit
         )
@@ -238,6 +270,8 @@ _link_routes(KINDS["campaign_creator"], "campaigns", Campaign, CampaignCreatorAd
     summary="All companies, for the brand form's picker",
 )
 async def list_companies(session: SessionDep, user: CurrentUser):
+    """Every company, A-Z, with how many brands each has (zero included)."""
+
     brands = func.count(col(Brand.id)).label("brand_count")
     rows = await session.exec(
         select(Company.id, Company.name, Company.gstin, brands)
@@ -265,6 +299,11 @@ async def recent_edits(
     before: Optional[int] = None,
     limit: int = Query(50, ge=1, le=200),
 ):
+    """Edit history across all records, newest first, optionally by kind or user.
+    
+        Admins only.
+    """
+
     return await edits.history(
         session, kind, user_id=user_id, before=before, limit=limit
     )

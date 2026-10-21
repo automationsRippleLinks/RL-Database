@@ -29,7 +29,9 @@ _HANDLE_RE = re.compile(
 )
 
 #: Enough to say "the user meant a URL, not a search term".
-_LINK_HINT_RE = re.compile(r"^(?:https?://|www\.)|\.(?:com|net|org|be|in|co)(?:/|$)", re.I)
+_LINK_HINT_RE = re.compile(
+    r"^(?:https?://|www\.)|\.(?:com|net|org|be|in|co)(?:/|$)", re.I
+)
 
 
 def strip_format_chars(text: str) -> str:
@@ -49,6 +51,11 @@ def clean(value: Any) -> str:
 
 
 def platform_of(link: Any, sheet_fallback: str = "") -> Optional[PlatformChoices]:
+    """Platform from the link's domain, else from `sheet_fallback`.
+
+    `sheet_fallback` is the name of the sheet tab the row came from; only
+    "instagram" and "youtube" are recognised there. None if neither says.
+    """
     low = clean(link).lower()
     for needle, platform in _PLATFORM_DOMAINS:
         if needle in low:
@@ -60,11 +67,18 @@ def platform_of(link: Any, sheet_fallback: str = "") -> Optional[PlatformChoices
 
 
 def handle_of(link: Any) -> Optional[str]:
+    """Lowercased fist path segment after the domain, without leading "@".
+
+    Skips one `in/`, `@`, `channel/`, `c/` or `user/` prefix. Short domains
+    (youtu.be, fb.com) are not matched, so they give None.
+    """
     m = _HANDLE_RE.search(clean(link))
     return m.group(1).lstrip("@").rstrip("\\").lower() if m else None
 
 
 class ProfileLink(NamedTuple):
+    """What a pasted link says about the creator, in 'Creator' column terms."""
+
     #: None when the domain isn't one we recognise.
     platform: Optional[PlatformChoices]
     #: None when nothing handle-shaped could be pulled out of the URL.

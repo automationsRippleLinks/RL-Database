@@ -1,3 +1,5 @@
+"""Free-form tags on creators."""
+
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 
@@ -8,6 +10,8 @@ if TYPE_CHECKING:
 
 
 class Tag(SQLModel, table=True):
+    """A label on creators; the creator form creates new ones by name as needed."""
+
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(nullable=False, unique=True)
 

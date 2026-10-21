@@ -1,3 +1,9 @@
+"""Ingest routes: upload a JSON file of rows, check on its job, commit a dry run.
+
+The work itself runs in the worker (services/ingest); these routes only create jobs
+and queue them. Ingest permission needed throughout.
+"""
+
 import json
 from uuid import UUID
 
@@ -24,10 +30,13 @@ from app.schemas.ingest import (
 
 router = APIRouter()
 
+# skip the big JSON columns; the job responses don't include them
 _LIGHT = (defer(IngestJob.rows), defer(IngestJob.ai_output))
 
 
 async def _job_or_404(session: AsyncSession, job_id: UUID) -> IngestJob:
+    """The ingest job without its rows and AI output, or 404."""
+
     job = (
         await session.exec(
             select(IngestJob).options(*_LIGHT).where(IngestJob.job_id == job_id)
@@ -42,6 +51,8 @@ async def _job_or_404(session: AsyncSession, job_id: UUID) -> IngestJob:
 
 @router.get("/sources", response_model=list[IngestSourceInfo])
 async def ingest_sources(session: SessionDep, user: IngestUser):
+    """Each ingest source with its table's row count and its latest job."""
+
     out = []
     for source, handler in SOURCES.items():
         count = (
@@ -68,6 +79,8 @@ async def ingest_sources(session: SessionDep, user: IngestUser):
 async def list_jobs(
     session: SessionDep, user: IngestUser, limit: int = Query(20, ge=1, le=100)
 ):
+    """Most recent ingest jobs of every source, newest first."""
+
     stmnt = (
         select(IngestJob)
         .options(*_LIGHT)
@@ -79,6 +92,8 @@ async def list_jobs(
 
 @router.get("/jobs/{job_id}", response_model=IngestJobOut)
 async def get_job(job_id: UUID, session: SessionDep, user: IngestUser):
+    """One ingest job: its status, counts and row errors."""
+
     return await _job_or_404(session, job_id)
 
 
@@ -94,7 +109,16 @@ async def upload(
     file: UploadFile = File(...),
     source: IngestSource = Form(...),
     dry_run: bool = Form(True),
+    use_ai: bool = Form(True),
 ):
+    """Store an uploaded JSON file as a queued ingest job and hand it to the worker.
+
+    Accepts a bare array of row objects or {"data": [...]}. A dry run by default.
+    use_ai=false skips the AI: judgement cells must already name allowed values.
+    413 over MAX_UPLOAD_BYTES; 400 if the JSON isn't a non-empty list of objects.
+    """
+
+    # read one byte past the limit: enough to tell "too big" without reading it all
     raw = await file.read(settings.MAX_UPLOAD_BYTES + 1)
     if len(raw) > settings.MAX_UPLOAD_BYTES:
         raise HTTPException(
@@ -121,6 +145,7 @@ async def upload(
         source=source,
         origin="upload",
         dry_run=dry_run,
+        use_ai=use_ai,
         file_name=file.filename,
         started_by=user.email,
         received=len(rows),
@@ -139,6 +164,13 @@ async def upload(
     dependencies=[CSRFProtected],
 )
 async def commit(job_id: UUID, session: SessionDep, user: IngestUser):
+    """Queue a real run of a successful dry run, as a child job.
+    
+        The child stores no rows of its own: the worker re-reads the dry run's rows and
+        reuses its AI answers. 409 if the job isn't a successful dry run, or if it
+        already has a commit that is queued, running or done.
+    """
+
     parent = await _job_or_404(session, job_id)
     if not parent.dry_run or parent.status != JobStatus.SUCCESS:
         raise HTTPException(
@@ -165,6 +197,7 @@ async def commit(job_id: UUID, session: SessionDep, user: IngestUser):
         source=parent.source,
         origin="commit",
         dry_run=False,
+        use_ai=parent.use_ai,
         file_name=parent.file_name,
         started_by=user.email,
         received=parent.received,

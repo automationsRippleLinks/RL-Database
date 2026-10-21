@@ -1,3 +1,10 @@
+"""Postgres engine and sessions.
+
+The API's lifespan builds one engine and session factory and keeps them on
+app.state; route dependencies read them from there. Scripts with no app use
+cli_session_factory() instead.
+"""
+
 from typing import AsyncGenerator, Optional
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncEngine
@@ -11,6 +18,7 @@ SessionFactory = async_sessionmaker[AsyncSession]
 
 
 def create_engine() -> AsyncEngine:
+    """Async engine with the pool sized and recycled per the DB_* settings."""
     return create_async_engine(
         str(settings.DB_URL),
         echo=settings.DB_ECHO,
@@ -23,10 +31,15 @@ def create_engine() -> AsyncEngine:
 
 
 def create_session_factory(engine: AsyncEngine) -> SessionFactory:
+    """Session maker; objects stay readable after commit (expire_on_commit=False)."""
     return async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def init_db(engine: AsyncEngine, reset: bool = False) -> None:
+    """Create any missing tables from the models; reset=True drops them all first.
+    
+    Bypasses Alembic and is not called a anywhere at present.
+    """
     async with engine.begin() as conn:
         if reset:
             await conn.run_sync(SQLModel.metadata.drop_all)
@@ -63,7 +76,7 @@ def cli_session_factory() -> SessionFactory:
 
 
 async def dispose_cli_engine() -> None:
-    """Close the individual session and engine made to the standalone script"""
+    """Close the engine and reset factory"""
     global _cli_engine, _cli_factory
     if _cli_engine is not None:
         await _cli_engine.dispose()

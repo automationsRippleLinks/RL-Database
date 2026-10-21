@@ -1,3 +1,8 @@
+"""Creators: one row per profile on one platform.
+
+The same person on Instagram and on YouTube is two creators.
+"""
+
 from uuid import uuid4, UUID
 from typing import Optional, TYPE_CHECKING
 
@@ -29,10 +34,14 @@ if TYPE_CHECKING:
     from .tag import Tag
     from .brand import Brand
     from .link_models import PitchCreatorLink, CampaignCreatorLink
-    from .commercial_package import CommercialPackage
 
 
 class Creator(Versioned, table=True):
+    """A creator profile, unique by (platform, username).
+    
+    `followers` / `avg_views` of 0 mean unknown, not zero (services/creator_gaps.py).
+    The trigram indexes back the substring (ILIKE) search on name, handle and place.
+    """
     model_config = ConfigDict(validate_assignment=True)
 
     id: Optional[UUID] = Field(
@@ -70,10 +79,6 @@ class Creator(Versioned, table=True):
     city: Optional[str] = Field(default=None, nullable=True)
     state: Optional[str] = Field(default=None, nullable=True)
     region: Optional[str] = Field(default=None, nullable=True)
-
-    commercial_packages: list["CommercialPackage"] = Relationship(
-        back_populates="creator"
-    )
 
     emails: list[str] = Field(
         default_factory=list,

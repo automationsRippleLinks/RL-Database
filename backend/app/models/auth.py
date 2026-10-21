@@ -1,3 +1,5 @@
+"""People who can sign in, and what each may do."""
+
 from typing import Optional
 from datetime import datetime, timezone
 
@@ -6,6 +8,13 @@ from pydantic import ConfigDict, field_validator
 
 
 class User(SQLModel, table=True):
+    """A person who signs in with a password or with Google.
+
+    A super admin passes every permission check whatever the can_* / is_admin
+    flags say. `is_currently_employed` false switches the account off.
+    `hashed_password` is None for Google accounts.
+    """
+
     model_config = ConfigDict(validate_assignment=True)
 
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -55,4 +64,5 @@ class User(SQLModel, table=True):
     @field_validator("email", mode="after")
     @classmethod
     def lowercase_email(cls, v: str) -> str:
+        """Store emails trimmed and lowercase, so lookups by email always match."""
         return v.lower().strip()

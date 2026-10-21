@@ -44,6 +44,7 @@ NONE_VALUE = "__none__"
 
 _VIEWS_PLATFORMS = (PlatformChoices.INSTAGRAM, PlatformChoices.YOUTUBE)
 
+# kind -> (link table, term table, the link's foreign key to the term)
 _TERMS = {
     "categories": (CategoryCreatorLink, Category, CategoryCreatorLink.category_id),
     "languages": (LanguageCreatorLink, Language, LanguageCreatorLink.language_id),
@@ -51,14 +52,17 @@ _TERMS = {
 
 
 def _blank(column) -> ColumnElement:
+    """NULL, empty, or only spaces."""
     return func.coalesce(func.btrim(col(column)), "") == ""
 
 
 def _no_items(array_column) -> ColumnElement:
+    """NULL or empty array (cardinality of NULL is NULL, hence the coalesce)."""
     return func.coalesce(func.cardinality(col(array_column)), 0) == 0
 
 
 def _has_none(kind: str) -> ColumnElement:
+    """Creator has no category (or language) link rows at all."""
     link = _TERMS[kind][0]
     return ~exists(
         select(link.creator_id)
@@ -92,6 +96,7 @@ def is_missing(field: str) -> ColumnElement:
 
 
 def any_missing() -> ColumnElement:
+    """True when the creator is missing at least one details in FIELDS."""
     return or_(*[is_missing(f) for f in FIELDS])
 
 

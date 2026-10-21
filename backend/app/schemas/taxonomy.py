@@ -1,7 +1,8 @@
+"""Shapes for the Taxonomy page, where categories and languages are managed."""
+
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
-
 
 #: Which table a request is about. Both are the same shape -- an id and a unique
 #: name -- so one set of handlers serves both rather than four near-identical
@@ -10,6 +11,8 @@ TaxonomyKind = Literal["categories", "languages"]
 
 
 class TaxonomyTerm(BaseModel):
+    """One category or language."""
+
     id: int
     name: str
     #: How many creators are linked. Drives the "N creators still use this"
@@ -18,11 +21,15 @@ class TaxonomyTerm(BaseModel):
 
 
 class TaxonomyList(BaseModel):
+    """Every term of one kind, most used first, then by name."""
+
     kind: TaxonomyKind
     terms: list[TaxonomyTerm]
 
 
 class TaxonomyTermWrite(BaseModel):
+    """Body for adding or renaming a term."""
+
     name: str = Field(min_length=1, max_length=100)
 
     @field_validator("name")

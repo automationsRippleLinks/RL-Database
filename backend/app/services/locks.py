@@ -5,7 +5,7 @@ renews the claim every minute while it stays open. Anyone else trying to open
 or save the record meanwhile is told who has it. A closed computer simply stops
 renewing, so a forgotten lock clears itself within two minutes.
 
-A lock lives in Redis only -- it is a courtesy between people. not data. The
+A lock lives in Redis only -- it is a courtesy between people, not data. The
 version check on save is what actually guarantees nothing is overwritten.
 """
 
@@ -19,6 +19,8 @@ from app.core.config import settings
 
 
 class LockHolder(BaseModel):
+    """Who holds an edit lock and until when; stored as JSON under the lock key."""
+
     user_id: int
     name: str
     since: datetime
@@ -26,10 +28,12 @@ class LockHolder(BaseModel):
 
 
 def _key(kind: str, record_id: str) -> str:
+    """Redis key for one record's lock, e.g. `<prefix>creator:<id>`."""
     return f"{settings.EDIT_LOCK_CACHE_PREFIX}{kind}:{record_id}"
 
 
 async def holder(redis: Redis, kind: str, record_id: str) -> Optional[LockHolder]:
+    """Whoever holds the lock right now, or None if the record is free."""
     raw = await redis.get(_key(kind, record_id))
     return LockHolder.model_validate_json(raw) if raw else None
 
@@ -54,7 +58,7 @@ async def acquire(
             continue
         if current.user_id != user_id:
             return False, current
-        mine.since = current.since  # renewing keep the original start time
+        mine.since = current.since  # renewing keeps the original start time
         if await redis.set(key, mine.model_dump_json(), xx=True, ex=ttl):
             return True, mine
     raise RuntimeError(f"could not claim {key}")  # only under a rapid claim/expire race

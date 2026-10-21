@@ -1,9 +1,16 @@
+"""Transactional email over SMTP (STARTTLS), and the bodies of the auth emails."""
+
 import aiosmtplib
+
 from email.message import EmailMessage
 from app.core.config import settings
 
 
 async def send_email(to: str, subject: str, html_body: str, text_body: str) -> None:
+    """Send one email with a plain-text part and an HTML alternative.
+    
+    Auth routes run this as a background task, so failures don't reach the caller.
+    """
     message = EmailMessage()
     message["From"] = settings.SMTP_FROM
     message["To"] = to
@@ -22,10 +29,11 @@ async def send_email(to: str, subject: str, html_body: str, text_body: str) -> N
 
 
 def verification_email_body(name: str, verify_url: str) -> tuple[str, str]:
+    """(text, html) for the verify-your-email message."""
     text = (
         f"Hi {name},\n\n"
         f"Verify your RippleLinks email for Ripple Pulse account:\n{verify_url}\n\n"
-        f"This link expires in 24 hours."
+        f"This link expires in {int(settings.EMAIL_VERIFICATION_CACHE_TTL / 3600)} hours."
     )
 
     html = f"""\
@@ -88,7 +96,7 @@ def verification_email_body(name: str, verify_url: str) -> tuple[str, str]:
                 <tr>
                     <td align="center" style="padding:20px 40px 0 40px;">
                     <p style="margin:0; font-size:13px; line-height:1.5; color:#8B98A6;">
-                        This link expires in 24 hours.
+                        This link expires in {int(settings.EMAIL_VERIFICATION_CACHE_TTL / 3600)} hours.
                     </p>
                     </td>
                 </tr>
@@ -135,10 +143,11 @@ def verification_email_body(name: str, verify_url: str) -> tuple[str, str]:
 
 
 def password_reset_email_body(name: str, reset_url: str) -> tuple[str, str]:
+    """(text, html) for the password-reset message."""
     text = (
         f"Hi {name},\n\n"
         f"Reset password of your Ripple Pulse account:\n{reset_url}\n\n"
-        f"This link expires in 10 minutes."
+        f"This link expires in {int(settings.PASSWORD_RESET_CACHE_TTL / 60)} minutes."
     )
 
     html = f"""\
@@ -201,7 +210,7 @@ def password_reset_email_body(name: str, reset_url: str) -> tuple[str, str]:
                 <tr>
                     <td align="center" style="padding:20px 40px 0 40px;">
                     <p style="margin:0; font-size:13px; line-height:1.5; color:#8B98A6;">
-                        This link expires in 10 minutes.
+                        This link expires in {int(settings.PASSWORD_RESET_CACHE_TTL / 60)} minutes.
                     </p>
                     </td>
                 </tr>

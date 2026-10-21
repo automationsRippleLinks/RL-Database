@@ -1,3 +1,5 @@
+"""Pitches: proposals made to a client, imported from the pitch master sheet."""
+
 from uuid import uuid4, UUID
 from typing import TYPE_CHECKING, Optional
 from datetime import datetime, timezone
@@ -17,6 +19,12 @@ if TYPE_CHECKING:
 
 
 class Pitch(Versioned, table=True):
+    """A pitch to a client; `campaign` is the campaign made from it, if any.
+    
+    Ingest stores `pitch_code` uppercase with a -YYYY suffix. `platform` is a list:
+    one pitch can cover several platforms.
+    """
+    
     model_config = ConfigDict(validate_assignment=True)
 
     id: UUID | None = Field(default_factory=uuid4, primary_key=True)

@@ -46,6 +46,10 @@ def _scope(
 
 
 async def _by_term(session: AsyncSession, req, kind: str) -> list[SummaryOption]:
+    """Creators per category (or language), most first, for that dropdown.
+    
+    Ends with a '__none__' option counting creators with none linked, if any.
+    """
     link, term, fk = gaps._TERMS[kind]
     conds = _scope(
         req,
@@ -82,6 +86,11 @@ async def _by_term(session: AsyncSession, req, kind: str) -> list[SummaryOption]
 async def creator_summary(
     session: AsyncSession, req: CreatorSummaryRequest
 ) -> CreatorSummary:
+    """Everything the Creators data dashboard shows, for the given filters.
+    
+    `platforms` lists every platform; `totals` and `fields` cover only the
+    platforms ticked in the filter (all of them when none are ticked).
+    """
     columns = [
         col(Creator.platform),
         func.count().label("total"),
@@ -103,6 +112,7 @@ async def creator_summary(
             total=r[1],
             with_gaps=r[2],
             cells={
+                # after platform/total/with_gaps, each field adds two columns
                 f: MissingCell(applicable=r[3 + 2 * i], missing=r[4 + 2 * i])
                 for i, f in enumerate(gaps.FIELDS)
             },

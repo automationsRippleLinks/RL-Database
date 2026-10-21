@@ -1,3 +1,14 @@
+"""pitch_creator and campaign_creator: the creators on a pitch or campaign sheet.
+
+Each row is a creator plus their creator row on a pitch / campaign that must already
+be ingested. New creators are created; existing ones only gain category and
+language links. On a re-ingest, pitch creator rows already present are skipped,
+while campaign creator rows are overwritten.
+
+Also holds creator-level pieces used elsewhere (the plain creator list, Apify runs,
+hand edits): CREATOR_AI, creator_fields, tier_for, taxonomy_list.
+"""
+
 from typing import Any, Literal, Optional
 import re
 from uuid import uuid4
@@ -31,6 +42,7 @@ from .common import (
     bulk_insert,
 )
 
+# exclusive upper bounds on followers; a million or more is MEGA
 _TIERS = (
     (20_000, TierChoices.NANO),
     (100_000, TierChoices.MICRO),
@@ -40,6 +52,8 @@ _TIERS = (
 
 
 def tier_for(followers: int, raw_tier: Any = None) -> TierChoices:
+    """Tier by follower count; "celeb" in the tier cell wins. No count gives NA."""
+
     if re.search(r"celeb", cells.text(raw_tier), re.I):
         return TierChoices.CELEB
     if not followers:
@@ -51,6 +65,10 @@ REGIONS = ("North", "South", "East", "West", "Central", "North-East")
 
 
 def taxonomy_list(names: dict[str, int]) -> Any:
+    """Answer type for an AI field listing taxonomy names: only these names allowed.
+
+    With no names it falls back to list[str]; pydantic can't build an empty Literal.
+    """
     return list[Literal[tuple(sorted(names))]] if names else list[str]
 
 
@@ -89,6 +107,12 @@ variant to an allowed name only when it means the same thing.
 
 
 def creator_fields(r: RowReader, raw: dict) -> Optional[dict]:
+    """The creator's own columns from a row; None if the profile link is unusable.
+    
+        The platform comes from the link's domain, else from the row's `sheet` cell.
+        A follower or view count of 0 is stored as unknown (None).
+    """
+
     link = raw.get("profile_link")
     platform, username = platform_of(link, cells.text(raw.get("sheet"))), handle_of(
         link
@@ -112,6 +136,12 @@ def creator_fields(r: RowReader, raw: dict) -> Optional[dict]:
 
 
 class _CreatorSource:
+    """Shared logic for creator rows; subclasses say which parent and link table.
+    
+        A subclass sets the link model, the parent's foreign key and the cell holding the
+        parent's key, and implements _parents, _orphan_message and _write_links.
+    """
+
     table: type
     link_model: type
     parent_fk: str
@@ -119,6 +149,8 @@ class _CreatorSource:
     ai = CREATOR_AI
 
     def parse(self, rows: list[dict]) -> tuple[list[Record], list[RowError]]:
+        """Read each row into the parent's key, the creator, and their creator row."""
+
         records, errors = [], []
         for i, raw in enumerate(rows, start=1):
             r = RowReader(raw, i, errors)
@@ -139,12 +171,18 @@ class _CreatorSource:
         return records, errors + self._file_checks(rows)
 
     def _normalize_key(self, key: Optional[str]) -> Optional[str]:
+        """Hook: tidy the parent key before it is matched. Unchanged by default."""
+
         return key
 
     def _file_checks(self, rows: list[dict]) -> list[RowError]:
+        """Hook: errors about the file as a whole. None by default."""
+
         return []
 
     def apply_ai(self, rec: Record) -> None:
+        """Copy the AI's gender, location, categories and languages onto the record."""
+
         c = rec.data["creator"]
         for key in ("gender", "city", "state", "region"):
             c[key] = rec.ai[key]
@@ -154,11 +192,15 @@ class _CreatorSource:
         )
 
     async def _parents(self, session: AsyncSession, keys: set[str]) -> dict[str, Any]:
+        """{key: parent id} for the keys that exist."""
+
         raise NotImplementedError
 
     async def validate(
         self, session: AsyncSession, records: list[Record]
     ) -> list[RowError]:
+        """Creators repeated within a parent, and one error per missing parent."""
+
         errors = duplicates(
             records,
             lambda r: (
@@ -185,15 +227,20 @@ class _CreatorSource:
         return errors
 
     def _orphan_message(self, key: str, n: int) -> str:
+        """Error text for `n` rows whose parent key matches nothing."""
+
         raise NotImplementedError
 
     async def write(
         self, session: AsyncSession, records: list[Record], tax: Taxonomy
     ) -> tuple[dict, str]:
+        """Get-or-create creators, add category/language links, then creator rows."""
+
         parents = await self._parents(session, {r.data["key"] for r in records})
         creators = {}
         for r in records:
             c = r.data["creator"]
+            # a creator on several pitches/campaigns: the first row's details are used
             creators.setdefault((c["platform"], c["username"]), c)
         ids, created = await creator_ids(session, creators)
 
@@ -226,6 +273,8 @@ class _CreatorSource:
 
 
 class PitchCreator(_CreatorSource):
+    """Creators on a pitch, matched to it by the file id of the pitch's spreadsheet."""
+
     label = "Pitch Creator"
     table = link_model = PitchCreatorLink
     parent_fk = "pitch_id"
@@ -238,9 +287,12 @@ class PitchCreator(_CreatorSource):
         "package_cost",
         "final_cost",
     )
+    # the v2 template only had these two combined cost columns
     _LEGACY_COSTS = ("cost_with_deliverables", "cost_with_deliverables_usage")
 
     def _file_checks(self, rows: list[dict]) -> list[RowError]:
+        """Reject the whole file if any row has costs only in the old v2 columns."""
+
         legacy = sum(
             1
             for raw in rows
@@ -257,15 +309,21 @@ class PitchCreator(_CreatorSource):
         ]
 
     async def _parents(self, session, keys):
+        """{spreadsheet id: pitch id} for the spreadsheets that belong to a pitch."""
+
         stmnt = select(Pitch.spreadsheet_id, Pitch.id).where(
             col(Pitch.spreadsheet_id).in_(keys)
         )
         return dict((await session.exec(stmnt)).all())
 
     def _orphan_message(self, key, n):
+        """Error text for rows whose spreadsheet no pitch uses."""
+
         return f"no pitch uses spreadsheet {key} ({n} rows); ingest pitch_master first"
 
     async def _write_links(self, session, links):
+        """Insert new creator rows; ones already on the pitch are left untouched."""
+
         inserted = await bulk_insert(
             session,
             PitchCreatorLink,
@@ -276,24 +334,38 @@ class PitchCreator(_CreatorSource):
 
 
 class CampaignCreator(_CreatorSource):
+    """Creators on a campaign, matched to it by campaign code."""
+
     label = "Campaign Creator"
     table = link_model = CampaignCreatorLink
     parent_fk = "campaign_id"
     key_field = "campaign_code"
 
     def _normalize_key(self, key):
+        """Campaign codes are stored upper-case (see CampaignMaster.parse)."""
+
         return key.upper() if key else key
 
     async def _parents(self, session, keys):
+        """{campaign code: campaign id} for the codes that exist."""
+
         stmnt = select(Campaign.campaign_code, Campaign.id).where(
             col(Campaign.campaign_code).in_(keys)
         )
         return dict((await session.exec(stmnt)).all())
 
     def _orphan_message(self, key, n):
+        """Error text for rows whose campaign code doesn't exist."""
+
         return f"no campaign {key!r} ({n} rows); ingest campaign_master first"
 
     async def _write_links(self, session: AsyncSession, links):
+        """Upsert creator rows: new ones are inserted, existing ones overwritten.
+        
+                Every existing row counts as updated and gets its version bumped, even when
+                nothing in it changed.
+        """
+
         pairs = {(l["creator_id"], l["campaign_id"]) for l in links}
         existing = set()
         for cid in {c for _, c in pairs}:
@@ -308,6 +380,7 @@ class CampaignCreator(_CreatorSource):
             if links
             else []
         )
+        # bind parameters per row: the mutable columns plus the two keys
         chunk = max(1, settings.PG_MAX_PARAMS // max(1, len(mutable) + 2))
         for i in range(0, len(links), chunk):
             stmnt = pg_insert(CampaignCreatorLink).values(links[i : i + chunk])

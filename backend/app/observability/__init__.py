@@ -1,3 +1,15 @@
+"""Traces, metrics and logs, sent to Grafana over OpenTelemetry (OTLP).
+
+    API / worker  --OTLP-->  local: grafana/otel-lgtm  (endpoint http://localhost:4318)
+                             prod:  Grafana Cloud      (endpoint + Authorization header)
+
+With OTEL_ENABLED=false nothing is exported, but logs still go to the console
+with the trace id column, so the code paths are the same everywhere.
+
+What never goes into telemetry: sheet cells, creator contacts, AI prompts.
+Ids, counts, sources and timings only.
+"""
+
 import logging
 import sys
 import socket
@@ -28,13 +40,21 @@ _providers: list = []
 
 
 class _TraceIds(logging.Filter):
+    """Adds the current trace id to every log line (or "-" outside a trace)."""
+
     def filter(self, record: logging.LogRecord) -> bool:
+        """Set record.trace_id; never drops the record."""
+
         ctx = trace.get_current_span().get_span_context()
         record.trace_id = format(ctx.trace_id, "032x") if ctx.is_valid else "-"
         return True
 
 
 def _headers() -> dict[str, str]:
+    """ "Authorization=Basic%20abc,X-Other=1" -> dict. Values are URL-decoded, as
+        the OTLP spec says, so Grafana Cloud's "Basic%20..." and "Basic ..." both work.
+    """
+
     pairs = [
         h.split("=", 1)
         for h in settings.OTEL_EXPORTER_OTLP_HEADERS.split(",")
@@ -44,6 +64,12 @@ def _headers() -> dict[str, str]:
 
 
 def setup(service: str) -> None:
+    """Configure logging and, if OTEL_ENABLED, OTLP export. Once per process.
+    
+        `service` becomes service.name in Grafana ("ripple-pulse-api" or
+        "ripple-pulse-worker"). Call it before anything logs; later calls do nothing.
+    """
+
     if _providers:
         return
 
@@ -59,7 +85,7 @@ def setup(service: str) -> None:
     root.handlers = [console]
 
     if not settings.OTEL_ENABLED:
-        _providers.append(None)
+        _providers.append(None)  # marks setup as done, with nothing to shut down
         return
 
     resource = Resource.create(
@@ -104,10 +130,17 @@ def setup(service: str) -> None:
 
 
 def instrument_app(app: FastAPI) -> None:
+    """Count API errors always; trace requests too when OTEL_ENABLED.
+    
+        Health checks and /home are left out of tracing.
+    """
+
     from .metrics import API_ERRORS
 
     @app.middleware("http")
     async def count_errors(request: Request, call_next):
+        """Add one to API_ERRORS for a 5xx response or an exception that escapes."""
+
         try:
             response = await call_next(request)
         except Exception:
@@ -117,6 +150,7 @@ def instrument_app(app: FastAPI) -> None:
             API_ERRORS.add(amount=1)
         return response
 
+    # export a 0 now so the alert's increase() can see the very first error
     API_ERRORS.add(amount=0)
 
     if settings.OTEL_ENABLED:
@@ -126,6 +160,8 @@ def instrument_app(app: FastAPI) -> None:
 
 
 def instrument_clients(engine: AsyncEngine, redis: Redis) -> None:
+    """Trace SQL queries and Redis commands, when OTEL_ENABLED."""
+
     if settings.OTEL_ENABLED:
         from opentelemetry.instrumentation.redis import RedisInstrumentor
         from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
@@ -135,6 +171,8 @@ def instrument_clients(engine: AsyncEngine, redis: Redis) -> None:
 
 
 def shutdown() -> None:
+    """Flush whatever is still buffered; call on process exit."""
+
     for p in _providers:
         if p is not None:
             p.shutdown()

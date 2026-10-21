@@ -2,11 +2,11 @@
 
     admins          change names, can_ingest, can_edit, and switch people on / off
     super admins    also grant or remove admin and super admin
-    nobody          changes their own admin rights or switch themselves off
+    nobody          changes their own admin rights or switches themselves off
     admins          can't touch another admin or super admin (only super admins can)
 
 Switching someone off signs them out everywhere at once; their sessions are
-deleted, no just left to expire. Every change lands in edit_log as kind "user".
+deleted, not just left to expire. Every change lands in edit_log as kind "user".
 """
 
 import logging
@@ -28,6 +28,11 @@ _NOT_ON_YOURSELF = {"is_admin", "is_superadmin", "is_currently_employed"}
 
 
 async def active_sessions(redis: Redis, user_id: int) -> int:
+    """How many of the user's sessions are still alive.
+    
+    The per-user set can hold ids of sessions that have since expired, so each one
+    is checked against its own key rather than trusting the set's size.
+    """
     sids = await redis.smembers(f"{settings.USER_SESSIONS_CACHE_PREFIX}{user_id}")
     if not sids:
         return 0
@@ -38,10 +43,12 @@ async def active_sessions(redis: Redis, user_id: int) -> int:
 
 
 async def sign_out_everywhere(redis: Redis, user_id: int) -> None:
+    """Delete every session the user has; no session id matches "", so none is kept."""
     await destroy_other_sessions(redis, user_id, keep_sid="")
 
 
 async def row(redis: Redis, user: User) -> UserAdminRow:
+    """The user as the admin page shows them, with their live session count."""
     out = UserAdminRow.model_validate(user)
     out.active_sessions = await active_sessions(redis, user.id)
     return out
@@ -50,6 +57,7 @@ async def row(redis: Redis, user: User) -> UserAdminRow:
 async def listing(
     session: AsyncSession, redis: Redis, q: str | None, employed: bool | None
 ) -> list[UserAdminRow]:
+    """Users by name; `q` matches name or email, `employed` filters on/off people."""
     stmnt = select(User).order_by(func.lower(User.name))
     if q:
         stmnt = stmnt.where(
@@ -61,6 +69,7 @@ async def listing(
 
 
 async def get(session: AsyncSession, user_id: int) -> User:
+    """The user, or 404."""
     user = await session.get(User, user_id)
     if user is None:
         raise HTTPException(
@@ -70,6 +79,7 @@ async def get(session: AsyncSession, user_id: int) -> User:
 
 
 def _refuse(message: str, code: int = status.HTTP_403_FORBIDDEN) -> HTTPException:
+    """A {"code": "forbidden", "message": ...} error for the UI; 403 by default."""
     return HTTPException(
         status_code=code, detail={"code": "forbidden", "message": message}
     )
@@ -82,6 +92,11 @@ async def update(
     user_id: int,
     body: UserAdminUpdate,
 ) -> UserAdminRow:
+    """Apply an admin's change to a user, enforcing the rules in the module docstring.
+    
+    Only fields whose value actually differs count, so re-sending a protected field
+    unchanged is not refused. Switching someone off also signs them out everywhere.
+    """
     target = await get(session, user_id)
     sent = body.model_dump(exclude_unset=True)
     changed = {f: v for f, v in sent.items() if getattr(target, f) != v}

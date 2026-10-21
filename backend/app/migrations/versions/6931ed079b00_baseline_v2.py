@@ -165,18 +165,18 @@ def upgrade():
     sa.ForeignKeyConstraint(['creator_id'], ['creator.id'], ),
     sa.PrimaryKeyConstraint('creator_id', 'category_id')
     )
-    op.create_table('commercialpackage',
-    sa.Column('id', sa.Uuid(), server_default=sa.text('uuidv4()'), nullable=False),
-    sa.Column('creator_id', sa.Uuid(), nullable=False),
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('cost', sa.Integer(), nullable=False),
-    sa.Column('valid_from', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('valid_to', sa.DateTime(timezone=True), nullable=True),
-    sa.ForeignKeyConstraint(['creator_id'], ['creator.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_commercialpackage_creator_id'), 'commercialpackage', ['creator_id'], unique=False)
-    op.create_index('uq_creator_package_current', 'commercialpackage', ['creator_id', 'name'], unique=True, postgresql_where=sa.text('valid_to IS NULL'))
+    # op.create_table('commercialpackage',
+    # sa.Column('id', sa.Uuid(), server_default=sa.text('uuidv4()'), nullable=False),
+    # sa.Column('creator_id', sa.Uuid(), nullable=False),
+    # sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    # sa.Column('cost', sa.Integer(), nullable=False),
+    # sa.Column('valid_from', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    # sa.Column('valid_to', sa.DateTime(timezone=True), nullable=True),
+    # sa.ForeignKeyConstraint(['creator_id'], ['creator.id'], ),
+    # sa.PrimaryKeyConstraint('id')
+    # )
+    # op.create_index(op.f('ix_commercialpackage_creator_id'), 'commercialpackage', ['creator_id'], unique=False)
+    # op.create_index('uq_creator_package_current', 'commercialpackage', ['creator_id', 'name'], unique=True, postgresql_where=sa.text('valid_to IS NULL'))
     op.create_table('languagecreatorlink',
     sa.Column('creator_id', sa.Uuid(), nullable=False),
     sa.Column('language_id', sa.Integer(), nullable=False),
@@ -198,17 +198,17 @@ def upgrade():
     sa.ForeignKeyConstraint(['creator_id'], ['creator.id'], ),
     sa.PrimaryKeyConstraint('creator_id', 'brand_id')
     )
-    op.create_table('packagedeliverables',
-    sa.Column('id', sa.Uuid(), server_default=sa.text('uuidv4()'), nullable=False),
-    sa.Column('package_id', sa.Uuid(), nullable=False),
-    sa.Column('deliverable_type', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('quantity', sa.Integer(), nullable=False),
-    sa.Column('price', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['package_id'], ['commercialpackage.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_packagedeliverables_deliverable_type'), 'packagedeliverables', ['deliverable_type'], unique=False)
-    op.create_index(op.f('ix_packagedeliverables_package_id'), 'packagedeliverables', ['package_id'], unique=False)
+    # op.create_table('packagedeliverables',
+    # sa.Column('id', sa.Uuid(), server_default=sa.text('uuidv4()'), nullable=False),
+    # sa.Column('package_id', sa.Uuid(), nullable=False),
+    # sa.Column('deliverable_type', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    # sa.Column('quantity', sa.Integer(), nullable=False),
+    # sa.Column('price', sa.Integer(), nullable=False),
+    # sa.ForeignKeyConstraint(['package_id'], ['commercialpackage.id'], ),
+    # sa.PrimaryKeyConstraint('id')
+    # )
+    # op.create_index(op.f('ix_packagedeliverables_deliverable_type'), 'packagedeliverables', ['deliverable_type'], unique=False)
+    # op.create_index(op.f('ix_packagedeliverables_package_id'), 'packagedeliverables', ['package_id'], unique=False)
     op.create_table('pitch',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('pitch_code', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -240,11 +240,11 @@ def upgrade():
     sa.Column('pitch_id', sa.Uuid(), nullable=True),
     sa.Column('spreadsheet_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('report_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('status', sa.Enum('COMPLETED', 'ON_HOlD', 'SCRAPPED', 'WIP', name='campaignstatuschoices'), nullable=False),
+    sa.Column('status', sa.Enum('COMPLETED', 'ON_HOLD', 'SCRAPPED', 'WIP', name='campaignstatuschoices'), nullable=False),
     sa.Column('expected_end_date', sa.Date(), nullable=False),
     sa.Column('start_date', sa.Date(), nullable=False),
     sa.Column('end_date', sa.Date(), nullable=True),
-    sa.Column('report_status', sa.Enum('COMPLETED', 'ON_HOlD', 'SCRAPPED', 'WIP', name='campaignstatuschoices'), nullable=False),
+    sa.Column('report_status', sa.Enum('COMPLETED', 'ON_HOLD', 'SCRAPPED', 'WIP', name='campaignstatuschoices'), nullable=False),
     sa.Column('report_completion_date', sa.Date(), nullable=True),
     sa.ForeignKeyConstraint(['brand_id'], ['brand.id'], ),
     sa.ForeignKeyConstraint(['pitch_id'], ['pitch.id'], ),
@@ -358,15 +358,15 @@ def downgrade():
     op.drop_table('campaign')
     op.drop_index(op.f('ix_pitch_campaign_name'), table_name='pitch')
     op.drop_table('pitch')
-    op.drop_index(op.f('ix_packagedeliverables_package_id'), table_name='packagedeliverables')
-    op.drop_index(op.f('ix_packagedeliverables_deliverable_type'), table_name='packagedeliverables')
-    op.drop_table('packagedeliverables')
+    # op.drop_index(op.f('ix_packagedeliverables_package_id'), table_name='packagedeliverables')
+    # op.drop_index(op.f('ix_packagedeliverables_deliverable_type'), table_name='packagedeliverables')
+    # op.drop_table('packagedeliverables')
     op.drop_table('brandcreatorlink')
     op.drop_table('tagcreatorlink')
     op.drop_table('languagecreatorlink')
-    op.drop_index('uq_creator_package_current', table_name='commercialpackage', postgresql_where=sa.text('valid_to IS NULL'))
-    op.drop_index(op.f('ix_commercialpackage_creator_id'), table_name='commercialpackage')
-    op.drop_table('commercialpackage')
+    # op.drop_index('uq_creator_package_current', table_name='commercialpackage', postgresql_where=sa.text('valid_to IS NULL'))
+    # op.drop_index(op.f('ix_commercialpackage_creator_id'), table_name='commercialpackage')
+    # op.drop_table('commercialpackage')
     op.drop_table('categorycreatorlink')
     op.drop_index('ix_brand_display_name_trgm', table_name='brand', postgresql_using='gin', postgresql_ops={'display_name': 'gin_trgm_ops'})
     op.drop_table('brand')

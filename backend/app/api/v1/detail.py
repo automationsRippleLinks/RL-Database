@@ -6,7 +6,6 @@ from decimal import Decimal
 
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select, col
-from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 from app.api.deps import SessionDep, CurrentUser
@@ -14,7 +13,6 @@ from app.services import search
 from app.models import *
 from app.models.enums import PlatformChoices
 from app.schemas.search import (
-    CreatorRow,
     CampaignRow,
     PitchRow,
     BrandRef,
@@ -24,8 +22,6 @@ from app.schemas.search import (
     BrandSearchRequest,
 )
 from app.schemas.detail import (
-    CreatorPackage,
-    PackageItem,
     CreatorDetail,
     CreatorPitchSummary,
     CreatorCampaignSummary,
@@ -42,10 +38,10 @@ from app.schemas.detail import (
 
 router = APIRouter()
 
-STANDARD_PACKAGE = "standard"
-
 
 def _views(platform: PlatformChoices, link: CampaignCreatorLink) -> Optional[int]:
+    """The creator row's views column for its platform; None for other platforms."""
+
     return {
         PlatformChoices.INSTAGRAM: link.ig_reel_views,
         PlatformChoices.YOUTUBE: link.yt_views,
@@ -53,6 +49,8 @@ def _views(platform: PlatformChoices, link: CampaignCreatorLink) -> Optional[int
 
 
 async def _get_or_404(session, model, id_, label: str):
+    """Row by primary key, or 404 "<label> not found"."""
+
     row = await session.get(model, id_)
     if row is None:
         raise HTTPException(
@@ -62,44 +60,20 @@ async def _get_or_404(session, model, id_, label: str):
 
 
 def _sum(values) -> Optional[int]:
+    """Sum ignoring Nones; None (not 0) when there is nothing to add up."""
+
     vals = [v for v in values if v is not None]
     return sum(vals) if vals else None
 
 
-def _package(creator: Creator) -> Optional[CreatorPackage]:
-    current = [
-        p
-        for p in creator.commercial_packages
-        if p.valid_to is None and p.name.strip().lower() == STANDARD_PACKAGE
-    ]
-    if not current:
-        return None
-    p = max(current, key=lambda p: p.valid_from)
-    return CreatorPackage(
-        id=p.id,
-        name=p.name,
-        cost=p.cost,
-        valid_from=p.valid_from,
-        items=[
-            PackageItem(
-                deliverable_type=d.deliverable_type, quantity=d.quantity, price=d.price
-            )
-            for d in sorted(p.deliverables, key=lambda d: d.deliverable_type)
-        ],
-    )
-
-
 @router.get("/creators/{creator_id}", response_model=CreatorDetail)
 async def creator_detail(creator_id: UUID, session: SessionDep, user: CurrentUser):
+    """Creator page: the search row (with its latest cost and when it's from), tags, brands and
+    every pitch and campaign they were on (newest first)."""
     creator = (
         await session.exec(
             select(Creator)
             .where(Creator.id == creator_id)
-            .options(
-                selectinload(Creator.commercial_packages).selectinload(
-                    CommercialPackage.deliverables
-                )
-            )
         )
     ).first()
 
@@ -108,10 +82,9 @@ async def creator_detail(creator_id: UUID, session: SessionDep, user: CurrentUse
             status_code=status.HTTP_404_NOT_FOUND, detail="Creator not found"
         )
 
-    terms = {
-        kind: (await search.terms_for(session, [creator_id], kind)).get(creator_id, [])
-        for kind in ("category", "language", "tag")
-    }
+    # same builder as the search table, so latest cost and cpv match it exactly
+    row = (await search.creator_rows(session, [creator]))[0]
+    tags = (await search.terms_for(session, [creator_id], "tag")).get(creator_id, [])
     brands = (
         await session.exec(
             select(Brand)
@@ -149,14 +122,11 @@ async def creator_detail(creator_id: UUID, session: SessionDep, user: CurrentUse
     ).all()
 
     return CreatorDetail(
-        **CreatorRow.of(creator, terms["category"], terms["language"]).model_dump(
-            exclude={"profile_url"}
-        ),
+        **row.model_dump(exclude={"profile_url", "cpv"}),
         bio=creator.bio,
-        tags=terms["tag"],
+        tags=tags,
         brands=[BrandRef.of(b) for b in brands],
         stats_refreshed_at=creator.stats_refreshed_at,
-        package=_package(creator),
         pitches=[
             CreatorPitchSummary(
                 pitch_id=p.id,
@@ -191,6 +161,11 @@ async def creator_detail(creator_id: UUID, session: SessionDep, user: CurrentUse
 
 @router.get("/campaigns/{campaign_id}", response_model=CampaignDetail)
 async def campaign_detail(campaign_id: UUID, session: SessionDep, user: CurrentUser):
+    """Campaign page: the campaign, its pitch, all creator rows and the totals.
+    
+        Cost, view and CPV totals leave out dropped creator rows; the counts don't.
+    """
+
     campaign: Campaign = await _get_or_404(session, Campaign, campaign_id, "Campaign")
     brand = await session.get(Brand, campaign.brand_id) if campaign.brand_id else None
 
@@ -225,6 +200,7 @@ async def campaign_detail(campaign_id: UUID, session: SessionDep, user: CurrentU
             total_final_cost=_sum(link.final_cost for link, _ in live),
             total_brand_cost=_sum(link.brand_cost for link, _ in live),
             total_views=_sum(_views(cr.platform, link) for link, cr in live),
+            # plain mean of each row's CPV, not total cost / total views
             avg_cpv=(sum(cpvs) / len(cpvs)).quantize(Decimal("0.01")) if cpvs else None,
         ),
     )
@@ -232,6 +208,9 @@ async def campaign_detail(campaign_id: UUID, session: SessionDep, user: CurrentU
 
 @router.get("/pitches/{pitch_id}", response_model=PitchDetail)
 async def pitch_detail(pitch_id: UUID, session: SessionDep, user: CurrentUser):
+    """Pitch page: the pitch, its brand's company, the campaign it became (if any),
+        its creator rows and their cost totals."""
+
     pitch: Pitch = await _get_or_404(session, Pitch, pitch_id, "Pitch")
     brand = await session.get(Brand, pitch.brand_id) if pitch.brand_id else None
     company = (
@@ -277,6 +256,11 @@ async def pitch_detail(pitch_id: UUID, session: SessionDep, user: CurrentUser):
 
 @router.get("/brands/{brand_id}", response_model=BrandDetail)
 async def brand_detail(brand_id: int, session: SessionDep, user: CurrentUser):
+    """Brand page: its list-row counts, recent campaigns and pitches, and top creators.
+    
+        Top creators are ranked by summed final cost across the brand's campaigns.
+    """
+
     await _get_or_404(session, Brand, brand_id, "Brand")
 
     limit = settings.BRAND_DETAIL_LIMIT

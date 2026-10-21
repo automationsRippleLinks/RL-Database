@@ -1,3 +1,5 @@
+"""The v1 API: mounts every route module under its URL prefix and docs tag."""
+
 from fastapi import APIRouter
 
 from .health import router as health_router
@@ -24,4 +26,4 @@ router.include_router(apify_router, prefix="/apify", tags=["Apify"])
 router.include_router(admin_router, prefix="/admin", tags=["Admin"])
 router.include_router(users_router, prefix="/admin/users", tags=["Users"])
 router.include_router(edits_router, tags=["Editing"])
-router.include_router(analytics_router, prefix="/analytics", tags=["Aanlytics"])
+router.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])

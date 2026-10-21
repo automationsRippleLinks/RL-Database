@@ -1,3 +1,9 @@
+"""Results handler for the Instagram profile scraper (APIFY_IG_PROFILE_ACTOR).
+
+Refreshes the stats of creators we already have, then asks the AI to fill a
+missing city or categories from the bio.
+"""
+
 from typing import Optional
 from datetime import datetime, UTC
 
@@ -32,6 +38,8 @@ BIO_AI = AISpec(
 
 
 def _avg_views(item: dict) -> Optional[int]:
+    """Mean views of the video posts among the profile's latest posts; None if none."""
+
     views = [
         p.get("videoPlayCount") or p.get("videoViewCount")
         for p in item.get("latestPosts") or []
@@ -44,6 +52,15 @@ def _avg_views(item: dict) -> Optional[int]:
 async def handle(
     sf: SessionFactory, redis: Redis, items: list[dict]
 ) -> tuple[int, list[RowError], str]:
+    """Apply one run's profiles to the matching Instagram creators.
+    
+        Usernames we don't have are reported, never created. Followers move the tier
+        unless the creator is celeb; scraped emails and phones are added to the
+        creator's own; a blank scraped value keeps the old one. City and categories are
+        only filled when the creator has none. Returns (creators refreshed, problems,
+        summary).
+    """
+
     errors: list[RowError] = []
     scraped: dict[str, dict] = {}
     for i, item in enumerate(items, start=1):
@@ -65,7 +82,7 @@ async def handle(
     async with sf() as session:
         creators: list[Creator] = []
         names = sorted(scraped)
-        for i in range(0, len(names), 1000):
+        for i in range(0, len(names), 1000):  # keeps each IN (...) list a sane size
             creators += (
                 await session.exec(
                     select(Creator).where(
@@ -117,6 +134,7 @@ async def handle(
         filled = 0
         if gaps:
             taxonomy = await load_taxonomy(session)
+            # judge() keys rows by number; position in `order` maps them back
             order = sorted(gaps)
             inputs = {
                 n: {"bio": gaps[u].bio, "business_category": scraped[u].get("businessCategoryName") or ""}

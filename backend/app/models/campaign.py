@@ -1,3 +1,5 @@
+"""Campaigns: work actually run for a brand, usually made from a won pitch."""
+
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID, uuid4
 from datetime import date
@@ -17,6 +19,12 @@ if TYPE_CHECKING:
 
 
 class Campaign(Versioned, table=True):
+    """A campaign, filed under a month and year.
+    
+    `spreadsheet_id` and `report_id` are Google Drive file ids, not links.
+    `status` and `report_status` move separately: a campaign can be completed
+    while its report it still WIP.
+    """
     model_config = ConfigDict(validate_assignment=True)
 
     id: Optional[UUID] = Field(

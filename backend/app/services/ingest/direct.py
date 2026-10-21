@@ -1,6 +1,11 @@
-from typing import Any, Literal, get_args
-from datetime import datetime, UTC
-from uuid import uuid4
+"""creator: a plain list of creators, with no pitch or campaign behind them.
+
+New creators are inserted whole. For creators already in the database the
+file only fills gaps: empty fields get a value, contacts / categories /
+languages / tags / brands are added, nothing is overwritten.
+"""
+
+from typing import Any
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select, col
@@ -13,40 +18,13 @@ from app.models import (
     LanguageCreatorLink,
     BrandCreatorLink,
     TagCreatorLink,
-    CommercialPackage,
-    PackageDeliverables,
 )
 from app.schemas.ingest import RowError
 from .creators import CREATOR_AI, creator_fields
 from .common import Record, RowReader, duplicates, Taxonomy, bulk_insert, link_taxonomy
 from . import cells
 
-PACKAGE_NAME = "Standard"
-
-DeliverableType = Literal[
-    "reel",
-    "reel_story",
-    "video_story",
-    "static_carousel",
-    "short_form_videos",
-    "reshare_short_form_videos",
-    "dedicated_video",
-    "integrated_video",
-    "rights",
-    "boosting",
-]
-
-#: every deliverable a package can list; the edit form offers the same set
-DELIVERABLE_TYPES: tuple[str, ...] = get_args(DeliverableType)
-
-_EXTRAS = ("rights", "boosting")
-
-_DELIVERABLES = {
-    name: (f"{name}_count", f"{name}_cost")
-    for name in DELIVERABLE_TYPES
-    if name not in _EXTRAS
-}
-
+# set on an existing creator only where the field is still empty
 _FILLABLE = (
     "name",
     "followers",
@@ -59,34 +37,16 @@ _FILLABLE = (
 )
 
 
-def _package(r: RowReader) -> tuple[int, list[tuple[str, int, int]]] | None:
-    items = []
-    for name, (count_key, cost_key) in _DELIVERABLES.items():
-        count, cost = (
-            r.get(count_key, cells.whole) or 0,
-            r.get(cost_key, cells.whole) or 0,
-        )
-        if count or cost:
-            items.append((name, count or 1, cost))
-    for name in _EXTRAS:
-        cost = r.get(f"{name}_cost", cells.whole) or 0
-        if cost:
-            items.append((name, 1, cost))
-    total = r.get("package_cost", cells.whole) or 0
-    if not items and not total:
-        return None
-    if not total:
-        r.fail("package_cost", "missing, but the row has deliverables")
-        return None
-    return total, sorted(items)
-
-
 class DirectCreator:
+    """The `creator` ingest source: a plain creator list (see the module docstring)."""
+
     label = "Creators"
     table = Creator
     ai = CREATOR_AI
 
     def parse(self, rows: list[dict]) -> tuple[list[Record], list[RowError]]:
+        """Read each row into the creator, their tags, brands."""
+
         records, errors = [], []
         for i, raw in enumerate(rows, start=1):
             r = RowReader(raw, i, errors)
@@ -102,7 +62,6 @@ class DirectCreator:
                         "brands": [
                             b.lower() for b in r.get("brands", cells.names) or []
                         ],
-                        "package": _package(r),
                     },
                     ai_input={k: cells.text(raw.get(k)) for k in self.ai.covers},
                 )
@@ -110,6 +69,8 @@ class DirectCreator:
         return records, errors
 
     def apply_ai(self, rec: Record):
+        """Copy the AI's gender, location, categories and languages onto the record."""
+
         c = rec.data["creator"]
         for key in ("gender", "city", "state", "region"):
             c[key] = rec.ai[key]
@@ -121,6 +82,8 @@ class DirectCreator:
     async def validate(
         self, session: AsyncSession, records: list[Record]
     ) -> list[RowError]:
+        """Creators listed twice, and unknown brands (this file never adds brands)."""
+
         errors = duplicates(
             records,
             lambda r: (r.data["creator"]["platform"], r.data["creator"]["username"]),
@@ -149,6 +112,8 @@ class DirectCreator:
     async def write(
         self, session: AsyncSession, records: list[Record], tax: Taxonomy
     ) -> tuple[dict, str]:
+        """Insert new creators, fill gaps in existing ones, add links."""
+
         by_key = {
             (r.data["creator"]["platform"], r.data["creator"]["username"]): r
             for r in records
@@ -218,11 +183,6 @@ class DirectCreator:
             ),
         }
 
-        packages = await self._packages(
-            session,
-            {ids[k]: r.data["package"] for k, r in by_key.items() if r.data["package"]},
-        )
-
         counts = {
             "inserted": len(new),
             "updated": updated,
@@ -231,11 +191,13 @@ class DirectCreator:
         links = ", ".join(f"{n} {kind}" for kind, n in added.items())
         return counts, (
             f"{len(new)} creators added, {updated} existing creators filled in, "
-            f"{counts['skipped']} unchanged; links added: {links}; {packages} packages set."
+            f"{counts['skipped']} unchanged; links added: {links}."
         )
 
     @staticmethod
     def _fill(c: Creator, incoming: dict[str, Any]) -> bool:
+        """Fill empty fields and add new contacts. Returns whether anything changed."""
+
         changed = False
         for field in _FILLABLE:
             if getattr(c, field) in (None, "", 0) and incoming.get(field) not in (
@@ -258,6 +220,8 @@ class DirectCreator:
 
     @staticmethod
     async def _tag_ids(session: AsyncSession, names: set[str]) -> dict[str, int]:
+        """Get-or-create tags; matched case-insensitively, first spelling wins."""
+
         if not names:
             return {}
         found = {
@@ -284,71 +248,3 @@ class DirectCreator:
                 ).all()
             }
         return found
-
-    @staticmethod
-    async def _packages(session: AsyncSession, wanted: dict) -> int:
-        if not wanted:
-            return 0
-        current = (
-            await session.exec(
-                select(CommercialPackage).where(
-                    col(CommercialPackage.creator_id).in_(wanted),
-                    col(CommercialPackage.valid_to).is_(None),
-                    CommercialPackage.name == PACKAGE_NAME,
-                )
-            )
-        ).all()
-        by_creator = {p.creator_id: p for p in current}
-        items_now: dict = {}
-        if current:
-            for pkg_id, kind, qty, price in (
-                await session.exec(
-                    select(
-                        PackageDeliverables.package_id,
-                        PackageDeliverables.deliverable_type,
-                        PackageDeliverables.quantity,
-                        PackageDeliverables.price,
-                    ).where(
-                        col(PackageDeliverables.package_id).in_([p.id for p in current])
-                    )
-                )
-            ).all():
-                items_now.setdefault(pkg_id, []).append((kind, qty, price))
-
-        now = datetime.now(UTC)
-        packages, items = [], []
-        for creator_id, (cost, deliverables) in wanted.items():
-            old = by_creator.get(creator_id)
-            if (
-                old
-                and old.cost == cost
-                and sorted(items_now.get(old.id, [])) == deliverables
-            ):
-                continue
-            if old:
-                old.valid_to = now
-                session.add(old)
-            pkg_id = uuid4()
-            packages.append(
-                {
-                    "id": pkg_id,
-                    "creator_id": creator_id,
-                    "name": PACKAGE_NAME,
-                    "cost": cost,
-                    "valid_from": now,
-                }
-            )
-            items += [
-                {
-                    "id": uuid4(),
-                    "package_id": pkg_id,
-                    "deliverable_type": k,
-                    "quantity": q,
-                    "price": p,
-                }
-                for k, q, p in deliverables
-            ]
-        await session.flush()
-        await bulk_insert(session, CommercialPackage, packages)
-        await bulk_insert(session, PackageDeliverables, items)
-        return len(packages)

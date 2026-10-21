@@ -1,3 +1,18 @@
+"""Ingest jobs: turn an uploaded sheet export into rows in the database.
+
+Every source in `SOURCES` goes through the same stages, and the first stage that
+reports errors fails the job before anything is written:
+
+    parse       cells -> typed values, row by row
+    validate    duplicates in the file, rows pointing at missing pitches/campaigns
+    ai          judgement cells (city, category, status ...) via `ai.judge`, or, when
+                the upload turned the AI off, `ai.match_exactly` (cells as typed)
+    write       one transaction; rolled back on a dry run, so its counts are real
+
+Committing a dry run starts a child job that re-reads the parent's rows and reuses
+its AI answers, so the commit writes exactly what the preview showed.
+"""
+
 from typing import Optional, Any
 from uuid import UUID
 import logging
@@ -30,6 +45,8 @@ SOURCES = {
 
 
 def _unmatched(row: int, out: dict) -> list[RowError]:
+    """One error per cell the AI reported as matching nothing allowed."""
+
     taxonomy_hint = {"category", "language"}
     return [
         RowError(
@@ -51,6 +68,12 @@ def _unmatched(row: int, out: dict) -> list[RowError]:
 async def _inputs(
     sf: SessionFactory, job: IngestJob
 ) -> tuple[list[dict], Optional[dict]]:
+    """(rows, saved AI answers) for a job.
+
+    A fresh upload has its own rows and no AI answers yet. A commit job has neither;
+    it takes both from the dry run it commits.
+    """
+
     if job.parent_job_id is None:
         return job.rows or [], None
     async with sf() as session:
@@ -63,6 +86,13 @@ async def _inputs(
 
 
 async def run_job(sf: SessionFactory, redis: Redis, job_id: UUID) -> None:
+    """Worker entry point: run one queued ingest job and record how it ended.
+
+    Does nothing if the job is no longer queued or another worker holds it. A crash
+    marks the job failed as a system error; the write stage is one transaction, so
+    nothing is left half-written.
+    """
+
     job = await jobs.claim(sf, job_id)
     if job is None:
         return
@@ -72,6 +102,7 @@ async def run_job(sf: SessionFactory, redis: Redis, job_id: UUID) -> None:
             "ingest.job_id": str(job_id),
             "ingest.source": IngestSource(job.source).value,
             "ingest.dry_run": job.dry_run,
+            "ingest.use_ai": job.use_ai
         }
     )
     try:
@@ -96,9 +127,16 @@ async def _run(
     rows: list[dict],
     saved_ai: Optional[dict],
 ) -> None:
+    """Run the stages in order, finishing the job at the first one with errors.
+
+    After a real (not dry) run the search, facet and suggestion caches are cleared.
+    A dry run stores its AI answers on the job for the commit to reuse.
+    """
     source = SOURCES[IngestSource(job.source)]
 
     async def fail(errors: list[RowError], stage: str, **extra: Any) -> None:
+        """Finish the job as failed; no stage before `write` has written anything."""
+
         await jobs.finish(
             sf,
             job.job_id,
@@ -109,6 +147,8 @@ async def _run(
         )
 
     def stage(name: str):
+        """Tracing span for one stage, named `ingest.<name>`."""
+
         return tracer.start_as_current_span(
             f"ingest.{name}",
             attributes={"ingest.source": IngestSource(job.source).value},
@@ -130,8 +170,14 @@ async def _run(
         return await fail(errors, "checking against the database")
 
     usage = None
+    ai_stage = "running the AI step" if job.use_ai else "matching cells as typed"
     with stage("ai") as span:
-        if saved_ai is None:
+        if saved_ai is None and not job.use_ai:
+            result = ai.match_exactly(
+                source.ai, {r.row: r.ai_input for r in records}, taxonomy
+            )
+            outputs, errors = result.outputs, result.errors
+        elif saved_ai is None:
             try:
                 result = await ai.judge(
                     source.ai, {r.row: r.ai_input for r in records}, taxonomy, redis
@@ -145,6 +191,7 @@ async def _run(
                 )
             outputs, errors, usage = result.outputs, result.errors, result.usage
         else:
+            # stored as JSON, so the row numbers come back as strings
             outputs, errors = {int(k): v for k, v in saved_ai.items()}, []
             span.set_attribute("ingest.ai_reused", True)
         for r in records:
@@ -153,7 +200,7 @@ async def _run(
                 errors += _unmatched(r.row, r.ai)
         span.set_attribute("ingest.errors", len(errors))
     if errors:
-        return await fail(errors, "running the AI step", ai_usage=usage)
+        return await fail(errors, ai_stage, ai_usage=usage)
     for r in records:
         source.apply_ai(r)
 
@@ -161,6 +208,7 @@ async def _run(
         async with sf() as session:
             counts, message = await source.write(session, records, taxonomy)
             if job.dry_run:
+                # the write really ran, so the counts are exact; now undo it
                 await session.rollback()
                 message = f"Dry run, nothing written. Would have: {message}"
             else:
@@ -176,6 +224,7 @@ async def _run(
                 settings.SUGGEST_CACHE_PREFIX,
             )
         except Exception:
+            # the data is already committed; stale caches expire on their own
             logger.warning("cache invalidation failed after job %s", job.job_id)
     await jobs.finish(
         sf,

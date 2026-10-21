@@ -1,3 +1,5 @@
+"""Creator categories (Beauty, Comedy, ...), one half of the taxonomy."""
+
 from typing import Optional, TYPE_CHECKING
 
 from sqlmodel import SQLModel, Relationship, Field
@@ -9,6 +11,7 @@ if TYPE_CHECKING:
 
 
 class Category(SQLModel, table=True):
+    """A category, managed on the Taxonomy page; ingest only links to existing ones."""
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(unique=True, nullable=False)
 

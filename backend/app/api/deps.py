@@ -1,3 +1,6 @@
+"""Shared route dependencies: DB session, Redis, the signed-in user, the CSRF check
+and the permission gates. Super admins pass every permission gate."""
+
 from typing import Annotated
 from datetime import datetime, timezone
 
@@ -24,6 +27,13 @@ RedisDep = Annotated[redis.Redis, Depends(get_redis)]
 async def get_current_user(
     request: Request, session: SessionDep, redis: RedisDep
 ) -> User:
+    """Signed-in user from the rl_session cookie, or 401.
+    
+        Unverified or no-longer-employed users also get 401, so clearing either flag
+        locks them out on their next request. Reading the session renews its TTL, and
+        every call stamps `last_activity_at` and commits.
+    """
+
     sid = request.cookies.get("rl_session")
     if not sid:
         raise HTTPException(
@@ -50,6 +60,11 @@ async def get_current_user(
 
 
 async def verify_csrf(request: Request) -> None:
+    """Double-submit check: the X-CSRF-Token header must match the csrf_token cookie.
+    
+        403 if either is missing or they differ. Used on routes that change data.
+    """
+
     cookie_token = request.cookies.get("csrf_token")
     header_token = request.headers.get("X-CSRF-Token")
 
@@ -67,7 +82,9 @@ CSRFProtected = Depends(verify_csrf)
 
 
 async def require_ingest(user: CurrentUser) -> User:
-    if not user.can_ingest:
+    """Current user if they may run ingest jobs and Apify runs, else 403."""
+
+    if not (user.can_ingest or user.is_superadmin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not permitted to ingest",
@@ -77,7 +94,9 @@ async def require_ingest(user: CurrentUser) -> User:
 
 
 async def require_edit(user: CurrentUser) -> User:
-    if not user.can_edit:
+    """Current user if they may edit records, else 403."""
+
+    if not (user.can_edit or user.is_superadmin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not permitted to edit",
@@ -86,6 +105,8 @@ async def require_edit(user: CurrentUser) -> User:
     return user
 
 async def require_superAdmin(user: CurrentUser) -> User:
+    """Current user if they are a super admin, else 403."""
+
     if not user.is_superadmin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -96,6 +117,8 @@ async def require_superAdmin(user: CurrentUser) -> User:
 
 
 async def require_admin(user: CurrentUser) -> User:
+    """Current user if they are an admin or super admin, else 403."""
+
     if not (user.is_admin or user.is_superadmin): # admin or higher permission
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

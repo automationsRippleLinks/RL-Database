@@ -11,6 +11,7 @@ from sqlmodel import SQLModel, Field
 
 
 class Versioned(SQLModel):
+    """Mixin for hand-editable tables: adds the `version` column."""
     version: int = Field(
         default=1, nullable=False, sa_column_kwargs={"server_default": "1"}
     )
@@ -18,6 +19,11 @@ class Versioned(SQLModel):
 
 @event.listens_for(Versioned, "before_update", propagate=True)
 def _bump_version(mapper, connection, target) -> None:
+    """Add one to `version` whenever ORM flushes and update to a versioned row.
+    
+    Bulk SQL statements don't fire this, so ingest's campaign-creator upsert bumps
+    the column in its own SQL.
+    """
     # the edit service sets the next version itself; don't add a second one
     if not inspect(target).attrs.version.history.has_changes():
         target.version = (target.version or 0) + 1

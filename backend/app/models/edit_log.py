@@ -15,6 +15,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 
 class EditLog(SQLModel, table=True):
+    """One edit history line; the API returns it as HistoryEntry."""
+
     __tablename__ = "edit_log"
 
     id: Optional[int] = Field(default=None, primary_key=True)

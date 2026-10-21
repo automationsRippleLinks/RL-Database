@@ -1,3 +1,10 @@
+"""Sign-in routes: email + password, Google sign-in, email verification and password
+reset.
+
+A session is an id in Redis, sent as the httponly rl_session cookie together with a
+readable csrf_token cookie that the frontend echoes back in X-CSRF-Token.
+"""
+
 from urllib.parse import urlencode
 import httpx
 import logging
@@ -45,11 +52,18 @@ log = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# checked when the email is unknown, so a wrong email is as slow as a wrong password
 _DUMMY_HASH = hash_password(new_csrf_token())
 IS_PROD = settings.ENVIRONMENT == "PROD"
 
 
 def _set_session_cookies(response: Response, sid: str, csrf_token: str) -> None:
+    """Set both cookies for the session's lifetime.
+    
+        The CSRF cookie is not httponly because the frontend must read it. Cookies are
+        `secure` only in PROD, so local dev over plain http still works.
+    """
+
     response.set_cookie(
         "rl_session",
         sid,
@@ -78,12 +92,17 @@ async def _start_session(response: Response, redis, user_id: int) -> str:
 
 
 def _client_ip(request: Request) -> str:
+    """Caller's IP for rate limiting. Behind a proxy this is the proxy's address
+        unless the server is set to trust forwarded headers."""
+
     return request.client.host if request.client else "unknown"
 
 
 async def _send_verification(
     background_tasks: BackgroundTasks, redis, user: User
 ) -> None:
+    """Create a verification token and email the link after the response is sent."""
+
     token = await create_email_verification_token(redis, user.id)
     text, html = verification_email_body(
         user.name, f"{settings.FRONTEND_URL}verify-email?token={token}"
@@ -112,6 +131,8 @@ def _ensure_switched_on(user: User) -> None:
 
 
 def _error_redirect(code: str) -> RedirectResponse:
+    """Send the browser back to the frontend login page with `auth_error=<code>`."""
+
     return RedirectResponse(
         f"{settings.FRONTEND_URL}login?auth_error={code}",
         status_code=status.HTTP_307_TEMPORARY_REDIRECT,
@@ -120,6 +141,8 @@ def _error_redirect(code: str) -> RedirectResponse:
 
 @router.get("/me", response_model=SessionUser)
 async def me(user: CurrentUser) -> SessionUser:
+    """The signed-in user and their permissions."""
+
     return SessionUser.from_user(user)
 
 
@@ -135,6 +158,12 @@ async def login(
     session: SessionDep,
     redis: RedisDep,
 ) -> SessionUser:
+    """Email + password sign-in; sets the session cookies.
+    
+        Rate limited per email and per IP. 401 for a wrong email or password alike;
+        403 if the account is unverified or switched off.
+    """
+
     email = body.email
 
     await check_rate_limit(redis, "login:email", email, limit=5, window=15 * 60)
@@ -174,6 +203,12 @@ async def login(
 
 @router.get("/google/login")
 async def google_login(request: Request, redis: RedisDep, next: str | None = None):
+    """Redirect to Google's sign-in page.
+    
+        Stores a one-time `state` in Redis holding where to send the user afterwards
+        (`next`, made safe first); the callback checks it.
+    """
+
     safe_next = _validate_next(next)
 
     state = new_token()
@@ -189,6 +224,7 @@ async def google_login(request: Request, redis: RedisDep, next: str | None = Non
         "response_type": "code",
         "scope": "openid email profile",
         "state": state,
+        # hint only, to filter Google's account picker; the callback does the check
         "hd": "ripplelinks.com",
         "prompt": "select_account",
     }
@@ -207,7 +243,14 @@ async def google_callback(
     state: str | None = None,
     error: str | None = None,
 ):
-    # user declined conset on Google's screen - no code, no state to check.
+    """Google redirects here after sign-in; on success, start a session.
+    
+        Creates the account (already verified) on a first Google sign-in from an allowed
+        domain. Always redirects to the frontend: to `next` on success, otherwise to the
+        login page with an error code.
+    """
+
+    # user declined consent on Google's screen - no code, no state to check.
     if error:
         return _error_redirect("google_denied")
 
@@ -301,6 +344,8 @@ async def google_callback(
     "/logout", dependencies=[CSRFProtected], status_code=status.HTTP_204_NO_CONTENT
 )
 async def logout(request: Request, response: Response, redis: RedisDep) -> None:
+    """End this browser's session and clear both cookies. Other devices stay in."""
+
     sid = request.cookies.get("rl_session")
     if sid:
         await destroy_session(redis, sid)
@@ -320,6 +365,11 @@ async def signup(
     redis: RedisDep,
     background_tasks: BackgroundTasks,
 ) -> SessionUser:
+    """Create a password account and email a verification link. No session yet.
+    
+        The email must be on an allowed domain (403), and new (409).
+    """
+
     existing_user = (
         await session.exec(select(User).where(User.email == body.email))
     ).first()
@@ -350,6 +400,11 @@ async def signup(
 async def verify_email(
     body: VerifyEmailRequest, response: Response, session: SessionDep, redis: RedisDep
 ) -> SessionUser:
+    """Use a verification link's token: mark the account verified and sign in.
+    
+        The token is single-use. Verifying also switches the account on.
+    """
+
     user_id = await read_email_verification_token(redis, body.token)
     if user_id is None:
         raise HTTPException(
@@ -385,6 +440,11 @@ async def resend_verification(
     redis: RedisDep,
     background_tasks: BackgroundTasks,
 ) -> None:
+    """Email a fresh verification link to an unverified password account.
+    
+        Always 204, whether or not the account exists. Rate limited.
+    """
+
     await check_rate_limit(
         redis, "resend_verification:email", body.email, limit=3, window=15 * 60
     )
@@ -410,6 +470,12 @@ async def forgot_password(
     redis: RedisDep,
     background_tasks: BackgroundTasks,
 ) -> None:
+    """Email a password reset link if a password account has this address.
+    
+        Always 204, so it can't be used to find out which addresses exist. Google
+        accounts get no email. Rate limited.
+    """
+
     await check_rate_limit(
         redis, "forgot_password:email", body.email, limit=3, window=15 * 60
     )
@@ -444,6 +510,11 @@ async def reset_password(
     session: SessionDep,
     redis: RedisDep,
 ) -> SessionUser:
+    """Set a new password from a reset link's single-use token, then sign in here.
+    
+        Every other session of the user is ended. Rate limited per IP.
+    """
+
     await check_rate_limit(
         redis,
         "reset_password:ip",

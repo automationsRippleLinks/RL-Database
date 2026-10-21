@@ -1,7 +1,7 @@
-"""Request and respone shapes for editing.
+"""Request and response shapes for editing.
 
-The PATCH bodies are generate from the table models, so a new column becomes
-editable without touching this file. Every fiedl may be left out (only what is
+The PATCH bodies are generated from the table models, so a new column becomes
+editable without touching this file. Every field may be left out (only what is
 sent changes); if the table doesn't allow a field to be null, it can't be sent as
 null either. Unknown fields are rejected, so a typo in the frontend shows up
 as a 422 instead of being silently ignored.
@@ -11,9 +11,14 @@ from typing import Any, Optional, Annotated, Literal
 from uuid import UUID
 from datetime import datetime
 
-from pydantic import BaseModel, create_model, ConfigDict, EmailStr, AfterValidator, Field
+from pydantic import (
+    BaseModel,
+    create_model,
+    ConfigDict,
+    EmailStr,
+    AfterValidator,
+)
 
-from app.services.ingest.direct import DeliverableType
 from app.services.ingest.creators import REGIONS
 from app.models import Creator, Brand, Company, Pitch, Campaign
 from app.models.link_models import PitchCreatorLinkBase, CampaignCreatorLinkBase
@@ -21,7 +26,10 @@ from app.services.locks import LockHolder
 
 _ALWAYS_FIXED = {"id", "version", "created_at", "updated_at"}
 
-def update_model(name: str, table: type, *, fixed: set[str] = frozenset(), **overrides) -> type[BaseModel]:
+
+def update_model(
+    name: str, table: type, *, fixed: set[str] = frozenset(), **overrides
+) -> type[BaseModel]:
     """PATCH body for `table`: its columns minus `fixed`, all optional, plus `version`."""
     fields: dict[str, Any] = {
         # the form sends back the version it loaded; leave it out to skip the check
@@ -42,22 +50,10 @@ Email = Annotated[EmailStr, AfterValidator(lambda e: e.strip().lower())]
 Phone = Annotated[str, AfterValidator(lambda p: "".join(p.split()))]
 
 
-class PackageItemWrite(BaseModel):
-    deliverable_type: DeliverableType
-    quantity: int = Field(default=1, ge=1)
-    price: int = Field(default=0, ge=0)
-
-
-class PackageWrite(BaseModel):
-    """The creator's standard package. A change starts a new version; the old one is kept."""
-
-    cost: int = Field(gt=0)
-    items: list[PackageItemWrite] = []
-
 CreatorUpdate = update_model(
     "CreatorUpdate",
     Creator,
-    fixed={"stats_refreshed_at"},   # only an Apify refresh sets this
+    fixed={"stats_refreshed_at"},  # only an Apify refresh sets this
     gender=(Optional[Literal["Female", "Male", "Couple", "Community"]], None),
     region=(Optional[Literal[REGIONS]], None),
     emails=(list[Email], None),
@@ -66,9 +62,7 @@ CreatorUpdate = update_model(
     categories=(list[int], None),
     languages=(list[int], None),
     brands=(list[int], None),
-    tags=(list[str], None), # names; new ones are created
-    # null closed the current package (the creator no longer has one)
-    package=(Optional[PackageWrite], None),
+    tags=(list[str], None),  # names; new ones are created
 )
 
 BrandUpdate = update_model("BrandUpdate", Brand)
@@ -89,6 +83,7 @@ class PitchCreatorAdd(PitchCreatorLinkBase):
     creator_id: UUID
     payment_terms: str = "Under 45 days."
 
+
 class CampaignCreatorAdd(CampaignCreatorLinkBase):
     """Add an existing creator to a campaign."""
 
@@ -97,6 +92,7 @@ class CampaignCreatorAdd(CampaignCreatorLinkBase):
 
 
 # === responses =====================================================================
+
 
 class EditRecord(BaseModel):
     """A row as the edit form needs it: raw column values (ids, not names) + version."""
@@ -113,7 +109,10 @@ class EditSession(BaseModel):
     lock: LockHolder
     record: EditRecord
 
+
 class HistoryEntry(BaseModel):
+    """One edit history line (an EditLog row) as the API returns it."""
+
     id: int
     kind: str
     record_id: str
@@ -124,7 +123,10 @@ class HistoryEntry(BaseModel):
     user_name: str
     at: datetime
 
+
 class CompanyRow(BaseModel):
+    """A company in the brand form's picker, with how many brands belong to it."""
+
     id: int
     name: str
     gstin: Optional[str] = None

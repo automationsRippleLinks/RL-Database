@@ -1,3 +1,10 @@
+"""Join tables between creators and everything else.
+
+The brand, category, language and tag links are just the two ids. A creator on a
+pitch or campaign carries the deal itself, so those links are full rows with a
+version of their own for the edit form.
+"""
+
 from typing import Optional, TYPE_CHECKING
 from uuid import UUID
 from datetime import date, timedelta
@@ -15,6 +22,8 @@ from .versioned import Versioned
 
 
 class BrandCreatorLink(SQLModel, table=True):
+    """Brands listed against a creator (the creator sheet and the creator form)."""
+
     creator_id: Optional[UUID] = Field(
         default=None, foreign_key="creator.id", primary_key=True
     )
@@ -24,6 +33,8 @@ class BrandCreatorLink(SQLModel, table=True):
 
 
 class CategoryCreatorLink(SQLModel, table=True):
+    """A creator's categories."""
+
     creator_id: Optional[UUID] = Field(
         default=None, foreign_key="creator.id", primary_key=True
     )
@@ -33,6 +44,8 @@ class CategoryCreatorLink(SQLModel, table=True):
 
 
 class LanguageCreatorLink(SQLModel, table=True):
+    """A creator's languages."""
+
     creator_id: Optional[UUID] = Field(
         default=None, foreign_key="creator.id", primary_key=True
     )
@@ -42,6 +55,8 @@ class LanguageCreatorLink(SQLModel, table=True):
 
 
 class TagCreatorLink(SQLModel, table=True):
+    """A creator's tags."""
+
     creator_id: Optional[UUID] = Field(
         default=None, foreign_key="creator.id", primary_key=True
     )
@@ -49,6 +64,12 @@ class TagCreatorLink(SQLModel, table=True):
 
 
 class PitchCreatorLinkBase(Versioned):
+    """A creator's quote on a pitch: deliverable counts and costs, rights and terms.
+
+    PitchCreatorRow, PitchCreatorAdd and the PATCH body all build on these columns,
+    so a column added here shows up in each of them.
+    """
+
     # deliverables count
 
     # IG
@@ -142,6 +163,8 @@ class PitchCreatorLinkBase(Versioned):
 
 
 class PitchCreatorLink(PitchCreatorLinkBase, table=True):
+    """A creator on a pithc, keyed by (creator, pitch)."""
+
     creator_id: Optional[UUID] = Field(
         default=None, foreign_key="creator.id", primary_key=True
     )
@@ -154,6 +177,13 @@ class PitchCreatorLink(PitchCreatorLinkBase, table=True):
 
 
 class CampaignCreatorLinkBase(Versioned):
+    """A creator on a campaign: the deal, extra costs, content progress, live stats.
+
+    CampaignCreatorRow, CampaignCreatorAdd and the PATCH body all build on these
+    columns. A dropped creator keeps the row; page totals and the "worked" search
+    filter leave dropped rows out.
+    """
+
     is_dropped: bool = Field(
         default=False, sa_column_kwargs={"server_default": "false"}
     )
@@ -318,7 +348,7 @@ class CampaignCreatorLinkBase(Versioned):
         nullable=False,
         sa_column_kwargs={"server_default": "0.00"},
     )
-    cpv: Decimal = Field(
+    cpv: Decimal = Field(  # cost per view
         default=Decimal("0.00"),
         decimal_places=2,
         nullable=False,
@@ -350,6 +380,8 @@ class CampaignCreatorLinkBase(Versioned):
 
 
 class CampaignCreatorLink(CampaignCreatorLinkBase, table=True):
+    """A creator on a campaign, keyed by (creator, campaign)."""
+
     creator_id: Optional[UUID] = Field(
         default=None, foreign_key="creator.id", primary_key=True
     )

@@ -1,3 +1,5 @@
+"""Brands: the client names pitches and campaigns are made for."""
+
 from typing import Optional, TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, Index
@@ -16,6 +18,11 @@ if TYPE_CHECKING:
 
 
 class Brand(Versioned, table=True):
+    """A brand we pitch to or run campaigns for.
+    
+    `name` is the lowercase key ingest matches brands by; `display_name` keeps the 
+    casing people typed and is what every page shows.
+    """
     model_config = ConfigDict(validate_assignment=True)
 
     __table_args__ = (
@@ -53,4 +60,5 @@ class Brand(Versioned, table=True):
     @field_validator("name", mode="after")
     @classmethod
     def lowercase_name(cls, v: str) -> str:
+        """Keep the match key lowercase and trimmed, the way ingest writes it."""
         return v.lower().strip()

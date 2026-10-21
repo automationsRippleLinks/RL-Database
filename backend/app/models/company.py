@@ -1,3 +1,5 @@
+"""Companies: the legal entity (with its GSTIN) behind one or more brands."""
+
 from typing import Optional, TYPE_CHECKING
 import re
 
@@ -13,6 +15,7 @@ if TYPE_CHECKING:
 
 
 class Company(Versioned, table=True):
+    """A company that owns brands. A GSTIN of '' or NULL means none on record."""
 
     __table_args__ = (
         CheckConstraint(
@@ -32,6 +35,11 @@ class Company(Versioned, table=True):
     @field_validator("gstin")
     @classmethod
     def validate_gstin(cls, value: Optional[str]) -> str:
+        """Uppercase and check the GSTIN's shape; '' passes as "none".
+
+        Company has no validate_assignment, so this runs only through 
+        model_validate (the edit form's save), not on construction or assignment.
+        """
         if value is None:
             return None
         upper_val = value.upper().strip()

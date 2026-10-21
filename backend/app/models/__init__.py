@@ -1,3 +1,9 @@
+"""Every table model, gathered in one package.
+
+Alembic's env imports SQLModel from here, so loading this file is what puts every
+table on the metadata it diffs against.
+"""
+
 from sqlmodel import SQLModel
 from .link_models import (
     LanguageCreatorLink,
@@ -18,7 +24,6 @@ from .brand import Brand
 from .ingest_job import IngestJob, IngestSource, JobStatus
 from .apify_run import ApifyRun, RunTrigger
 from .tag import Tag
-from .commercial_package import CommercialPackage, PackageDeliverables
 from .edit_log import EditLog
 from .versioned import Versioned
 
@@ -52,8 +57,6 @@ __all__ = [
     "JobStatus",
     "ApifyRun",
     "RunTrigger",
-    "CommercialPackage",
-    "PackageDeliverables",
     "EditLog",
     "Versioned",
 ]
