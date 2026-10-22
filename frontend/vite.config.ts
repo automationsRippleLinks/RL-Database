@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       allowedHosts: ["sneak-afternoon-palatable.ngrok-free.dev"],
-      port: 5173,
+      port: 5175,
       proxy: {
         "/api": {
           target: env.VITE_PROXY_TARGET,

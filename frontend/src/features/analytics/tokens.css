@@ -56,19 +56,25 @@
   box-sizing: border-box;
 }
 
-:where(.cc-root) button {
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  text-align: inherit;
-}
+/* In the base layer, like the app's own reset: dashboard cc- styles still win, and shared app
+   components placed inside the dashboard (tables, dropdowns, buttons) keep their own look. */
+/* In the base layer, like the app's own reset: the dashboard's cc- styles still win, and shared
+   app components used inside the dashboard (tables, dropdowns, buttons) keep their own look. */
+@layer base {
+  :where(.cc-root) button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-align: inherit;
+  }
 
-:where(.cc-root) button:disabled {
-  cursor: default;
-  opacity: 0.45;
+  :where(.cc-root) button:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
 }
 
 :where(.cc-root) :where(h1, h2, p) {
@@ -168,32 +174,6 @@
   text-align: center;
 }
 
-/* .cc-tip {
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 70;
-  pointer-events: none;
-  max-width: 280px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  background: var(--ink);
-  color: var(--page);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.22);
-  font-size: 12.5px;
-  line-height: 1.4;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(3px);
-  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0s linear 0.12s;
-} */
-
-/* .cc-tip[data-show="true"] {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-  transition-delay: 0s;
-} */
 
 .cc-tip b,
 .cc-tip span {

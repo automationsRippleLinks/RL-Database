@@ -1,49 +1,27 @@
-import type { ReactNode } from 'react';
-import type { brandMetrics, campaignMetrics, creatorMetrics, pitchMetrics } from './metrics';
+import type { creatorMetrics } from './metrics';
 import type { Part } from './charts';
-import { Donut, Legend, RankBars, SegBar } from './charts';
+import { Donut, Legend } from './charts';
 import { fmtN } from './creators/calculations/format';
+import { compact } from '@/lib/format';
+import { SECTIONS } from './sections';
 import './tokens.css';
 import './analytics.css';
-import { STATUS_COLOR, PITCH_COLOR, CREATOR_COLOR, BRAND_COLOR } from './colors';
+import { CREATOR_COLOR } from './colors';
 
 export type ViewId = 'creators' | 'brands' | 'campaigns' | 'pitches';
-type Metrics = {
-  creators: ReturnType<typeof creatorMetrics>;
-  brands: ReturnType<typeof brandMetrics>;
-  campaigns: ReturnType<typeof campaignMetrics>;
-  pitches: ReturnType<typeof pitchMetrics>;
+
+/** What each unbuilt section will show, for its "Coming soon" card. */
+const COMING: Record<Exclude<ViewId, 'creators'>, string> = {
+  brands: 'Campaigns per brand, and which brands are most active.',
+  campaigns: 'Running, completed and on-hold campaigns, and what is due soon.',
+  pitches: 'Pitches over time, and which ones became campaigns.',
 };
 
-function Card({ id, title, open, summary, children }: { id: ViewId; title: string; open: (v: ViewId) => void; summary: string; children: ReactNode }) {
-  return (
-    <button type="button" className="cc-an-card" data-testid={`card-${id}`} aria-label={`Open ${title} analytics. ${summary}`} onClick={() => open(id)}>
-      <span className="cc-an-head">
-        <span className="cc-an-title">{title.toUpperCase()}</span>
-        <span className="cc-an-go" aria-hidden="true">
-          Open
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
-        </span>
-      </span>
-      {children}
-    </button>
-  );
-}
-
-/** The landing page: exactly four clickable cards. Totals live inside the cards. */
-export function AnalyticsHome({ m, open }: { m: Metrics; open: (v: ViewId) => void }) {
-  const c = m.creators;
+/** The landing page: the live Creators card, then one "Coming soon" card per section still being built. */
+export function AnalyticsHome({ creators: c, open }: { creators: ReturnType<typeof creatorMetrics>; open: (v: ViewId) => void }) {
   const creatorParts: Part[] = [
     { key: 'missing', label: 'missing at least one field', n: c.missing, color: CREATOR_COLOR.missing },
     { key: 'complete', label: 'all fields filled', n: c.complete, color: CREATOR_COLOR.complete },
-  ];
-  const top3 = m.brands.ranked.slice(0, 3);
-  const k = m.campaigns;
-  const statusParts: Part[] = k.byStatus.map((s) => ({ key: s.status, label: s.label.toLowerCase(), n: s.n, color: STATUS_COLOR[s.status] }));
-  const p = m.pitches;
-  const pitchParts: Part[] = [
-    { key: 'linked', label: 'linked to a campaign', n: p.linked, color: PITCH_COLOR.linked },
-    { key: 'none', label: 'no campaign yet', n: p.notLinked, color: PITCH_COLOR.none },
   ];
 
   return (
@@ -54,36 +32,38 @@ export function AnalyticsHome({ m, open }: { m: Metrics; open: (v: ViewId) => vo
         </div>
       </header>
       <section className="cc-an-grid" aria-label="Analytics">
-        <Card id="creators" title="Creators" open={open} summary={`${fmtN(c.total)} creators, ${fmtN(c.missing)} missing at least one field.`}>
+        <button
+          type="button"
+          className="cc-an-card"
+          data-testid="card-creators"
+          aria-label={`Open Creators analytics. ${fmtN(c.total)} creators, ${fmtN(c.missing)} missing at least one field.`}
+          onClick={() => open('creators')}
+        >
+          <span className="cc-an-head">
+            <span className="cc-an-title">CREATORS</span>
+            <span className="cc-an-go" aria-hidden="true">
+              Open
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+            </span>
+          </span>
           <span className="cc-an-count" data-testid="count-creators">{fmtN(c.total)}</span>
           <span className="cc-an-body">
-            <Donut parts={creatorParts} size={116} centre={fmtN(c.missing)} sub="missing" label={`Creators: ${c.missing} missing at least one field, ${c.complete} complete`} />
+            <Donut parts={creatorParts} size={116} centre={compact(c.missing)} sub="missing" label={`Creators: ${c.missing} missing at least one field, ${c.complete} complete`} />
             <Legend parts={creatorParts} />
           </span>
-        </Card>
+        </button>
 
-        <Card id="brands" title="Brands" open={open} summary={`${fmtN(m.brands.total)} brands.`}>
-          <span className="cc-an-count" data-testid="count-brands">{fmtN(m.brands.total)}</span>
-          <span className="cc-an-cap">Campaign activity · top 3 by campaigns</span>
-          <RankBars rows={top3.map((b) => ({ key: String(b.id), label: b.name, parts: [{ n: b.campaigns, color: BRAND_COLOR, label: 'Campaigns' }] }))} empty="No campaigns yet." />
-        </Card>
-
-        <Card id="campaigns" title="Campaigns" open={open} summary={`${fmtN(k.running)} running of ${fmtN(k.total)} campaigns.`}>
-          <span className="cc-an-count" data-testid="count-campaigns">
-            {fmtN(k.running)}
-            <small>running</small>
-          </span>
-          <span className="cc-an-cap">of {fmtN(k.total)} campaigns</span>
-          <SegBar parts={statusParts} label={`Campaign status: ${statusParts.map((s) => `${s.n} ${s.label}`).join(', ')}`} />
-          <Legend parts={statusParts} />
-        </Card>
-
-        <Card id="pitches" title="Pitches" open={open} summary={`${fmtN(p.total)} pitches.`}>
-          <span className="cc-an-count" data-testid="count-pitches">{fmtN(p.total)}</span>
-          <span className="cc-an-cap" title="Pitches have no status in the database. This shows whether a campaign points to the pitch.">Campaign link</span>
-          <SegBar parts={pitchParts} label={`Pitches: ${p.linked} linked to a campaign, ${p.notLinked} with no campaign yet`} />
-          <Legend parts={pitchParts} />
-        </Card>
+        {SECTIONS.filter((s) => !s.ready && s.id !== 'creators').map((s) => (
+          <div key={s.id} className="cc-an-card cc-an-soon" data-testid={`card-${s.id}`}>
+            <span className="cc-an-head">
+              <span className="cc-an-title">{s.title.toUpperCase()}</span>
+              <span className="cc-an-pill">Coming soon</span>
+            </span>
+            <s.icon className="cc-an-icon" aria-hidden="true" />
+            <span className="cc-an-soon-t">We&apos;re working on this</span>
+            <span className="cc-an-cap">{COMING[s.id as keyof typeof COMING]}</span>
+          </div>
+        ))}
       </section>
     </div>
   );

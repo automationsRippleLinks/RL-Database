@@ -160,14 +160,12 @@ export const SCOPE_LABELS: Record<SearchScope, string> = {
 export const SCOPES: SearchScope[] = ['creators', 'brands', 'campaigns', 'pitches'];
 
 export const INGEST_SOURCE_LABELS: Record<IngestSource, string> = {
-  pitch_master: 'Pitch master',
-  campaign_master: 'Campaign master',
-  pitch_creator: 'Pitch — creator rows',
-  campaign_creator: 'Campaign — creator rows',
-  brands: 'Brand Data'
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
+  creator: 'Creators',
+  pitch_master: 'Pitch Master',
+  campaign_master: 'Campaign Master',
+  pitch_creator: 'Pitch Creator',
+  campaign_creator: 'Campaign Creator',
+};// ─────────────────────────────────────────────────────────────────────────────
 // Tier sentinel translation
 // ─────────────────────────────────────────────────────────────────────────────
 

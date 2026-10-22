@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { ApiError, setUnauthorizedHandler } from '@/lib/api-client';
+import { ApiError, setForbiddenHandler, setUnauthorizedHandler } from '@/lib/api-client';
 import { authApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';
 import type { SessionUser } from '@/types/api';
@@ -13,6 +13,9 @@ export interface AuthContextValue {
   status: AuthStatus;
   user: SessionUser | null;
   canIngest: boolean;
+  canEdit: boolean;
+  isSuperAdmin : boolean;
+  isAdmin: boolean;
   login: (email: string, password: string) => Promise<SessionUser>;
   logout: () => Promise<void>;
   /** Re-reads /auth/me — used after the Google redirect lands back here. */
@@ -43,6 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: ({ signal }) => authApi.me({ signal, suppressUnauthorizedRedirect: true }),
     retry: false,
     staleTime: 5 * 60_000,
+    // Permissions can change while someone is logged in: re-check when they come back to the tab.
+    refetchOnWindowFocus: 'always',
     // A 401 here is the expected "not logged in" answer, not an error to surface.
     throwOnError: false,
   });
@@ -81,6 +86,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => setUnauthorizedHandler(null);
   }, [navigate, queryClient]);
 
+
+  /** A 403 means the buttons on screen may be out of date: re-read /auth/me so they match the backend. */
+  useEffect(() => {
+    setForbiddenHandler(() => void queryClient.invalidateQueries({ queryKey: queryKeys.session }));
+    return () => setForbiddenHandler(null);
+  }, [queryClient]);
+
   const refresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.session });
   }, [queryClient]);
@@ -103,12 +115,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       status,
       user: sessionQuery.data ?? null,
       canIngest: sessionQuery.data?.permissions?.can_ingest ?? false,
+      isSuperAdmin: sessionQuery.data?.permissions?.is_superadmin?? false,
+      isAdmin: sessionQuery.data?.permissions?.is_admin ?? false,
+      canEdit: sessionQuery.data?.permissions?.can_edit?? false,
+    
       login: (email, password) => loginMutation.mutateAsync({ email, password }),
       logout: () => logoutMutation.mutateAsync(),
       refresh,
       setSession,
       loginError: loginMutation.error,
       isLoggingIn: loginMutation.isPending,
+
     }),
     [status, sessionQuery.data, loginMutation, logoutMutation, refresh, setSession],
   );

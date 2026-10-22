@@ -1,8 +1,7 @@
-import type { AuthErrorCode } from '@/types/api';
-import { logger } from './observability';
+import type { AuthErrorCode } from "@/types/api";
+import { logger } from "./observability";
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
 
 // Error information used by the application.
 export class ApiError extends Error {
@@ -30,7 +29,7 @@ export class ApiError extends Error {
     fields?: Record<string, string>;
   }) {
     super(opts.detail);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.status = opts.status;
     this.detail = opts.detail;
     this.code = opts.code ?? null;
@@ -53,10 +52,15 @@ export class ApiError extends Error {
 type UnauthorizedHandler = () => void;
 let onUnauthorized: UnauthorizedHandler | null = null;
 
-export function setUnauthorizedHandler(
-  handler: UnauthorizedHandler | null,
-) {
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
   onUnauthorized = handler;
+}
+
+// Any 403 may mean this person's permissions just changed: the auth layer re-reads /auth/me.
+let onForbidden: UnauthorizedHandler | null = null;
+
+export function setForbiddenHandler(handler: UnauthorizedHandler | null) {
+  onForbidden = handler;
 }
 
 // Read the CSRF cookie for requests that change data.
@@ -66,7 +70,7 @@ function readCsrfToken(): string | null {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
   signal?: AbortSignal;
   formData?: FormData;
@@ -77,17 +81,14 @@ interface RequestOptions {
 }
 
 // Build the request URL, including any query parameters.
-function buildUrl(
-  path: string,
-  query?: RequestOptions['query'],
-): string {
+function buildUrl(path: string, query?: RequestOptions["query"]): string {
   const url = `${API_BASE_URL}${path}`;
   if (!query) return url;
 
   const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== "") {
       params.set(key, String(value));
     }
   }
@@ -109,11 +110,11 @@ function logApiFailure(
     .split(/[?#]/)[0]
     .replace(
       /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=\/|$)/gi,
-      '/:id',
+      "/:id",
     )
-    .replace(/\/\d+(?=\/|$)/g, '/:id');
+    .replace(/\/\d+(?=\/|$)/g, "/:id");
 
-  logger.error('api_request_failed', {
+  logger.error("api_request_failed", {
     endpoint: safePath,
     method,
     // Status 0 means no HTTP response was received.
@@ -126,20 +127,20 @@ export async function apiRequest<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = 'GET', body, signal, formData, query } = options;
+  const { method = "GET", body, signal, formData, query } = options;
 
   const headers: Record<string, string> = {
-    Accept: 'application/json',
+    Accept: "application/json",
   };
 
   if (body !== undefined) {
-    headers['Content-Type'] = 'application/json';
+    headers["Content-Type"] = "application/json";
   }
 
   // Preserve the application's existing CSRF protection.
-  if (method !== 'GET') {
+  if (method !== "GET") {
     const csrf = readCsrfToken();
-    if (csrf) headers['X-CSRF-Token'] = csrf;
+    if (csrf) headers["X-CSRF-Token"] = csrf;
   }
 
   // Start a separate timer for each request.
@@ -151,15 +152,13 @@ export async function apiRequest<T>(
     response = await fetch(buildUrl(path, query), {
       method,
       headers,
-      credentials: 'include',
-      body:
-        formData ??
-        (body !== undefined ? JSON.stringify(body) : undefined),
+      credentials: "include",
+      body: formData ?? (body !== undefined ? JSON.stringify(body) : undefined),
       signal,
     });
   } catch (error) {
     // Cancelled requests are not failures.
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       throw error;
     }
 
@@ -167,7 +166,7 @@ export async function apiRequest<T>(
 
     throw new ApiError({
       status: 0,
-      detail: 'Could not reach the API. Is the backend running?',
+      detail: "Could not reach the API. Is the backend running?",
       path,
     });
   }
@@ -181,7 +180,7 @@ export async function apiRequest<T>(
 
     throw new ApiError({
       status: 401,
-      detail: 'Your session has expired.',
+      detail: "Your session has expired.",
       path,
     });
   }
@@ -189,20 +188,19 @@ export async function apiRequest<T>(
   // Log unsuccessful HTTP responses.
   if (!response.ok) {
     logApiFailure(path, method, response.status, startedAt);
+    if (response.status === 403 && !path.startsWith("/auth/")) onForbidden?.();
 
     const parsed = await extractDetail(response);
     throw new ApiError({
       status: response.status,
       detail: parsed.message,
       code:
-        response.headers.get('X-Error-Code') ??
-        (typeof parsed.info?.code === 'string' ? parsed.info.code : null),
+        response.headers.get("X-Error-Code") ??
+        (typeof parsed.info?.code === "string" ? parsed.info.code : null),
       info: parsed.info,
       fields: parsed.fields,
       path,
-      retryAfterSeconds: parseRetryAfter(
-        response.headers.get('Retry-After'),
-      ),
+      retryAfterSeconds: parseRetryAfter(response.headers.get("Retry-After")),
     });
   }
 
@@ -243,7 +241,8 @@ interface ParsedError {
 
 async function extractDetail(response: Response): Promise<ParsedError> {
   const fallback = (): ParsedError => ({
-    message: response.statusText || `Request failed with status ${response.status}`,
+    message:
+      response.statusText || `Request failed with status ${response.status}`,
     info: null,
     fields: {},
   });
@@ -251,18 +250,23 @@ async function extractDetail(response: Response): Promise<ParsedError> {
   try {
     const data: unknown = await response.json();
 
-    if (typeof data === 'string') return { message: data, info: null, fields: {} };
+    if (typeof data === "string")
+      return { message: data, info: null, fields: {} };
 
-    if (data && typeof data === 'object' && 'detail' in data) {
+    if (data && typeof data === "object" && "detail" in data) {
       const detail = (data as { detail: unknown }).detail;
 
-      if (typeof detail === 'string') return { message: detail, info: null, fields: {} };
+      if (typeof detail === "string")
+        return { message: detail, info: null, fields: {} };
 
       // The edit routes send { code, message, ...extras }.
-      if (detail && typeof detail === 'object' && !Array.isArray(detail)) {
+      if (detail && typeof detail === "object" && !Array.isArray(detail)) {
         const info = detail as Record<string, unknown>;
         return {
-          message: typeof info.message === 'string' ? info.message : fallback().message,
+          message:
+            typeof info.message === "string"
+              ? info.message
+              : fallback().message,
           info,
           fields: {},
         };
@@ -272,15 +276,20 @@ async function extractDetail(response: Response): Promise<ParsedError> {
       if (Array.isArray(detail)) {
         const fields: Record<string, string> = {};
         const messages = detail.map((item) => {
-          if (!item || typeof item !== 'object' || !('msg' in item)) return JSON.stringify(item);
+          if (!item || typeof item !== "object" || !("msg" in item))
+            return JSON.stringify(item);
           const { msg, loc } = item as { msg: unknown; loc?: unknown };
           // loc looks like ["body", "emails", 0]: the field is the second part.
-          if (Array.isArray(loc) && typeof loc[1] === 'string' && !(loc[1] in fields)) {
+          if (
+            Array.isArray(loc) &&
+            typeof loc[1] === "string" &&
+            !(loc[1] in fields)
+          ) {
             fields[loc[1]] = String(msg);
           }
           return String(msg);
         });
-        return { message: messages.join('; '), info: null, fields };
+        return { message: messages.join("; "), info: null, fields };
       }
     }
 
@@ -292,33 +301,31 @@ async function extractDetail(response: Response): Promise<ParsedError> {
 
 // Keep these exports because other application files use them.
 export const api = {
-  get: <T>(
-    path: string,
-    opts?: Omit<RequestOptions, 'method' | 'body'>,
-  ) => apiRequest<T>(path, { ...opts, method: 'GET' }),
+  get: <T>(path: string, opts?: Omit<RequestOptions, "method" | "body">) =>
+    apiRequest<T>(path, { ...opts, method: "GET" }),
 
   post: <T>(
     path: string,
     body?: unknown,
-    opts?: Omit<RequestOptions, 'method' | 'body'>,
-  ) => apiRequest<T>(path, { ...opts, method: 'POST', body }),
+    opts?: Omit<RequestOptions, "method" | "body">,
+  ) => apiRequest<T>(path, { ...opts, method: "POST", body }),
 
   patch: <T>(
     path: string,
     body?: unknown,
-    opts?: Omit<RequestOptions, 'method' | 'body'>,
-  ) => apiRequest<T>(path, { ...opts, method: 'PATCH', body }),
+    opts?: Omit<RequestOptions, "method" | "body">,
+  ) => apiRequest<T>(path, { ...opts, method: "PATCH", body }),
 
   del: <T = void>(
     path: string,
-    opts?: Omit<RequestOptions, 'method' | 'body'>,
-  ) => apiRequest<T>(path, { ...opts, method: 'DELETE' }),
+    opts?: Omit<RequestOptions, "method" | "body">,
+  ) => apiRequest<T>(path, { ...opts, method: "DELETE" }),
 
   upload: <T>(
     path: string,
     formData: FormData,
-    opts?: Omit<RequestOptions, 'method'>,
-  ) => apiRequest<T>(path, { ...opts, method: 'POST', formData }),
+    opts?: Omit<RequestOptions, "method">,
+  ) => apiRequest<T>(path, { ...opts, method: "POST", formData }),
 };
 
 // Google login uses browser navigation instead of fetch.

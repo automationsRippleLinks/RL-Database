@@ -8,8 +8,7 @@ import {
   Video,
   type LucideIcon,
 } from 'lucide-react';
-import type { CreatorDetail } from '@/types/api';
-
+import type { LatestCostDeliverable } from '@/types/api';
 
 export interface Deliverable {
   key: string;
@@ -41,30 +40,27 @@ function present(type: string): { label: string, icon: LucideIcon } {
   };
 }
 
-export interface CommercialPackage {
-  /** Headline figure, in rupees. */
-  total: number;
-  items: Deliverable[];
-  name: string;
-  validFrom: string;
-}
-
-export function commercialPackageFor(detail: CreatorDetail): CommercialPackage | null {
-  const pkg = detail.package;
-  if (!pkg) return null;
-
-  const items: Deliverable[] = pkg.items
+/** The items behind the latest cost, ready to draw. Empty when there are none. */
+export function deliverablesFor(
+  items: LatestCostDeliverable[] | string | null | undefined,
+): Deliverable[] {
+  if (!Array.isArray(items)) return [];
+  return items
     .filter((item) => item.quantity > 0)
     .map((item) => ({
       key: item.deliverable_type,
       ...present(item.deliverable_type),
       quantity: item.quantity,
-      cost: item.price * item.quantity,
+      cost: Number(item.price ?? 0) * item.quantity,
     }));
+}
 
-  const summed = items.reduce((total, item) => total + item.cost, 0);
-  const total = pkg.cost > 0 ? pkg.cost : summed;
-  if (total <= 0 && items.length === 0) return null;
-
-  return { total, items, name: pkg.name, validFrom: pkg.valid_from};
+/** "Reel ×1 + Story ×3", for tooltips. */
+export function deliverablesLabel(
+  items: LatestCostDeliverable[] | string | null | undefined,
+): string {
+  if (typeof items === 'string') return items;
+  return deliverablesFor(items)
+    .map((d) => (d.quantity > 1 ? `${d.label} ×${d.quantity}` : d.label))
+    .join(' + ');
 }

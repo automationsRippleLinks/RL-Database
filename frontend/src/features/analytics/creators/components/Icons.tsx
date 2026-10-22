@@ -10,11 +10,7 @@ export const CheckIcon = () => (
     <path d="M2.5 6.5L5 9L9.5 3.5" />
   </svg>
 );
-export const XIcon = () => (
-  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" {...base}>
-    <path d="M2.5 2.5L9.5 9.5M9.5 2.5L2.5 9.5" />
-  </svg>
-);
+
 export const CloseIcon = () => (
   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" {...base}>
     <path d="M3.5 3.5L12.5 12.5M12.5 3.5L3.5 12.5" />
@@ -41,14 +37,8 @@ export const DoneIcon = () => (
   </svg>
 );
 
-export const AlertIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" {...base}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7.5v5M12 16v.1" />
-  </svg>
-);
 
-/** Platform as a small icon chip. The name stays available to screen readers and as a hover title. */
+
 export function PlatformIcon({ platform, label }: { platform: string; label: string }) {
   const p = ['instagram', 'youtube', 'linkedin', 'facebook'].includes(platform) ? platform : 'other';
   const glyph = {
@@ -98,11 +88,7 @@ export const DownloadIcon = () => (
     <path d="M8 2.5v7.5M4.8 7.2L8 10.3l3.2-3.1M3 13h10" />
   </svg>
 );
-export const ExternalIcon = () => (
-  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...base}>
-    <path d="M6.5 3.5H4A1.5 1.5 0 0 0 2.5 5v7A1.5 1.5 0 0 0 4 13.5h7a1.5 1.5 0 0 0 1.5-1.5V9.5M9.5 2.5h4v4M13.3 2.7L7.5 8.5" />
-  </svg>
-);
+
 export const LockIcon = () => (
   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...base}>
     <rect x="3.2" y="7" width="9.6" height="6.5" rx="1.6" />
@@ -112,10 +98,5 @@ export const LockIcon = () => (
 export const PencilIcon = () => (
   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...base}>
     <path d="M2.8 13.2l.6-2.9 7-7a1.4 1.4 0 0 1 2 0l.3.3a1.4 1.4 0 0 1 0 2l-7 7zM9.4 4.3l2.3 2.3" />
-  </svg>
-);
-export const ChevRightIcon = () => (
-  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" {...base}>
-    <path d="M6 3.5L10.5 8 6 12.5" />
   </svg>
 );

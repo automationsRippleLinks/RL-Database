@@ -1,22 +1,19 @@
-import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
-import {
-  ManIcon,
-  NonBinaryIcon,
-  UserGroup02Icon,
-  WomanIcon,
-} from '@hugeicons/core-free-icons';
-import { Mail, Phone, type LucideIcon } from 'lucide-react';
+import { Mail, Mars, Phone, Transgender, Users, Venus, type LucideIcon } from 'lucide-react';
 import { DataTable, type Column } from '@/components/DataTable';
-import { PlatformMark } from '@/components/PlatformMark';
 import { useToast } from '@/components/Toast';
 import {
   compact,
   formatNumber,
   initials,
   profileUrlFor,
+  formatMonthYear,
+  isOlderThanYear,
 } from '@/lib/format';
 import type { CreatorRow } from '@/types/api';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { PlatformLink } from '@/components/PlatformMark';
+import { deliverablesLabel } from './deliverables';
+import { cn } from '@/lib/utils';
 
 // ── CREATOR TABLE PROPS ────────────────────────────────────────
 
@@ -71,7 +68,7 @@ export function CreatorTable({
 
 // ── CREATOR TABLE COLUMNS ──────────────────────────────────────
 
-function creatorColumns(
+export function creatorColumns(
   onCopy: (value: string) => void,
 ): Column<CreatorRow>[] {
   return [
@@ -92,8 +89,7 @@ function creatorColumns(
       className: 'w-20 text-center',
       cell: (row) => (
         <span className="inline-flex">
-          <PlatformMark platform={row.platform} />
-        </span>
+          <PlatformLink row={row} />        </span>
       ),
     },
 
@@ -152,31 +148,120 @@ function creatorColumns(
       cell: (row) => <GenderGlyph gender={row.gender} />,
     },
 
-    // Languages
+    //cost
+    // {
+    //   id: 'cost',
+    //   header: 'Latest cost',
+    //   headerClassName: 'text-center w-28 text-[12px]',
+    //   className: 'text-center tabular-nums',
+    //   cell: (row) =>
+    //     row.latest_cost ? (
+    //       <span>₹{formatNumber(row.latest_cost)} </span>
+    //     ) : (
+    //       <span className="text-rp-muted">—</span>
+
+    //     ),
+    // },
+
+    //cost
     {
-      id: 'languages',
-      header: 'Languages',
-      headerClassName: 'text-left w-25 text-[12px]',
-      cell: (row) => (
-        <TruncatedList
-          items={row.languages}
-          overflowTitle="Also speaks"
-        />
-      ),
+      id: 'cost',
+      header: 'Latest cost',
+      headerClassName: 'text-center w-28 text-[12px]',
+      className: 'text-center tabular-nums',
+      cell: (row) => {
+        if (!row.latest_cost) return <span className="text-rp-muted">—</span>;
+        const when = formatMonthYear(row.latest_cost_month, row.latest_cost_year);
+        const stale = isOlderThanYear(row.latest_cost_month, row.latest_cost_year);
+        const source = row.latest_cost_source?.replace(/_/g, ' ');
+        const deliverables = deliverablesLabel(row.latest_cost_deliverables);
+        const tip = [
+          `Latest cost: ₹${formatNumber(row.latest_cost)}`,
+          `Followers: ${compact(row.followers)}`,
+          when && `Month: ${when}`,
+          source && `Source: ${source}`,
+          deliverables && `For: ${deliverables}`,
+          stale && 'Over a year old, confirm before pitching',
+        ]
+          .filter(Boolean)
+          .join('\n');
+        return (
+          <span
+            className={cn('cursor-help', stale && 'text-rp-danger')}
+            title={tip}
+          >
+            ₹{formatNumber(row.latest_cost)}
+            {when && (
+              <span
+                className={cn(
+                  'block text-[10.5px]',
+                  stale ? 'text-rp-danger' : 'text-rp-muted',
+                )}
+              >
+                {when}
+              </span>
+            )}
+          </span>
+        );
+      },
     },
 
-    // Categories
+    // CPV (cost per view)
     {
-      id: 'categories',
-      header: 'Categories',
-      headerClassName: 'text-left w-28 text-[12px]',
-      cell: (row) => (
-        <TruncatedList
-          items={row.categories}
-          overflowTitle="Also"
-        />
-      ),
+      id: 'cpv',
+      header: 'CPV',
+      headerClassName: 'text-center w-20 text-[12px]',
+      className: 'text-center tabular-nums',
+      cell: (row) =>
+        row.latest_cost && row.avg_views ? (
+          <span title="Latest cost ÷ average views">
+            ₹{(row.latest_cost / row.avg_views).toFixed(2)}
+          </span>
+        ) : (
+          <span className="text-rp-muted">—</span>
+        ),
     },
+
+    // CPV (cost per view) — worked out by the backend
+    // {
+    //   id: 'cpv',
+    //   header: 'CPV',
+    //   headerClassName: 'text-center w-20 text-[12px]',
+    //   className: 'text-center tabular-nums',
+    //   cell: (row) =>
+    //     row.cpv != null ? (
+    //       <span title="Latest cost ÷ average views">₹{row.cpv.toFixed(2)}</span>
+    //     ) : (
+    //       <span className="text-rp-muted">—</span>
+    //     ),
+    // },
+
+
+    // Languages
+    // {
+    //   id: 'languages',
+    //   header: 'Languages',
+    //   headerClassName: 'text-left w-25 text-[12px]',
+    //   cell: (row) => (
+    //     <TruncatedList
+    //       items={row.languages}
+    //       overflowTitle="Also speaks"
+    //     />
+    //   ),
+    // },
+
+    // Categories
+    // {
+    //   id: 'categories',
+    //   header: 'Categories',
+    //   headerClassName: 'text-left w-28 text-[12px]',
+    //   cell: (row) => (
+    //     <TruncatedList
+    //       items={row.categories}
+    //       overflowTitle="Also"
+    //     />
+    //   ),
+    // },
 
     // Contact
     {
@@ -274,19 +359,19 @@ function CreatorLocation({ creator }: { creator: CreatorRow }) {
 
 const GENDER_GLYPH: {
   test: RegExp;
-  icon: IconSvgElement;
+  icon: LucideIcon;
 }[] = [
     {
       test: /^\s*(f|female|woman|women)\s*$/i,
-      icon: WomanIcon,
+      icon: Venus,
     },
     {
       test: /^\s*(m|male|man|men)\s*$/i,
-      icon: ManIcon,
+      icon: Mars,
     },
     {
       test: /^\s*(nb|non[-\s]?binary|other|transgender|trans)\s*$/i,
-      icon: NonBinaryIcon,
+      icon: Transgender,
     },
   ];
 
@@ -295,9 +380,7 @@ function GenderGlyph({ gender }: { gender: string | null }) {
     return <span className="text-rp-muted">—</span>;
   }
 
-  const icon =
-    GENDER_GLYPH.find(({ test }) => test.test(gender))?.icon ??
-    UserGroup02Icon;
+  const Icon = GENDER_GLYPH.find(({ test }) => test.test(gender))?.icon ?? Users;
 
   return (
     <span
@@ -305,7 +388,7 @@ function GenderGlyph({ gender }: { gender: string | null }) {
       aria-label={gender}
       className="inline-flex text-rp-muted"
     >
-      <HugeiconsIcon icon={icon} className="size-4.25" />
+      <Icon className="size-4.25" />
     </span>
   );
 }
@@ -313,113 +396,7 @@ function GenderGlyph({ gender }: { gender: string | null }) {
 // ── CREATOR LANGUAGES AND CATEGORIES ──────────────────────────
 
 
-function TruncatedList({
-  items,
-  overflowTitle,
-}: {
-  items: string[];
-  overflowTitle: string;
-}) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isPinned, setIsPinned] = useState(false);
-  const [suppressHover, setSuppressHover] = useState(false);
 
-  const popupRef = useRef<HTMLSpanElement>(null);
-  const isOpen = isHovered || isPinned;
-  const rest = items.length - 1;
-
-  useEffect(() => {
-    if (!isPinned) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(event.target as Node)
-      ) {
-        setIsPinned(false);
-        setIsHovered(false);
-        setSuppressHover(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isPinned]);
-
-  if (!items.length) {
-    return <span className="text-rp-muted">—</span>;
-  }
-
-  return (
-    <span className="flex items-center gap-1.25 whitespace-nowrap">
-      <span className="rounded-md border border-rp-border bg-rp-surface2 px-1.75 py-0.5 text-[11px]">
-        {items[0]}
-      </span>
-
-      {rest > 0 && (
-        <span
-          ref={popupRef}
-          className="relative inline-flex"
-          onMouseEnter={() => {
-            if (!suppressHover) {
-              setIsHovered(true);
-            }
-          }}
-          onMouseLeave={() => {
-            setIsHovered(false);
-            setSuppressHover(false);
-          }}
-        >
-          <button
-            type="button"
-            aria-expanded={isOpen}
-            aria-label={`Show ${rest} more ${overflowTitle}`}
-            onClick={(event) => {
-              event.stopPropagation();
-
-              if (event.detail >= 2) {
-                // Double-click closes the popup
-                setIsPinned(false);
-                setIsHovered(false);
-                setSuppressHover(true);
-              } else {
-                // Single click keeps the popup open
-                setIsPinned(true);
-                setSuppressHover(false);
-              }
-            }}
-            onMouseLeave={() => {
-              setIsHovered(false);
-              setSuppressHover(false);
-            }}
-            className="cursor-pointer rounded-md border border-dashed border-rp-box px-1.25 py-0.5 text-[10.5px] text-rp-muted"
-          >
-            +{rest}
-          </button>
-
-          {isOpen && (
-            <span
-              role="tooltip"
-              className="absolute top-full right-0 z-50 mt-1 min-w-max max-w-64 rounded-lg border border-rp-border bg-rp-surface px-3 py-2 text-[11px] font-normal whitespace-normal text-rp-text shadow-lg"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <span className="block font-semibold">
-                {overflowTitle}
-              </span>
-
-              <span className="mt-1 block">
-                {items.slice(1).join(', ')}
-              </span>
-            </span>
-          )}
-        </span>
-      )}
-    </span>
-  );
-}
 
 
 // ── CREATOR CONTACT ACTIONS ────────────────────────────────────

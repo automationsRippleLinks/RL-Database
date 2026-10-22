@@ -173,3 +173,17 @@ export function SectionTitle({
     </div>
   );
 }
+
+/** The "Previous" / "Next" button under result tables (search pages and the Creators dashboard). */
+export function PageButton({ label, disabled, onClick }: { label: string; disabled: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="cursor-pointer rounded-lg border border-rp-border bg-rp-surface px-3 py-1.25 text-xs text-rp-text disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {label}
+    </button>
+  );
+}

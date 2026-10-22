@@ -1,6 +1,6 @@
 import type { Column } from '@/components/DataTable';
-import { ChipList, TierBadge } from '@/components/bits';
-import { PlatformMark } from '@/components/PlatformMark';
+import { TierBadge ,ChipList} from '@/components/bits';
+import { PlatformLink } from '@/components/PlatformMark';
 import { MaskedContact } from '@/components/MaskedContact';
 import { compact, formatNumber } from '@/lib/format';
 import type { CreatorRow } from '@/types/api';
@@ -31,7 +31,7 @@ export const creatorColumns: Column<CreatorRow>[] = [
   {
     id: 'platform',
     header: 'Platform',
-    cell: (row) => <PlatformMark platform={row.platform} size={16} />,
+    cell: (row) => <PlatformLink row={row} size={16} />,
   },
   { id: 'tier', header: 'Tier', cell: (row) => <TierBadge tier={row.tier} /> },
   {
@@ -49,6 +49,7 @@ export const creatorColumns: Column<CreatorRow>[] = [
     cell: (row) => <span title={formatNumber(row.avg_views)}>{compact(row.avg_views)}</span>,
   },
   { id: 'city', header: 'City', cell: (row) => row.city ?? '—' },
+
   {
     id: 'categories',
     header: 'Categories',

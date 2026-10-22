@@ -28,9 +28,11 @@ export function RequireAuth() {
  * gate; this only avoids showing UI that would fail.
  */
 export function RequireIngestPermission() {
-  const { canIngest, user } = useAuth();
+  console.log("inside guard!!");
+  const { canIngest, user ,isAdmin,isSuperAdmin} = useAuth();
+  
 
-  if (!canIngest) {
+  if (!canIngest || !isAdmin || !isSuperAdmin) {
     return (
       <EmptyState
         icon={<ShieldOff className="size-7" />}

@@ -5,10 +5,10 @@ import { useCreatorDetail } from '@/features/search/queries';
 import type { CreatorSummary } from '@/types/api';
 import { scoreCreator } from './calculations/score';
 import type { FilterOptions } from './calculations/filters';
-import { fmtN } from './calculations/format';
+// import { fmtN } from './calculations/format';
 import { initialState, reducer } from './state';
 import { NONE, PLATFORMS } from './rules/config';
-import { useCreatorSummary, useMissingCreators } from './data/queries';
+import { useCreatorSummary, useCreatorTotal, useMissingCreators } from './data/queries';
 import { Charts } from './components/Charts';
 import { CreatorDrawer } from './components/CreatorDrawer';
 import { CreatorTable } from './components/CreatorTable';
@@ -17,6 +17,7 @@ import { LockIcon, PencilIcon } from './components/Icons';
 import '../tokens.css';
 import './styles.css';
 import '../analytics.css';
+import { SummaryTiles } from '@/components/SummaryTiles';
 
 const byName = (a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label);
 
@@ -45,8 +46,9 @@ function toOptions(summary: CreatorSummary | undefined): FilterOptions {
  * follow `can_edit` from /auth/me, and the backend checks it again on every save.
  */
 export function MissingDataPage() {
-  const { user } = useAuth();
-  const canEdit = user?.permissions.can_edit ?? false;
+  // const { user } = useAuth();
+  const { canEdit } = useAuth();
+
   const [state, dispatch] = useReducer(reducer, initialState);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -85,7 +87,9 @@ export function MissingDataPage() {
   }, [state.open, state.drawer, state.edit]);
 
   const s = summary.data;
-  const total = s?.totals.total ?? 0;
+  const total = s?.totals.total ?? 0; // active creators
+  const all = useCreatorTotal(state);
+  const everyone = Math.max(total, all.data?.totals.total ?? total); //active vv+ inactive creators 
   const withGaps = s?.totals.with_gaps ?? 0;
 
   return (
@@ -114,7 +118,7 @@ export function MissingDataPage() {
 
         <FilterBar options={options} state={state} dispatch={dispatch} />
 
-        <section className="cc-strip" aria-label="Summary">
+        {/* <section className="cc-strip" aria-label="Summary">
           <div className="cc-stat" data-testid="tile-total">
             <b className="cc-sv">{s ? fmtN(total) : '–'}</b>
             <span>Total creators</span>
@@ -127,7 +131,10 @@ export function MissingDataPage() {
             <b className="cc-sv">{s ? fmtN(total - withGaps) : '–'}</b>
             <span>Complete</span>
           </div>
-        </section>
+        </section> */}
+        {/* {s && <SummaryTiles total={total} active={total} inactive={0} missing={withGaps} complete={total - withGaps} />} */}
+        {s && <SummaryTiles total={everyone} active={total} inactive={everyone - total}
+          missing={withGaps} complete={total - withGaps} />}
 
         {summary.isPending && <p className="cc-status">Loading…</p>}
         {summary.isError && (

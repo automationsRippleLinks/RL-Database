@@ -62,15 +62,15 @@ export function FeedbackDialog({
         else onOpenChange(true);
       }}
     >
-      <DialogContent className="max-w-[426px] rounded-2xl border-rp-border bg-rp-surface p-[21px] shadow-rp">
-        <DialogTitle className="mb-[5px] text-[15.5px] font-bold">
+      <DialogContent className="max-w-106.5 rounded-2xl border-rp-border bg-rp-surface p-5.25 shadow-rp">
+        <DialogTitle className="mb-1.25 text-[15.5px] font-bold">
           Tell us what's not working
         </DialogTitle>
-        <DialogDescription className="mb-[13px] text-[12.5px] text-rp-muted">
+        <DialogDescription className="mb-3.25 text-[12.5px] text-rp-muted">
           Goes straight to the team that builds this. Wrong data counts too.
         </DialogDescription>
 
-        <div className="mb-[11px] flex gap-1.5">
+        <div className="mb- 2.75 flex gap-1.5">
           {KINDS.map((option) => (
             <button
               key={option}
@@ -94,10 +94,10 @@ export function FeedbackDialog({
           onChange={(event) => setMessage(event.target.value)}
           placeholder="What happened, and what did you expect?"
           aria-label="What happened, and what did you expect?"
-          className="min-h-[94px] w-full resize-y rounded-[11px] border border-rp-border bg-rp-surface2 px-3 py-[11px] text-[13px] outline-none focus-visible:border-rp-primary"
+          className="min-h-23.5 w-full resize-y rounded-[11px] border border-rp-border bg-rp-surface2 px-3 py- text-[13px] outline-none focus-visible:border-rp-primary"
         />
 
-        <div className="mt-[13px] flex justify-end gap-[9px]">
+        <div className="mt-3.25 flex justify-end gap-">
           <button
             type="button"
             onClick={close}

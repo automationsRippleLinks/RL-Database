@@ -13,15 +13,15 @@ type FilterModel = ReturnType<typeof usePitchFilterModel>;
 const GROUPS: { key: FilterGroupKey; label: string; icon: LucideIcon }[] = [
   { key: 'platform', label: 'Platform', icon: Globe },
   { key: 'type', label: 'Type', icon: Tag },
+  { key: 'dates', label: 'Created', icon: Calendar },
   { key: 'brand', label: 'Brand', icon: Building2 },
   { key: 'team', label: 'Team', icon: Users },
   { key: 'converted', label: 'Converted', icon: CheckCircle2 },
-  { key: 'dates', label: 'Created', icon: Calendar },
 ];
 
 const CONVERTED_OPTIONS = [
-  { value: '1', label: 'Converted', icon: CheckCircle2 },
-  { value: '0', label: 'Not converted', icon: XCircle },
+  { value: '1', label: 'Converted', icon: CheckCircle2, iconClassName: 'text-rp-success' },
+  { value: '0', label: 'Not converted', icon: XCircle, iconClassName: 'text-rp-danger' },
 ];
 
 interface PitchFilterGroupsProps {
@@ -146,6 +146,14 @@ export default function PitchFilters({
                   />
                 )}
 
+                {key === 'dates' && (
+                  <DateRangeControl
+                    label="Created between"
+                    from={model.values.createdFrom}
+                    to={model.values.createdTo}
+                    onChange={model.actions.setDates}
+                  />
+                )}
                 {key === 'team' && (
                   <div className="flex flex-col gap-1.8 rounded-[9px] border border-rp-border bg-rp-surface p-0.5">
                     <FilterDropdown
@@ -178,18 +186,11 @@ export default function PitchFilters({
                     onChange={(values) => {
                       const next = values[values.length - 1];
                       model.actions.setConverted((next as '1' | '0') ?? '');
+
                     }}
                   />
                 )}
 
-                {key === 'dates' && (
-                  <DateRangeControl
-                    label="Created between"
-                    from={model.values.createdFrom}
-                    to={model.values.createdTo}
-                    onChange={model.actions.setDates}
-                  />
-                )}
               </div>
             )}
           </div>

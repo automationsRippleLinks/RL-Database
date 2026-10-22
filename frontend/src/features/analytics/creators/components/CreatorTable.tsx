@@ -2,17 +2,22 @@ import { useState, type Dispatch } from 'react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { searchApi } from '@/lib/endpoints';
 import type { CreatorRow, SearchResponse } from '@/types/api';
-import { FIELD_BY_KEY, PLATFORM_LABEL } from '../rules/config';
-import { scoreCreator, type ScoredCreator } from '../calculations/score';
+import { DataTable, type Column } from '@/components/DataTable';
+import { PageButton } from '@/components/bits';
+import { cn } from '@/lib/utils';
+import { creatorColumns } from '@/features/search/creators/CreatorTable';
+import { CREATOR_PAGE_SIZES } from '@/features/search/request-state';
+import { FIELD_BY_KEY } from '../rules/config';
+import { scoreCreator } from '../calculations/score';
 import type { ScoredKey } from '../types';
 import { fmtN } from '../calculations/format';
-import type { SortKey } from '../calculations/sort';
 import type { Action, State } from '../state';
-import { ChevRightIcon, DoneIcon, DownloadIcon, ExternalIcon, PlatformIcon, SearchIcon, SortIcon } from './Icons';
+import { DoneIcon, DownloadIcon, SortIcon } from './Icons';
 import { creatorsToCsv } from '../calculations/csv';
 import { emptyMessage, filterSlug } from '../calculations/summary';
 import { downloadTextFile } from '../utils/download';
 import { tableRequest } from '../data/queries';
+import { TableSearch } from '@/components/TableSearch'
 
 interface Props {
   query: UseQueryResult<SearchResponse<CreatorRow>>;
@@ -21,12 +26,19 @@ interface Props {
 }
 
 const EXPORT_PAGE = 500;
-/** Tags shown before "+N more". */
-const TAGS_SHOWN = 2;
+
+/**
+ * Creator and Platform come from the main Creators table, so both pages look the same.
+ * Only their widths change: here they share the row with one wide Missing details column.
+ */
+const WIDTH: Record<string, string> = { creator: 'w-[25%]', platform: 'w-80' };
+const SHARED_COLUMNS = creatorColumns(() => undefined)
+  .filter((c) => c.id in WIDTH)
+  .map((c) => ({ ...c, headerClassName: cn(c.headerClassName, WIDTH[c.id]) }));
 
 export function CreatorTable({ query, state, dispatch }: Props) {
   const data = query.data;
-  const rows = (data?.rows ?? []).map(scoreCreator);
+  const rows = data?.rows ?? [];
   const total = data?.total ?? 0;
   const pages = Math.max(1, data?.pages ?? 1);
   const page = Math.min(state.page, pages);
@@ -54,17 +66,26 @@ export function CreatorTable({ query, state, dispatch }: Props) {
     }
   };
 
-  const th = (key: SortKey, label: string) => {
-    const on = state.sort.key === key;
-    return (
-      <th aria-sort={on ? (state.sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-        <button type="button" data-testid={`sort-${key}`} onClick={() => dispatch({ type: 'setSort', key })}>
-          {label}
-          <SortIcon dir={on ? state.sort.dir : null} />
+  const columns: Column<CreatorRow>[] = [
+    ...SHARED_COLUMNS,
+    {
+      id: 'missing',
+      header: (
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 uppercase tracking-[0.05em] [&_svg]:size-[11px]"
+          title="Most missing first / fewest missing first"
+          data-testid="sort-gaps"
+          onClick={() => dispatch({ type: 'setSort', key: 'gaps' })}
+        >
+          Missing details
+          <SortIcon dir={state.sort.key === 'gaps' ? state.sort.dir : null} />
         </button>
-      </th>
-    );
-  };
+      ),
+      headerClassName: 'text-left text-[12px]',
+      cell: (row) => <MissingChips row={row} selectedField={state.field} dispatch={dispatch} />,
+    },
+  ];
 
   return (
     <section id="cc-table" className="cc-panel cc-results" aria-label="Creators needing attention">
@@ -73,17 +94,13 @@ export function CreatorTable({ query, state, dispatch }: Props) {
           <h2>{state.field ? `Creators missing ${FIELD_BY_KEY[state.field].label.toLowerCase()}` : 'Creators needing attention'}</h2>
           <p data-testid="res-meta">{data ? `${fmtN(total)} ${total === 1 ? 'creator' : 'creators'}` : ''}</p>
         </div>
-        <label className="cc-search">
-          <SearchIcon />
-          <input
-            type="search"
-            placeholder="Search creators..."
-            autoComplete="off"
-            aria-label="Search creators by name or handle"
-            value={state.q}
-            onChange={(e) => dispatch({ type: 'setQuery', q: e.target.value })}
-          />
-        </label>
+        <TableSearch
+          value={state.q}
+          onChange={(q) => dispatch({ type: 'setQuery', q })}
+          placeholder="Search creators..."
+          label="Search creators by name or handle"
+          className="w-70 max-w-full"
+        />
         <button type="button" className="cc-btn cc-btn-primary cc-export" data-testid="download" disabled={!total || exporting} onClick={download}>
           <DownloadIcon />
           {exporting ? 'Exporting…' : 'Export'}
@@ -95,170 +112,95 @@ export function CreatorTable({ query, state, dispatch }: Props) {
         </p>
       )}
 
-      <div className={`cc-tbl-wrap scrollbar-thin${query.isFetching && data ? ' cc-busy' : ''}`}>
-        <table className="cc-ct">
-          <thead>
-            <tr>
-              {th('name', 'Creator')}
-              <th>Platform</th>
-              {th('gaps', 'Missing details')}
-              <th className="cc-view-h">View</th>
-            </tr>
-          </thead>
-          <tbody>
-            {query.isPending && (
-              <tr>
-                <td colSpan={4}>
-                  <p className="cc-empty">Loading…</p>
-                </td>
-              </tr>
+      <div className="cc-tbl-wrap scrollbar-thin">
+        {query.isError ? (
+          <p className="cc-empty" role="alert">
+            Could not load creators.{' '}
+            <button type="button" className="cc-lnk" onClick={() => void query.refetch()}>
+              Try again
+            </button>
+          </p>
+        ) : data && !rows.length ? (
+          <p className="cc-empty" data-testid="empty-table">
+            {emptyMessage(state)}{' '}
+            {filtered && (
+              <button type="button" className="cc-lnk" onClick={() => dispatch({ type: 'reset' })}>
+                Clear filters
+              </button>
             )}
-            {query.isError && (
-              <tr>
-                <td colSpan={4}>
-                  <p className="cc-empty" role="alert">
-                    Could not load creators.{' '}
-                    <button type="button" className="cc-lnk" onClick={() => void query.refetch()}>
-                      Try again
-                    </button>
-                  </p>
-                </td>
-              </tr>
-            )}
-            {data && !rows.length && (
-              <tr>
-                <td colSpan={4}>
-                  <p className="cc-empty" data-testid="empty-table">
-                    {emptyMessage(state)}{' '}
-                    {filtered && (
-                      <button type="button" className="cc-lnk" onClick={() => dispatch({ type: 'reset' })}>
-                        Clear filters
-                      </button>
-                    )}
-                  </p>
-                </td>
-              </tr>
-            )}
-            {rows.map((r) => (
-              <Row key={r.creator.id} r={r} selectedField={state.field} dispatch={dispatch} />
-            ))}
-          </tbody>
-        </table>
+          </p>
+        ) : (
+          <DataTable
+            appearance="results"
+            rows={rows}
+            columns={columns}
+            rowKey={(row) => row.id}
+            onRowClick={(row) => dispatch({ type: 'openDrawer', id: row.id })}
+            activeRowKey={state.drawer}
+            isLoading={query.isPending}
+            isFetching={query.isFetching && !!data}
+          />
+        )}
       </div>
 
       <div className="cc-pager">
-        <span>
-          Page {page} of {pages}
-        </span>
-        <div>
-          <button type="button" data-testid="pg-prev" disabled={page <= 1} onClick={() => dispatch({ type: 'setPage', page: page - 1 })}>
-            Previous
-          </button>
-          <button type="button" data-testid="pg-next" disabled={page >= pages} onClick={() => dispatch({ type: 'setPage', page: page + 1 })}>
-            Next
-          </button>
+        <div className="flex items-center gap-2.25">
+          <span>
+            {total === 0 ? 'No rows' : `Showing ${fmtN((page - 1) * state.size + 1)}–${fmtN(Math.min(page * state.size, total))} of ${fmtN(total)}`}
+          </span>
+          <select
+            value={state.size}
+            onChange={(e) => dispatch({ type: 'setSize', size: Number(e.target.value) })}
+            title="Rows per page"
+            aria-label="Rows per page"
+            className="cursor-pointer rounded-lg border border-rp-border bg-rp-surface px-2 py-1.25 text-xs"
+          >
+            {CREATOR_PAGE_SIZES.map((size) => (
+              <option key={size} value={size}>
+                {size} per page
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <PageButton label="Previous" disabled={page <= 1} onClick={() => dispatch({ type: 'setPage', page: page - 1 })} />
+          <span>
+            Page {page} of {pages}
+          </span>
+          <PageButton label="Next" disabled={page >= pages} onClick={() => dispatch({ type: 'setPage', page: page + 1 })} />
         </div>
       </div>
     </section>
   );
 }
 
-/** Two letters from the name, on a soft colour that stays the same for the same creator. */
-function Avatar({ name }: { name: string }) {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  const initials = ((words[0]?.[0] ?? '?') + (words.length > 1 ? (words[words.length - 1][0] ?? '') : '')).toUpperCase();
-  let h = 0;
-  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360;
+/** The dashboard's own column: one chip per missing detail. Clicking a chip lists everyone missing it. */
+function MissingChips({ row, selectedField, dispatch }: { row: CreatorRow; selectedField: ScoredKey | null; dispatch: Dispatch<Action> }) {
+  const missing = scoreCreator(row).missing;
+  if (missing.length === 0) {
+    return (
+      <span className="cc-done">
+        <DoneIcon />
+        Nothing missing
+      </span>
+    );
+  }
   return (
-    <span className="cc-av" style={{ '--hue': h } as React.CSSProperties} aria-hidden="true">
-      {initials}
-    </span>
-  );
-}
-
-function Row({ r, selectedField, dispatch }: { r: ScoredCreator; selectedField: ScoredKey | null; dispatch: Dispatch<Action> }) {
-  const c = r.creator;
-  const open = () => dispatch({ type: 'openDrawer', id: c.id });
-  const [expanded, setExpanded] = useState(false);
-  const shown = expanded ? r.missing : r.missing.slice(0, TAGS_SHOWN);
-  const more = r.missing.length - TAGS_SHOWN;
-
-  return (
-    <tr
-      tabIndex={0}
-      data-testid={`row-${c.id}`}
-      onClick={open}
-      onKeyDown={(e) => {
-        if (e.target !== e.currentTarget) return;
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          open();
-        }
-      }}
-    >
-      <td>
-        <div className="cc-who-cell">
-          <Avatar name={c.name} />
-          <div className="cc-who-txt">
-            <div className="cc-nm">{c.name}</div>
-            {c.profile_url ? (
-              <a className="cc-hd cc-hd-link" href={c.profile_url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
-                @{c.username}
-                <ExternalIcon />
-              </a>
-            ) : (
-              <div className="cc-hd">@{c.username}</div>
-            )}
-          </div>
-        </div>
-      </td>
-      <td>
-        <PlatformIcon platform={c.platform} label={PLATFORM_LABEL[c.platform] ?? c.platform} />
-      </td>
-      <td>
-        {r.missing.length === 0 ? (
-          <span className="cc-done">
-            <DoneIcon />
-            Nothing missing
-          </span>
-        ) : (
-          <div className="cc-tags">
-            {shown.map((k) => (
-              <button
-                key={k}
-                type="button"
-                className={`cc-tag${selectedField === k ? ' cc-sel' : ''}`}
-                title={`List all creators missing ${FIELD_BY_KEY[k].label.toLowerCase()}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  dispatch({ type: 'toggleField', field: k });
-                }}
-              >
-                {FIELD_BY_KEY[k].label}
-              </button>
-            ))}
-            {more > 0 && (
-              <button
-                type="button"
-                className="cc-more"
-                aria-expanded={expanded}
-                data-testid={`more-${c.id}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpanded((x) => !x);
-                }}
-              >
-                {expanded ? 'Show fewer' : `+${more} more`}
-              </button>
-            )}
-          </div>
-        )}
-      </td>
-      <td className="cc-view-c">
-        <button type="button" className="cc-view-btn" aria-label={`View ${c.name}`} onClick={open}>
-          <ChevRightIcon />
+    <div className="cc-tags">
+      {missing.map((k) => (
+        <button
+          key={k}
+          type="button"
+          className={`cc-tag${selectedField === k ? ' cc-sel' : ''}`}
+          title={`List all creators missing ${FIELD_BY_KEY[k].label.toLowerCase()}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            dispatch({ type: 'toggleField', field: k });
+          }}
+        >
+          {FIELD_BY_KEY[k].label}
         </button>
-      </td>
-    </tr>
+      ))}
+    </div>
   );
 }

@@ -20,6 +20,7 @@ import type {
   SearchScope,
 } from '@/types/api';
 
+
 /** Below this, a global/typeahead query matches so much that it's just noise. */
 export const MIN_GLOBAL_QUERY_LENGTH = 2;
 

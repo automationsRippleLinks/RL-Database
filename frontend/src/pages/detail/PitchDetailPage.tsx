@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { CreatorDrawer } from '@/features/search/creators/CreatorDrawer';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +21,7 @@ import {
   SectionTitle,
   TierBadge,
 } from '@/components/bits';
+import { TableSearch, matchesCreator } from '@/components/TableSearch';
 import { formatCurrency, formatDateTime, formatNumber, initials, profileUrlFor } from '@/lib/format';
 import type { PitchCreatorRow } from '@/types/api';
 import { usePitchDetail } from '@/features/search/queries';
@@ -28,11 +31,15 @@ export function PitchDetailPage() {
   const { pitchId } = useParams<{ pitchId: string }>();
   const { data, isPending, isError, error, refetch } = usePitchDetail(pitchId);
 
+  // useDocumentTitle(data?.pitch_code)
   useDocumentTitle(data?.pitch_code)
+  const [openCreatorId, setOpenCreatorId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   if (isPending) return <LoadingState label="Loading pitch…" />;
   if (isError) return <ErrorState error={error} onRetry={() => refetch()} />;
   if (!data) return null;
+  const creators = data.creators.filter((row) => matchesCreator(row, search));
 
   return (
     <div className="space-y-5">
@@ -138,25 +145,42 @@ export function PitchDetailPage() {
       </Card>
 
       <section>
-        <SectionTitle count={data.creators.length}>Creators in this pitch</SectionTitle>
+        <SectionTitle count={creators.length}>Creators in this pitch</SectionTitle>
         {/* PitchCreatorLink splits deliverables by platform, so the tabs follow suit. */}
         <Tabs defaultValue="deliverables">
-          <TabsList className="mb-2.5">
-            <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
-            <TabsTrigger value="costs">Costs</TabsTrigger>
-            <TabsTrigger value="rights">Rights</TabsTrigger>
-          </TabsList>
+          <div className="mb-2.5 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+            {/* deliverables, costs,rights  */}
+            <TabsList className="justify-self-start">
+              <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
+              <TabsTrigger value="costs">Costs</TabsTrigger>
+              <TabsTrigger value="rights">Rights</TabsTrigger>
+            </TabsList>
+
+            {/* table search bar  */}
+            <TableSearch
+              value={search}
+              onChange={setSearch}
+              placeholder="Search creators"
+            />
+        
+
+          </div>
           <TabsContent value="deliverables">
-            <PitchCreatorTable columns={deliverableColumns} rows={data.creators} />
+            <PitchCreatorTable columns={deliverableColumns} rows={creators} onOpen={setOpenCreatorId} />
           </TabsContent>
           <TabsContent value="costs">
-            <PitchCreatorTable columns={costColumns} rows={data.creators} />
+            <PitchCreatorTable columns={costColumns} rows={creators} onOpen={setOpenCreatorId} />
           </TabsContent>
           <TabsContent value="rights">
-            <PitchCreatorTable columns={rightsColumns} rows={data.creators} />
+            <PitchCreatorTable columns={rightsColumns} rows={creators} onOpen={setOpenCreatorId} />
           </TabsContent>
         </Tabs>
+
       </section>
+
+      {openCreatorId && (
+        <CreatorDrawer creatorId={openCreatorId} onClose={() => setOpenCreatorId(null)} />
+      )}
     </div>
   );
 }
@@ -164,25 +188,29 @@ export function PitchDetailPage() {
 function PitchCreatorTable({
   columns,
   rows,
+  onOpen,
 }: {
   columns: Column<PitchCreatorRow>[];
   rows: PitchCreatorRow[];
+  onOpen: (creatorId: string) => void;
 }) {
   return (
-    <DataTable
-      columns={columns}
-      rows={rows}
-      rowKey={(row) => row.creator_id}
-      maxHeightClass="max-h-[32rem]"
-      emptyState={
-        <p className="px-4 py-8 text-center text-xs text-muted-foreground">
-          No creators listed against this pitch yet.
-        </p>
-      }
-    />
+    <div data-rp-pop="results">
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(row) => row.creator_id}
+        onRowClick={(row) => onOpen(row.creator_id)}
+        maxHeightClass="max-h-[32rem]"
+        emptyState={
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">
+            No creators found
+          </p>
+        }
+      />
+    </div>
   );
 }
-
 const identityColumns: Column<PitchCreatorRow>[] = [
   {
     id: 'creator',
@@ -192,20 +220,12 @@ const identityColumns: Column<PitchCreatorRow>[] = [
 
       return (
         <span className="flex items-center gap-2.25">
-          <Link
-            to={`/creators/${row.creator_id}`}
-            className="flex size-7 shrink-0 items-center justify-center rounded-full border border-rp-border bg-rp-surface2 text-[10.5px] font-bold"
-          >
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-rp-border bg-rp-surface2 text-[10.5px] font-bold">
             {initials(row.name)}
-          </Link>
+          </span>
 
           <span className="min-w-0">
-            <Link
-              to={`/creators/${row.creator_id}`}
-              className="block truncate font-semibold text-rp-text hover:underline"
-            >
-              {row.name}
-            </Link>
+            <span className="block truncate font-semibold text-rp-text">{row.name}</span>
 
             {row.username &&
               (profileUrl ? (
@@ -244,11 +264,26 @@ const deliverableColumns: Column<PitchCreatorRow>[] = [
   {
     id: 'platform',
     header: 'Platform',
-    cell: (row) => (
-      <span title={PLATFORM_LABELS[row.platform] ?? row.platform}>
-        <PlatformMark platform={row.platform} size={15} />
-      </span>
-    ),
+    cell: (row) => {
+      const profileUrl = profileUrlFor(row);
+      const label = PLATFORM_LABELS[row.platform] ?? row.platform;
+      return profileUrl ? (
+        <a
+          href={profileUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          title={`Open profile on ${label}`}
+          className="inline-flex rounded-md p-0.5 hover:bg-rp-surface2"
+        >
+          <PlatformMark platform={row.platform} size={15} />
+        </a>
+      ) : (
+        <span title={label}>
+          <PlatformMark platform={row.platform} size={15} />
+        </span>
+      );
+    },
+
   }, { id: 'tier', header: 'Tier', cell: (row) => <TierBadge tier={row.tier} /> },
   { id: 'followers', header: 'Followers', numeric: true, cell: (row) => formatNumber(row.followers) },
   { id: 'reels', header: 'Reels', numeric: true, cell: (row) => count(row.reel_count) },
@@ -292,7 +327,7 @@ const rightsColumns: Column<PitchCreatorRow>[] = [
     id: 'usage',
     header: 'Usage rights',
     cell: (row) => row.usage_rights?.trim() || '—',
-    
+
   },
   {
     id: 'ad_promo',

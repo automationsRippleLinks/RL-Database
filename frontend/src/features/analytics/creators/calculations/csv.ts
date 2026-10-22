@@ -2,7 +2,6 @@ import { FIELD_BY_KEY } from '../rules/config';
 import type { ScoredCreator } from './score';
 
 const COLUMNS = ['Name', 'Username', 'Platform', 'Followers', 'Avg views', 'Email', 'Phone', 'City', 'State', 'Gender', 'Category', 'Language', 'Profile URL', 'Missing fields', 'Missing count'];
-
 /** Stops spreadsheet programs from running a cell that starts with = @ - + as a formula. Phone numbers (+91...) and negatives stay as they are. */
 function safe(text: string): string {
   return /^[=@\t\r]|^[-+](?!\d)/.test(text) ? `'${text}` : text;

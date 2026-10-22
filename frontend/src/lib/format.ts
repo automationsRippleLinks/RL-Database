@@ -52,6 +52,28 @@ export function formatDateTime(value: string | null | undefined): string {
     minute: '2-digit',
   });
 }
+export function formatMonthYear(
+  month: number | null | undefined,
+  year: number | null | undefined,
+) : string{
+  if (!year) return '';
+  if (!month || month < 1 || month >12) return String(year);
+  return new Date(year, month - 1, 1).toLocaleDateString('en-IN',{
+    month : 'short',
+    year: 'numeric',
+  });
+}
+
+/** True when this month and year are more than 12 months ago. Unknown date = false. */
+export function isOlderThanYear(
+  month: number | null | undefined,
+  year: number | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!month || !year) return false;
+  const monthsAgo = now.getFullYear() * 12 + now.getMonth() - (year * 12 + (month - 1));
+  return monthsAgo > 12;
+}
 
 /**
  * CampaignCreatorLink stores watch times as Postgres intervals (Python timedelta).

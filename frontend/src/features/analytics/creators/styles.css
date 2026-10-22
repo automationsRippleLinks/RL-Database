@@ -66,7 +66,8 @@
 .cc-fr-l { padding-right: 8px; line-height: 1.2; }
 .cc-fr-l small { display: block; color: var(--muted); font-size: 12px; }
 .cc-fr-p { position: relative; height: 24px; margin-right: var(--gut); }
-.cc-fr-b { position: absolute; left: 0; top: 50%; height: 16px; transform: translateY(-50%); width: calc(var(--p) * 100%); background: var(--miss); border-radius: 0 4px 4px 0; }
+.cc-fr-b { position: absolute; left: 0; top: 50%; height: 16px; transform: translateY(-50%); width: calc(var(--p) * 100%);
+background: color-mix(in srgb, var(--miss) 62%, var(--surface)); border-radius: 0 4px 4px 0;  }
 .cc-fr-v { position: absolute; top: 50%; left: calc(var(--p) * 100% + 8px); transform: translateY(-50%); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cc-fr-v b { font-weight: 600; }
 .cc-fr-v i { font-style: normal; color: var(--muted); margin-left: 6px; font-size: 13px; }
@@ -123,7 +124,7 @@ button.cc-tag:hover { border-color: var(--ink2); }
 .cc-pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 .cc-pager div { display: flex; gap: 8px; align-items: center; }
 .cc-pager button { min-height: 32px; padding: 0 12px; border: 1px solid var(--axis); border-radius: 8px; color: var(--ink); }
-.cc-pager button:hover:not(:disabled) { background: var(--hover); }
+/* .cc-pager button:hover:not(:disabled) { background: var(--hover); } */
 
 /* drawer */
 .cc-scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.38); opacity: 0; pointer-events: none; transition: opacity 0.18s; z-index: 40; }
@@ -224,10 +225,13 @@ button.cc-more:hover { background: var(--hover); }
 .cc-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .cc-view-only { margin-bottom: 14px; padding: 10px 12px; border: 1px solid var(--edge); border-radius: 8px; color: var(--ink2); font-size: 13px; }
 
-.cc-form { display: grid; gap: 14px; }
+.cc-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.cc-ff { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
 .cc-form-title { margin: 0; font-size: 16px; font-weight: 700; }
+.cc-form-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cc-clear { min-height: 28px; padding: 0 10px; border: 1px solid var(--axis); border-radius: 8px; background: transparent; font-size: 12px; font-weight: 500; }
+.cc-clear:hover:not(:disabled) { background: var(--hover); }
 .cc-form-note { margin: -8px 0 0; color: var(--muted); font-size: 13px; }
-.cc-ff { display: grid; gap: 6px; }
 .cc-fl-label { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; }
 .cc-tag-sm { min-height: 20px; font-size: 11px; padding: 0 7px 0 6px; font-weight: 500; }
 .cc-form input[type="text"], .cc-form select { width: 100%; min-height: 38px; padding: 0 10px; border: 1px solid var(--axis); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
@@ -241,19 +245,6 @@ button.cc-more:hover { background: var(--hover); }
 .cc-pickchip:hover { background: var(--hover); }
 .cc-pickchip[aria-checked="true"] { background: var(--wash); border-color: var(--series); color: var(--ink); font-weight: 600; }
 .cc-form-actions { display: flex; gap: 8px; position: sticky; bottom: 0; padding-block: 10px; background: var(--surface); }
-
-
-/* shell: sidebar + top bar (matches the Modash-style mockup, in the project's dark theme) */
-
-
-/* platform icon chips */
-.cc-pi { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; }
-.cc-pi svg { width: 18px; height: 18px; }
-.cc-pi-instagram { color: oklch(0.75 0.17 350); background: oklch(0.75 0.17 350 / 0.15); }
-.cc-pi-youtube { color: oklch(0.72 0.19 27); background: oklch(0.72 0.19 27 / 0.15); }
-.cc-pi-linkedin { color: oklch(0.72 0.14 245); background: oklch(0.72 0.14 245 / 0.15); }
-.cc-pi-facebook { color: oklch(0.72 0.15 260); background: oklch(0.72 0.15 260 / 0.15); }
-.cc-pi-other { color: var(--ink2); background: var(--hover); }
 
 /* missing tag: alert icon + short tooltip on hover or keyboard focus */
 /* .cc-tag { position: relative; }
@@ -299,8 +290,7 @@ button.cc-more:hover { background: var(--hover); }
 .cc-heat-na { display: grid; place-items: center; color: var(--muted); font-size: 12px; border-radius: 8px; border: 1px dashed var(--line); }
 .cc-heat-avg { display: grid; place-items: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .cc-heat-key { display: flex; align-items: center; gap: 10px; margin-top: 14px; color: var(--muted); font-size: 13px; flex-wrap: wrap; }
-.cc-heat-key i { width: 140px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, color-mix(in srgb, var(--series) 8%, var(--surface2)), color-mix(in srgb, var(--series) 70%, var(--surface2))); }
-.cc-heat-note { margin-left: 8px; }
+.cc-heat-key i { width: 36px; height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--series) calc(8% + var(--h) * 62%), var(--surface2)); }.cc-heat-note { margin-left: 8px; }
 .cc-heat { overflow-x: auto; }
 .cc-heat-c { text-align: center; }
 
@@ -339,3 +329,13 @@ button.cc-more:hover { background: var(--hover); }
 .cc-view-btn { width: 32px; height: 32px; border-radius: 8px; display: inline-grid; place-items: center; color: var(--muted); }
 .cc-view-btn:hover { background: var(--hover); color: var(--ink); }
 .cc-view-btn svg { width: 16px; height: 16px; }
+/* Fixed column widths, so sorting or paging never moves the columns */
+.cc-ct { table-layout: fixed; }
+.cc-ct th:nth-child(1) { width: 34%; }
+.cc-ct th:nth-child(2) { width: 120px; }
+.cc-ct th:nth-child(4) { width: 72px; }
+
+.cc-switch { position: relative; width: 38px; height: 22px; border-radius: 999px; border: 1px solid var(--axis); background: var(--surface); cursor: pointer; transition: background .15s, border-color .15s; }
+.cc-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--axis); transition: transform .15s, background .15s; }
+.cc-switch[aria-checked='true'] { background: var(--series); border-color: var(--series); }
+.cc-switch[aria-checked='true']::after { transform: translateX(16px); background: var(--series-fg); }

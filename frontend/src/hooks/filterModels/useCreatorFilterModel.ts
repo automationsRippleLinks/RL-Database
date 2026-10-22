@@ -44,10 +44,13 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
   const folMax = url.getString("max_followers");
   const viewMin = url.getString("min_views");
   const viewMax = url.getString("max_views");
-  const contact = url.getString("contact") || "contact";
+  // const contact = url.getString("contact") || "contact";
+  const contact = url.getString("contact");
   const hasPackage = url.getString("package") === "1";
   const pkgMin = url.getString("min_package");
   const pkgMax = url.getString("max_package");
+  const cpvMin = url.getString("min_cpv");
+  const cpvMax = url.getString("max_cpv");
 
   /** Every filter change resets to page 1 — page 7 of a smaller set is a dead end. */
   const set = (updates: Parameters<typeof url.setParams>[0]) =>
@@ -93,8 +96,12 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
     location: regions.length + states.length + cities.length,
     reach: (folMin || folMax ? 1 : 0) + (viewMin || viewMax ? 1 : 0),
     // contact: contact ? 1 : 0,
-    contact: contact !== "contact" && contact !== "none" ? 1 : 0,
-    deliverables: (hasPackage ? 1 : 0) + (pkgMin || pkgMax ? 1 : 0),
+    // contact: contact !== "contact" && contact !== "none" ? 1 : 0,
+    contact: contact ? 1 : 0,
+    deliverables:
+      (hasPackage ? 1 : 0) +
+      (pkgMin || pkgMax ? 1 : 0) +
+      (cpvMin || cpvMax ? 1 : 0),
   };
   const totalApplied = Object.values(counts).reduce(
     (sum, count) => sum + count,
@@ -118,12 +125,15 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
     hasPackage,
     pkgMax,
     pkgMin,
+    cpvMin,
+    cpvMax,
   };
 
   const actions = {
     setPlatforms: (next: string[]) => set({ platform: next }),
-    // setContact: (next: string | null) => set({ contact: next }),
-    setContact: (next: string | null) => set({ contact: next ?? "none" }),
+
+    // setContact: (next: string | null) => set({ contact: next ?? "none" }),
+    setContact: (next: string | null) => set({ contact: next }),
     setBrands: (next: string[]) => set({ c_brand: next }),
     setCategories: (next: string[]) => set({ category: next }),
     setLanguages: (next: string[]) => set({ language: next }),
@@ -146,6 +156,9 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
         min_package: min,
         max_package: max,
       }),
+    // CPV (cost per view) range, decimals like 0.75.
+    setCpv: (min: string, max: string) =>
+      set({ min_cpv: min, max_cpv: max }),
 
     clearAll: (clearQuery: boolean = false) =>
       set({
@@ -165,6 +178,9 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
         package: null,
         min_package: null,
         max_package: null,
+        min_cpv: null,
+        max_cpv: null,
+
         ...(clearQuery && { q: null }),
       }),
   };
@@ -256,11 +272,25 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
         });
       }
     }
+    if (cpvMin || cpvMax) {
+      list.push({
+        key: "cpv",
+        label: `CPV ₹${cpvMin || "any"}–${cpvMax || "any"}`,
+        remove: () => set({ min_cpv: null, max_cpv: null }),
+      });
+    }
     if (viewMin || viewMax) {
       list.push({
         key: "views",
         label: `Views ${viewMin || "any"}–${viewMax || "any"}`,
         remove: () => set({ min_views: null, max_views: null }),
+      });
+    }
+    if (contact) {
+      list.push({
+        key: "contact",
+        label: `has ${contact}`,
+        remove: () => set({ contact: null }),
       });
     }
     return list;
@@ -282,8 +312,11 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
     hasPackage,
     pkgMax,
     pkgMin,
+    cpvMin,
+    cpvMax,
     url,
+    contact,
   ]);
 
-  return { options, counts, totalApplied, values, actions, pills };
+  return { options, counts, totalApplied, values, actions, pills, contact };
 }

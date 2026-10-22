@@ -2,6 +2,7 @@ import { Globe } from 'lucide-react';
 import { PLATFORM_LABELS } from '@/lib/enums';
 import { cn } from '@/lib/utils';
 import type { Platform } from '@/types/api';
+import { profileUrlFor } from '@/lib/format';
 
 /**
  * The platform column and drawer header render a brand mark rather than a text
@@ -58,4 +59,34 @@ export function PlatformMark({
 /** True when this platform has a brand mark to show in the filter list. */
 export function hasMark(platform: Platform): boolean {
   return platform in MARK_FILES;
+}
+
+/**
+ * The platform mark as a link to the creator's profile on that platform.
+ * Falls back to the plain mark when no profile link can be worked out.
+ * stopPropagation keeps a click here from also opening the row's drawer.
+ */
+export function PlatformLink({
+  row,
+  size,
+}: {
+  row: { platform: Platform; username: string; profile_url?: string | null };
+  size?: number;
+}) {
+  const url = profileUrlFor(row);
+  const mark = <PlatformMark platform={row.platform} size={size} />;
+  if (!url) return mark;
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer noopener"
+      onClick={(event) => event.stopPropagation()}
+      title={`Open profile on ${PLATFORM_LABELS[row.platform] ?? row.platform}`}
+      className="inline-flex"
+    >
+      {mark}
+    </a>
+  );
 }

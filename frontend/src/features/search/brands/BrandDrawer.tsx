@@ -82,6 +82,8 @@ export function BrandDrawer({
     clearTimeout(swapTimer.current);
     swapTimer.current = undefined;
 
+    setClosing(true);
+
     swapTimer.current = setTimeout(() => {
       setDisplayedId(brandId);
 

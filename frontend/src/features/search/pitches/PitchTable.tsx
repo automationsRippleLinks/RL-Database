@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 import { DataTable, type Column } from '@/components/DataTable';
-import { PlatformMark } from '@/components/PlatformMark';
+import { PlatformLink} from '@/components/PlatformMark';
 import {
   ORG_TYPE_LABELS,
   PITCH_REQUIREMENT_LABELS,
@@ -42,14 +42,14 @@ const columns: Column<PitchRow>[] = [
   {
     id: 'brand',
     header: 'Brand',
-    headerClassName: 'text-left w-30',
+    headerClassName: 'text-left w-39',
     cell: (row) =>
       row.brand ? (
         <Link
           to={`/brands/${row.brand.id}`}
           state={withBackState(window.location).state}
           onClick={(event) => event.stopPropagation()}
-          className="block truncate font-medium text-rp-primary hover:underline"
+          className="inline truncate font-medium text-rp-primary hover:underline"
         >
           {row.brand.name}
         </Link>
@@ -57,6 +57,7 @@ const columns: Column<PitchRow>[] = [
         <span className="text-rp-muted italic">not linked</span>
       ),
   },
+
 
   // Platform
   {
@@ -67,9 +68,9 @@ const columns: Column<PitchRow>[] = [
       row.platform.length > 0 ? (
         <span className="inline-flex items-center gap-1.5">
           {row.platform.filter(Boolean).map((platform, index) => (
-            <PlatformMark
+            <PlatformLink
               key={`${platform}-${index}`}
-              platform={platform}
+              row={{ platform, username: '' }}
               size={15}
             />
           ))}
@@ -77,8 +78,7 @@ const columns: Column<PitchRow>[] = [
       ) : (
         <span className="text-rp-muted">—</span>
       ),
-  },
-
+    },
   // Type
   {
     id: 'type',
