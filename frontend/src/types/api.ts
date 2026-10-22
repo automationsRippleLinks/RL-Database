@@ -11,38 +11,56 @@
 // Note the wire values: tier "mid-tier" is hyphenated, and TierChoices.NA is "".
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type Platform = 'instagram' | 'youtube' | 'linkedin' | 'facebook' | 'others' | 'NA';
+export type Platform =
+  | "instagram"
+  | "youtube"
+  | "linkedin"
+  | "facebook"
+  | "others"
+  | "NA";
 
-export type Tier = 'nano' | 'micro' | 'mid-tier' | 'macro' | 'mega' | 'celeb' | '';
+export type Tier =
+  | "nano"
+  | "micro"
+  | "mid-tier"
+  | "macro"
+  | "mega"
+  | "celeb"
+  | "";
 
-export type CampaignStatus = 'completed' | 'on hold' | 'scrapped' | 'wip';
+export type CampaignStatus = "completed" | "on hold" | "scrapped" | "wip";
 
 export type Month =
-  | 'january'
-  | 'february'
-  | 'march'
-  | 'april'
-  | 'may'
-  | 'june'
-  | 'july'
-  | 'august'
-  | 'september'
-  | 'october'
-  | 'november'
-  | 'december';
+  | "january"
+  | "february"
+  | "march"
+  | "april"
+  | "may"
+  | "june"
+  | "july"
+  | "august"
+  | "september"
+  | "october"
+  | "november"
+  | "december";
 
-export type OrgType = 'Brand_Core' | 'Brand_Other' | 'Agency' | 'Retainer_Account' | 'NA';
+export type OrgType =
+  | "Brand_Core"
+  | "Brand_Other"
+  | "Agency"
+  | "Retainer_Account"
+  | "NA";
 
 export type PitchRequirement =
-  | 'list'
-  | 'plan'
-  | 'list_and_plan'
-  | 'content_buckets'
-  | 'media_plan'
-  | 'production'
-  | 'content_buckets_and_list'
-  | 'demographics_data'
-  | 'NA';
+  | "list"
+  | "plan"
+  | "list_and_plan"
+  | "content_buckets"
+  | "media_plan"
+  | "production"
+  | "content_buckets_and_list"
+  | "demographics_data"
+  | "NA";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth
@@ -53,18 +71,22 @@ export interface SessionUser {
   name: string;
   email: string;
   is_verified: boolean;
-  auth_provider: 'password' | 'google';
+  auth_provider: "password" | "google";
   /**
    * Backend-owned. The UI only follows these to show or hide buttons; the
    * backend's 403 is authoritative.
    */
   permissions: {
-    can_ingest: boolean;
+    /** May upload data and manage tags (the Ingest and Tags pages). */
+    can_edit: boolean;
     /** May change creator details (the dashboard's edit form). */
-    can_edit?: boolean;
-    /** Includes super admins. */
-    is_admin?: boolean;
-    is_superadmin?: boolean;
+    can_ingest: boolean;
+    /** Includes super admins. May clear someone else's edit lock. */
+    /** may change a creator's username and profiel link, needs a can_edit permission too */
+    can_edit_profile_link?: boolean;
+
+    is_admin: boolean;
+    is_superadmin: boolean;
   };
 }
 
@@ -109,21 +131,21 @@ export interface ResetPasswordRequest {
  * the header isn't readable — see PROPOSED_BACKEND_CHANGES.md.
  */
 export type AuthErrorCode =
-  | 'invalid_credentials'
-  | 'domain_not_allowed'
-  | 'not_verified'
-  | 'google_denied'
-  | 'google_no_email'
-  | 'state_mismatch'
-  | 'invalid_token'
-  | 'rate_limited'
-  | 'unknown';
+  | "invalid_credentials"
+  | "domain_not_allowed"
+  | "not_verified"
+  | "google_denied"
+  | "google_no_email"
+  | "state_mismatch"
+  | "invalid_token"
+  | "rate_limited"
+  | "unknown";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Search — one envelope shared by all four scopes so one table serves them all
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type SearchScope = 'creators' | 'brands' | 'campaigns' | 'pitches';
+export type SearchScope = "creators" | "brands" | "campaigns" | "pitches";
 
 export interface Paging {
   page: number;
@@ -141,32 +163,33 @@ export interface SearchResponse<Row> extends Paging {
 // ── Creators ────────────────────────────────────────────────────────────────
 
 export type CreatorSort =
-  | 'relevance'
-  | 'followers_desc'
-  | 'followers_asc'
-  | 'avg_views_desc'
-  | 'avg_views_asc'
-  | 'name_asc'
-  | 'name_desc'
-  | 'campaigns_desc'
-  | 'package_cost_desc'
-  | 'package_cost_asc'
+  | "relevance"
+  | "followers_desc"
+  | "followers_asc"
+  | "avg_views_desc"
+  | "avg_views_asc"
+  | "name_asc"
+  | "name_desc"
+  | "campaigns_desc"
+  | "package_cost_desc"
+  | "package_cost_asc"
   /** Most / fewest missing details first (the data-quality dashboard's table). */
-  | 'gaps_desc'
-  | 'gaps_asc';
+  | "gaps_desc"
+  | "gaps_asc";
 
-  /**
-   * Added for the redesign's Sort menu ("Most campaigns with us"). The backend
-   * has to recognise it; an unknown sort falls back to relevance there, so the
-   * failure mode is a wrongly-ordered page rather than an error.
-   */
+/**
+ * Added for the redesign's Sort menu ("Most campaigns with us"). The backend
+ * has to recognise it; an unknown sort falls back to relevance there, so the
+ * failure mode is a wrongly-ordered page rather than an error.
+ */
 
 /**
  * How a creator relates to the campaigns they appear on. `worked` excludes
  * campaigns they were dropped from, which is how the rest of the app reads
  * `is_dropped` too.
  */
-export type CampaignInvolvement = 'worked' | 'never' | 'dropped_only';
+
+export type CampaignInvolvement = "worked" | "never" | "dropped_only";
 
 export interface CreatorFilters {
   platforms: Platform[];
@@ -208,17 +231,22 @@ export interface CreatorFilters {
   max_followers: number | null;
   min_avg_views: number | null;
   max_avg_views: number | null;
-  has_package: boolean;
-  min_package_cost: number | null;
-  max_package_cost: number | null;
+  has_commercial: boolean;
+  min_commercial_cost: number | null;
+  max_commercial_cost: number | null;
+  /** Cost per view = latest cost ÷ avg views, rounded to 2 places. Decimals. */
+  min_cpv?: number | null;
+  max_cpv?: number | null;
   /**
    * Only creators missing this one detail, or `'any'` for creators missing at least
    * one of the nine. Used by the data-quality dashboard. Optional so the main
    * Creators page does not have to send it.
    */
-  missing?: MissingField | 'any' | null;
+  missing?: MissingField | "any" | null;
   /** true = active profiles only (the backend default), false = inactive only, null = both. */
   is_active?: boolean | null;
+  username?: string;
+  profile_link?: string;
 }
 
 export interface CreatorSearchRequest extends CreatorFilters, Paging {
@@ -260,6 +288,17 @@ export interface CreatorRow {
    * because the field is absent would be worse than admitting we don't know.
    */
   campaign_count?: number | null;
+  // newest pitch/campaign cost fofr this creator. null = no cost anywhere.
+  latest_cost?: number | null;
+  latest_cost_source?: string | null;
+  /** What the latest cost covered. null or empty = unknown. */
+  latest_cost_deliverables?: LatestCostDeliverable[] | string | null;
+  latest_cost_month?: number | null;
+  latest_cost_year?: number | null;
+
+  /** Cost per view, worked out by the backend (latest cost ÷ avg views). */
+
+  cpv?: number | null;
   /** false = the profile is gone from the platform. Search hides these by default. */
   is_active?: boolean;
   /**
@@ -277,6 +316,7 @@ export interface CreatorPitchSummary {
   campaign_name: string;
   platform: Platform[];
   final_cost: number | null;
+  package_cost?: number | null;
   brand_cost: number | null;
 }
 
@@ -290,6 +330,7 @@ export interface CreatorCampaignSummary {
   status: CampaignStatus;
   is_dropped: boolean;
   live_date: string | null;
+  initial_cost?: number | null;
   final_cost: number | null;
   /** Views on whichever platform the deliverable ran on. */
   views: number | null;
@@ -297,22 +338,30 @@ export interface CreatorCampaignSummary {
   cpv: string | null;
 }
 
-export interface CreatorPackageItem {
+// export interface CreatorPackageItem {
+//   deliverable_type: string;
+//   quantity: number;
+//   price: number;
+// }
+
+// export interface CreatorPackage {
+//   id: string;
+//   name: string;
+//   cost: number;
+//   valid_from: string;
+//   items: CreatorPackageItem[];
+// }
+
+export interface LatestCostDeliverable {
   deliverable_type: string;
   quantity: number;
   price: number;
 }
 
-export interface CreatorPackage {
-  id: string;
-  name: string;
-  cost: number;
-  valid_from: string;
-  items: CreatorPackageItem[];
-}
-
 export interface CreatorDetail extends CreatorRow {
-  package: CreatorPackage | null;
+  latest_cost_month?: number | null;
+  latest_cost_year?: number | null;
+  // package: CreatorPackage | null;
   pitches: CreatorPitchSummary[];
   campaigns: CreatorCampaignSummary[];
 }
@@ -337,12 +386,12 @@ export interface BrandRef {
 }
 
 export type BrandSort =
-  | 'relevance'
-  | 'name_asc'
-  | 'name_desc'
-  | 'campaigns_desc'
-  | 'pitches_desc'
-  | 'recent_desc';
+  | "relevance"
+  | "name_asc"
+  | "name_desc"
+  | "campaigns_desc"
+  | "pitches_desc"
+  | "recent_desc";
 
 export interface BrandFilters {
   org_types: OrgType[];
@@ -393,12 +442,12 @@ export interface BrandDetail extends BrandRow {
 // ── Campaigns ───────────────────────────────────────────────────────────────
 
 export type CampaignSort =
-  | 'relevance'
-  | 'start_date_desc'
-  | 'start_date_asc'
-  | 'code_asc'
-  | 'code_desc'
-  | 'creators_desc';
+  | "relevance"
+  | "start_date_desc"
+  | "start_date_asc"
+  | "code_asc"
+  | "code_desc"
+  | "creators_desc";
 
 export interface CampaignFilters {
   statuses: CampaignStatus[];
@@ -504,12 +553,12 @@ export interface CampaignDetail extends CampaignRow {
 // ── Pitches ─────────────────────────────────────────────────────────────────
 
 export type PitchSort =
-  | 'relevance'
-  | 'created_desc'
-  | 'created_asc'
-  | 'code_asc'
-  | 'code_desc'
-  | 'creators_desc';
+  | "relevance"
+  | "created_desc"
+  | "created_asc"
+  | "code_asc"
+  | "code_desc"
+  | "creators_desc";
 
 export interface PitchFilters {
   org_types: OrgType[];
@@ -718,7 +767,7 @@ export interface FacetsByScope {
 // maintainable from the app.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type TaxonomyKind = 'categories' | 'languages';
+export type TaxonomyKind = "categories" | "languages";
 
 export interface TaxonomyTerm {
   id: number;
@@ -735,58 +784,39 @@ export interface TaxonomyList {
 // ─────────────────────────────────────────────────────────────────────────────
 // Ingestion
 // ─────────────────────────────────────────────────────────────────────────────
-
-/** Matches IngestType in backend/app/api/v1/ingest.py. */
+/** Matches IngestSource in backend/app/models/ingest_job.py. */
 export type IngestSource =
-  | 'pitch_master'
-  | 'campaign_master'
-  | 'pitch_creator'
-  | 'campaign_creator'
-  | 'brands';
+  | "creator"
+  | "pitch_master"
+  | "campaign_master"
+  | "pitch_creator"
+  | "campaign_creator";
 
 export interface IngestSourceInfo {
   source: IngestSource;
   label: string;
-  /** pitch_creator and campaign_creator are declared in the enum but unimplemented. */
-  apps_script_supported: boolean;
-  upload_supported: boolean;
   last_job: IngestJob | null;
-  /** Rows currently in the DB from this source, for a before/after sense of scale. */
-  row_count: number | null;
+  /** Rows currently in the database for this source. */
+  row_count: number;
 }
 
-export type IngestJobStatus =
-  | 'queued'
-  | 'running'
-  | 'success'
-  | 'partial_success'
-  | 'failed';
+export type IngestJobStatus = "queued" | "running" | "success" | "failed";
 
 export interface IngestRowError {
-  /** Sheet row where the backend can work it out, else the index in the array. */
+  /** The row's position in the file (the first row is 1). 0 means the whole file. */
   row: number;
   field?: string | null;
   message: string;
-  /**
-   * Machine-readable reason. `invalid_email`, `unknown_category`,
-   * `unknown_language` and `batch_rejected` are the blocking ones -- they mean
-   * nothing was written and the file has to be fixed.
-   */
-  code?: string | null;
-  /**
-   * Warnings are advisory: the row still went in, with something coerced. They
-   * outnumber real errors on a typical export, so they must not be rendered the
-   * same way.
-   */
-  severity?: 'error' | 'warning';
 }
 
 export interface IngestJob {
   job_id: string;
   source: IngestSource;
-  origin: 'apps_script' | 'upload';
+  /** upload = a check (nothing saved), commit = the step that saves it. */
+  origin: "upload" | "commit";
   status: IngestJobStatus;
   dry_run: boolean;
+  file_name: string | null;
   started_at: string;
   finished_at: string | null;
   started_by: string | null;
@@ -796,13 +826,12 @@ export interface IngestJob {
     updated: number;
     skipped: number;
     failed: number;
-    /** Errors beyond the 500 the backend stores per job. */
-    errors_truncated?: number;
+    /** Errors beyond the 500 the backend keeps per job. */
+    errors_truncated: number;
   };
   errors: IngestRowError[];
   message: string | null;
 }
-
 export interface IngestJobList {
   jobs: IngestJob[];
 }
@@ -816,18 +845,18 @@ export interface IngestJobList {
  * backend uses for the `missing` filter and in the summary below.
  */
 export type MissingField =
-  | 'followers'
-  | 'avg_views'
-  | 'emails'
-  | 'phones'
-  | 'gender'
-  | 'city'
-  | 'state'
-  | 'categories'
-  | 'languages';
+  | "followers"
+  | "avg_views"
+  | "emails"
+  | "phones"
+  | "gender"
+  | "city"
+  | "state"
+  | "categories"
+  | "languages";
 
 /** `__none__` in `categories` / `languages` means "creators with none". */
-export const NONE_VALUE = '__none__';
+export const NONE_VALUE = "__none__";
 
 /** POST /analytics/creators/summary */
 export interface CreatorSummaryRequest {
@@ -921,5 +950,5 @@ export interface CreatorUpdate {
   /** Taxonomy ids. */
   categories?: number[];
   languages?: number[];
+  is_active?: boolean;
 }
-

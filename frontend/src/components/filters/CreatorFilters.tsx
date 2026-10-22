@@ -17,7 +17,7 @@ const GROUPS: { key: FilterGroupKey; label: string; icon: LucideIcon }[] = [
   { key: 'location', label: 'Location', icon: MapPin },
   { key: 'reach', label: 'Reach', icon: Users },
   { key: 'contact', label: 'Contact', icon: ContactIcon },
-  { key: 'deliverables', label: 'Deliverables', icon: Package },
+  { key: 'deliverables', label: 'Commercials', icon: Package },
 ];
 const CONTACT_OPTIONS = [
   { value: 'contact', label: 'Has Contact', icon: ContactIcon },
@@ -213,7 +213,8 @@ export default function CreatorFilters({
                   <IconFilter
                     options={CONTACT_OPTIONS}
                     // selected={model.values.contact ? [model.values.contact] : []}
-                    selected={model.values.contact && model.values.contact !== 'none' ? [model.values.contact] : []} onChange={(values) =>
+                    // selected={model.values.contact && model.values.contact !== 'none' ? [model.values.contact] : []} onChange={(values) =>
+                    selected={model.values.contact ? [model.values.contact] : []} onChange={(values) =>
                       model.actions.setContact(values[values.length - 1] ?? null)
                     }
                   />
@@ -228,7 +229,7 @@ export default function CreatorFilters({
                           onChange={(event) =>
                             model.actions.setHasPackage(event.target.checked)
                           }
-                          className="peer size-4 cursor-pointer appearance-none rounded-full border border-current bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rp-primary"
+                          className="peer size-4 cursor-pointer appearance-none rounded-full border border-current bg-transparent focus-visible:outline focus-visible:outline- focus-visible:outline-offset-2 focus-visible:outline-rp-primary"
                         />
 
                         {/* Show only a tick inside the circle when selected. */}
@@ -246,7 +247,7 @@ export default function CreatorFilters({
                         </svg>
                       </span>
 
-                      <span>Has package</span>
+                      <span>Has Commercials</span>
                     </label>
 
                     <RangeControl
@@ -254,6 +255,14 @@ export default function CreatorFilters({
                       min={model.values.pkgMin}
                       max={model.values.pkgMax}
                       onChange={model.actions.setPackageCost}
+                    />
+
+                    <RangeControl
+                      label="CPV (₹)"
+                      decimal
+                      min={model.values.cpvMin}
+                      max={model.values.cpvMax}
+                      onChange={model.actions.setCpv}
                     />
                   </>
                 )}

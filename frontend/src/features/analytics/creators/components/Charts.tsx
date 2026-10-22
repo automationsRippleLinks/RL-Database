@@ -6,8 +6,7 @@ import type { Action, State } from '../state';
 import type { CreatorSummary } from '@/types/api';
 import { BarChart, type BarItem } from './BarChart';
 import { ChartPanel, EmptyChart } from './ChartPanel';
-import { PlatformIcon } from './Icons';
-
+import { PlatformMark } from '@/components/PlatformMark';
 /** After a chart click, scroll down to the table so the filtered list is in view. */
 const toTable = () => document.getElementById('cc-table')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -102,8 +101,7 @@ function HeatmapChart({ summary, state, dispatch }: Props) {
                       if (!rowOn) toTable();
                     }}
                   >
-                    <PlatformIcon platform={p.platform} label={label} />
-                  </button>
+                    <PlatformMark platform={p.platform} />                  </button>
                   {FIELDS.map((f) => {
                     const cell = p.cells[f.key] ?? { applicable: 0, missing: 0 };
                     if (!cell.applicable) return <span key={f.key} className="cc-heat-na" title={`${f.label} does not apply to ${label} creators.`} />;

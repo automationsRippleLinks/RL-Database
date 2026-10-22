@@ -208,35 +208,87 @@ export interface FeedbackRequest {
 }
 
 export const feedbackApi = {
-  send: (body: FeedbackRequest): Promise<void> => api.post<void>("/feedback", body),
+  send: (body: FeedbackRequest): Promise<void> =>
+    api.post<void>("/feedback", body),
 };
 
 // ─── ingestion ───────────────────────────────────────────────────────────────
+// ─── ingestion ───────────────────────────────────────────────────────────────
+
+/** What the backend sends for a job: the counts sit directly on it. */
+interface RawIngestJob extends Omit<IngestJob, "counts" | "errors"> {
+  received: number;
+  inserted: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+  errors_truncated: number;
+  errors: IngestJob["errors"] | null;
+}
+
+/** The screens group the counts under `counts`; this is the one place that translates. */
+function toJob(raw: RawIngestJob): IngestJob {
+  const {
+    received,
+    inserted,
+    updated,
+    skipped,
+    failed,
+    errors_truncated,
+    errors,
+    ...rest
+  } = raw;
+  return {
+    ...rest,
+    counts: {
+      received,
+      inserted,
+      updated,
+      skipped,
+      failed,
+      errors_truncated: errors_truncated ?? 0,
+    },
+    errors: errors ?? [],
+  };
+}
 
 export const ingestApi = {
-  sources: ({ signal }: Ctx = {}): Promise<{ sources: IngestSourceInfo[] }> =>
-    api.get<{ sources: IngestSourceInfo[] }>("/ingest/sources", { signal }),
+  sources: async ({ signal }: Ctx = {}): Promise<{
+    sources: IngestSourceInfo[];
+  }> => {
+    const raw = await api.get<
+      (Omit<IngestSourceInfo, "last_job"> & { last_job: RawIngestJob | null })[]
+    >("/ingest/sources", { signal });
+    return {
+      sources: raw.map((s) => ({
+        ...s,
+        last_job: s.last_job ? toJob(s.last_job) : null,
+      })),
+    };
+  },
 
-  jobs: ({ signal }: Ctx = {}): Promise<{ jobs: IngestJob[] }> =>
-    api.get<{ jobs: IngestJob[] }>("/ingest/jobs", {
+  jobs: async ({ signal }: Ctx = {}): Promise<{ jobs: IngestJob[] }> => {
+    const raw = await api.get<{ jobs: RawIngestJob[] }>("/ingest/jobs", {
       signal,
       query: { limit: 20 },
-    }),
+    });
+    return { jobs: raw.jobs.map(toJob) };
+  },
 
-  job: (jobId: string, { signal }: Ctx = {}): Promise<IngestJob> =>
-    api.get<IngestJob>(`/ingest/jobs/${jobId}`, { signal }),
+  job: async (jobId: string, { signal }: Ctx = {}): Promise<IngestJob> =>
+    toJob(await api.get<RawIngestJob>(`/ingest/jobs/${jobId}`, { signal })),
 
-  runAppsScript: (source: IngestSource): Promise<IngestJob> =>
-    api.post<IngestJob>(`/ingest/apps-script/${source}`),
+  /** Saves a checked file for real. Returns the new job, which the backend runs in the background. */
+  commit: async (jobId: string): Promise<IngestJob> =>
+    toJob(await api.post<RawIngestJob>(`/ingest/jobs/${jobId}/commit`)),
 
-  upload: (
+  upload: async (
     source: IngestSource,
     rows: unknown[],
     dryRun: boolean,
     fileName: string,
   ): Promise<IngestJob> => {
-    // Sent as a file rather than a JSON body so large exports stream, and so the
-    // backend can keep the original filename on the job record.
+    // Sent as a file so large exports stream and the backend keeps the file name on the job.
     const formData = new FormData();
     formData.append(
       "file",
@@ -244,7 +296,7 @@ export const ingestApi = {
     );
     formData.append("source", source);
     formData.append("dry_run", String(dryRun));
-    return api.upload<IngestJob>("/ingest/upload", formData);
+    return toJob(await api.upload<RawIngestJob>("/ingest/upload", formData));
   },
 };
 
@@ -264,8 +316,9 @@ export const creatorEditApi = {
   open: (id: string): Promise<EditSession> =>
     api.post<EditSession>(`/creators/${id}/lock`),
 
-  /** Releases our lock. Failing to release is harmless: it expires on its own. */
-  close: (id: string): Promise<void> => api.del(`/creators/${id}/lock`),
+  /** Releases our lock (or, for an admin with force, someone else's). A failed release is harmless: it expires. */
+  close: (id: string, force = false): Promise<void> =>
+    api.del(`/creators/${id}/lock${force ? "?force=true" : ""}`),
 
   /** 409 = someone changed it since you opened it, 423 = someone else holds the lock. */
   save: (id: string, body: CreatorUpdate): Promise<EditRecord> =>

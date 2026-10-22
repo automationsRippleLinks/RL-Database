@@ -1,15 +1,14 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle } from 'lucide-react';
+// import { AlertCircle } from 'lucide-react';
 import { AccountMenu } from './AccountMenu';
-import { FeedbackDialog } from './FeedbackDialog';
+// import { FeedbackDialog } from './FeedbackDialog';
 import { PulseSearch } from './PulseSearch';
 
 export function PulseHeader() {
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  // const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
-    <header className="flex shrink-0 items-center gap-4 border-b border-rp-border px-[18px] py-[9px]">
+    <header className="flex shrink-0 items-center gap-4 border-b border-rp-border px-4.5 py-2.25">
       <Link to="/search" className="flex shrink-0 items-center gap-2.5">
         {/* White plate under the mark, and the logo scaled slightly past its box
             so it bleeds to the rounded edge instead of floating in padding. */}
@@ -25,7 +24,9 @@ export function PulseHeader() {
 
       <PulseSearch />
 
-      <div className="ml-auto flex shrink-0 items-center gap-[7px]">
+      <div className="ml-auto flex shrink-0 items-center gap-1.75">
+        {/* Feedback button hidden for now. To bring it back, uncomment this block,
+            the FeedbackDialog below, the two imports and the useState line above.
         <button
           type="button"
           onClick={() => setFeedbackOpen(true)}
@@ -35,10 +36,11 @@ export function PulseHeader() {
         >
           <AlertCircle className="size-[18px]" />
         </button>
+        */}
         <AccountMenu />
       </div>
 
-      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
+      {/* <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} /> */}
     </header>
   );
 }

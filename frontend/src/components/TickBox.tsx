@@ -1,5 +1,6 @@
-import { HugeiconsIcon } from '@hugeicons/react';
-import { CheckIcon } from '@hugeicons/core-free-icons';
+// import { HugeiconsIcon } from '@hugeicons/react';
+// import { CheckIcon } from '@hugeicons/core-free-icons';
+import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -30,8 +31,7 @@ export function TickBox({
         checked ? 'border-rp-primary bg-rp-primary text-rp-primary-fg' : 'border-rp-box',
       )}
     >
-      <HugeiconsIcon
-        icon={CheckIcon}
+      <Check
         className={cn('size-2.75', !checked && 'opacity-0')}
         strokeWidth={3.4}
       />

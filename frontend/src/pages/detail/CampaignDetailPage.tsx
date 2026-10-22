@@ -1,4 +1,5 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { ErrorState, LoadingState } from '@/components/states';
 import { StatRow, StatTile } from '@/components/StatTile';
 import { Badge } from '@/components/ui/badge';
 import { PlatformMark } from '@/components/PlatformMark';
+import { TableSearch, matchesCreator } from '@/components/TableSearch';
 import { MONTH_LABELS, PLATFORM_LABELS } from '@/lib/enums'; import {
   BrandLink,
   ChipList,
@@ -30,6 +32,7 @@ import {
 } from '@/lib/format';
 import type { CampaignCreatorRow } from '@/types/api';
 import { useCampaignDetail } from '@/features/search/queries';
+import { CreatorDrawer } from '@/features/search/creators/CreatorDrawer';
 import { useBackTo } from '@/hooks/useBackTo';
 import { withBackState } from '@/lib/navigation';
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
@@ -40,13 +43,14 @@ export function CampaignDetailPage() {
   const goBack = useBackTo('/search/campaigns');
   const { data, isPending, isError, error, refetch } = useCampaignDetail(campaignId);
   useDocumentTitle(data?.campaign_name);
-
+  const [search, setSearch] = useState('');
+  const [openCreatorId, setOpenCreatorId] = useState<string | null>(null);
   if (isPending) return <LoadingState label="Loading campaign…" />;
   if (isError) return <ErrorState error={error} onRetry={() => refetch()} />;
   if (!data) return null;
 
   const { totals } = data;
-
+  const creators = data.creators.filter((row) => matchesCreator(row, search));
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -127,57 +131,70 @@ export function CampaignDetailPage() {
       </Card>
 
       <section>
-        <SectionTitle count={data.creators.length}>Creators on this campaign</SectionTitle>
+        <SectionTitle count={creators.length}>Creators on this campaign</SectionTitle>
         {/*
           CampaignCreatorLink carries roughly sixty columns. Showing them all at once
           is unreadable, so they're split into the three questions people actually
           ask: what was agreed, what it cost, and how it performed.
         */}
         <Tabs defaultValue="delivery">
-          <TabsList className="mb-2.5">
-            <TabsTrigger value="delivery">Delivery</TabsTrigger>
-            <TabsTrigger value="commercials">Commercials</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="audience">Audience</TabsTrigger>
-          </TabsList>
+          <div className="mb-2.5 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+            <TabsList className="justify-self-start">
+              <TabsTrigger value="delivery">Delivery</TabsTrigger>
+              <TabsTrigger value="commercials">Commercials</TabsTrigger>
+              <TabsTrigger value="performance">Performance</TabsTrigger>
+              <TabsTrigger value="audience">Audience</TabsTrigger>
+            </TabsList>
+
+            <TableSearch value={search} onChange={setSearch} placeholder="Search creators" />
+
+            <div className="hidden sm:block" />
+          </div>
 
           <TabsContent value="delivery">
-            <CreatorTable columns={deliveryColumns} rows={data.creators} />
+            <CreatorTable columns={deliveryColumns} rows={creators} onOpen={setOpenCreatorId} />
           </TabsContent>
           <TabsContent value="commercials">
-            <CreatorTable columns={commercialColumns} rows={data.creators} />
+            <CreatorTable columns={commercialColumns} rows={creators} onOpen={setOpenCreatorId} />
           </TabsContent>
           <TabsContent value="performance">
-            <CreatorTable columns={performanceColumns} rows={data.creators} />
+            <CreatorTable columns={performanceColumns} rows={creators} onOpen={setOpenCreatorId} />
           </TabsContent>
           <TabsContent value="audience">
-            <CreatorTable columns={audienceColumns} rows={data.creators} />
+            <CreatorTable columns={audienceColumns} rows={creators} onOpen={setOpenCreatorId} />
           </TabsContent>
         </Tabs>
       </section>
+      {openCreatorId && (
+        <CreatorDrawer creatorId={openCreatorId} onClose={() => setOpenCreatorId(null)} />
+      )}
     </div>
   );
 }
-
 function CreatorTable({
   columns,
   rows,
+  onOpen,
 }: {
   columns: Column<CampaignCreatorRow>[];
   rows: CampaignCreatorRow[];
+  onOpen: (creatorId: string) => void;
 }) {
   return (
-    <DataTable
-      columns={columns}
-      rows={rows}
-      rowKey={(row) => row.creator_id}
-      maxHeightClass="max-h-[32rem]"
-      emptyState={
-        <p className="px-4 py-8 text-center text-xs text-muted-foreground">
-          No creators attached to this campaign yet.
-        </p>
-      }
-    />
+    <div data-rp-pop="results">
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey={(row) => row.creator_id}
+        onRowClick={(row) => onOpen(row.creator_id)}
+        maxHeightClass="max-h-[32rem]"
+        emptyState={
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">
+            No creators found
+          </p>
+        }
+      />
+    </div>
   );
 }
 
@@ -191,22 +208,12 @@ const creatorIdentityColumns: Column<CampaignCreatorRow>[] = [
 
       return (
         <span className="flex items-center gap-2.25">
-          <Link
-            to={`/creators/${row.creator_id}`}
-            state={withBackState(window.location).state}
-            className="flex size-7 shrink-0 items-center justify-center rounded-full border border-rp-border bg-rp-surface2 text-[10.5px] font-bold"
-          >
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-rp-border bg-rp-surface2 text-[10.5px] font-bold">
             {initials(row.name)}
-          </Link>
+          </span>
 
           <span className="min-w-0">
-            <Link
-              to={`/creators/${row.creator_id}`}
-              state={withBackState(window.location).state}
-              className="block truncate font-semibold text-rp-text hover:underline"
-            >
-              {row.name}
-            </Link>
+            <span className="block truncate font-semibold text-rp-text">{row.name}</span>
 
             {row.username && (
               profileUrl ? (
@@ -237,11 +244,25 @@ const deliveryColumns: Column<CampaignCreatorRow>[] = [
   {
     id: 'platform',
     header: 'Platform',
-    cell: (row) => (
-      <span title={PLATFORM_LABELS[row.platform] ?? row.platform}>
-        <PlatformMark platform={row.platform} size={15} />
-      </span>
-    ),
+    cell: (row) => {
+      const profileUrl = profileUrlFor(row);
+      const label = PLATFORM_LABELS[row.platform] ?? row.platform;
+      return profileUrl ? (
+        <a
+          href={profileUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          title={`Open profile on ${label}`}
+          className="inline-flex rounded-md p-0.5 hover:bg-rp-surface2"
+        >
+          <PlatformMark platform={row.platform} size={15} />
+        </a>
+      ) : (
+        <span title={label}>
+          <PlatformMark platform={row.platform} size={15} />
+        </span>
+      );
+    },
   }, { id: 'tier', header: 'Tier', cell: (row) => <TierBadge tier={row.tier} /> },
   {
     id: 'deliverables',

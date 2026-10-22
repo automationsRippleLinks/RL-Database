@@ -2,6 +2,7 @@
  * CSV export of the current result page — the one thing from the Streamlit app
  * people will have built habits around.
  */
+
 import type { Paging, SearchResponse } from '@/types/api';
 function escapeCell(value: unknown): string {
   if (value === null || value === undefined) return '';

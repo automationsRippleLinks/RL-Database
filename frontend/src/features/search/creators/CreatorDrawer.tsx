@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
-  Check,
   ChevronDown,
-  CircleDashed,
   ClipboardList,
-  Clock,
   Copy,
-  PauseCircle,
   X,
-  XCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { PlatformMark } from '@/components/PlatformMark';
@@ -18,16 +13,22 @@ import { ErrorState } from '@/components/states';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDismissable } from '@/hooks/useDismissable';
 import { MONTH_LABELS, PLATFORM_LABELS } from '@/lib/enums';
-import { compact, formatDate, formatNumber, initials, profileUrlFor } from '@/lib/format';
+import { compact, formatMonthYear, formatNumber, initials, profileUrlFor, formatCurrency, isOlderThanYear } from '@/lib/format';
 import { describePlace } from '@/lib/geo';
 import { cn } from '@/lib/utils';
-import type { CampaignStatus, CreatorCampaignSummary, CreatorPitchSummary, CreatorDetail } from '@/types/api';
+import type { CreatorCampaignSummary, CreatorPitchSummary, CreatorDetail } from '@/types/api';
 import { useCreatorDetail } from '../queries';
-import { commercialPackageFor } from './deliverables';
+import { deliverablesFor } from './deliverables';
 import { Link } from 'react-router-dom';
 import { withBackState } from '@/lib/navigation';
 import { ExpandableSection } from '@/components/ExpandableSection';
 import { DetailDrawer } from '@/components/DetailDrawer';
+import { useAuth } from '@/features/auth/useAuth';
+import { scoreCreator } from '@/features/analytics/creators/calculations/score';
+import { CreatorEditForm } from '@/features/analytics/creators/components/CreatorEditForm';
+// The edit form is the Analytics one, so its styles come with it (all classes are prefixed cc-).
+import '@/features/analytics/tokens.css';
+import '@/features/analytics/creators/styles.css';
 
 /**
  * Must match the `rpDrawerOut` duration in index.css. The panel is unmounted
@@ -35,6 +36,8 @@ import { DetailDrawer } from '@/components/DetailDrawer';
  */
 
 const EXIT_MS = 185;
+// pitches and campaigns show only latest few. the backedn sends them newest first 
+const LIST_LIMIT = 10;
 type CreatorSection = "campaigns" | "pitches";
 
 /**
@@ -63,8 +66,8 @@ export function CreatorDrawer({
 
   const { data, isPending, isError, error, refetch } = useCreatorDetail(displayedId);
   useCreatorDetail(creatorId);
-  
-  
+
+
 
   // Clicking another row swaps the contents in place. Everything that was
   // "opened" belongs to the creator who was showing, not to the panel — and a
@@ -153,6 +156,7 @@ export function CreatorDrawer({
         </div>
       ) : (
         <DrawerBody
+          key={data.id}
           detail={data}
           onClose={requestClose}
           dealsOpen={dealsOpen}
@@ -223,8 +227,20 @@ function DrawerBody({
   onCycleContact,
   onCopy,
 }: DrawerBodyProps) {
+  const { canEdit } = useAuth();
+  const [editing, setEditing] = useState(false);
   const profileUrl = profileUrlFor(detail);
-  const packageQuote = commercialPackageFor(detail);
+  const deals = deliverablesFor(detail.latest_cost_deliverables);
+  // console.log('deliverables', detail.latest_cost_deliverables);
+  const coveredText =
+    typeof detail.latest_cost_deliverables === "string"
+      ? detail.latest_cost_deliverables
+      : "";
+  const costWhen = formatMonthYear(detail.latest_cost_month, detail.latest_cost_year);
+  const stale = isOlderThanYear(detail.latest_cost_month, detail.latest_cost_year);
+  const costSource = [detail.latest_cost_source?.replace(/_/g, " "), costWhen]
+    .filter(Boolean)
+    .join(" · ");
 
   const emails = [...detail.emails].filter(Boolean) as string[];
   const phones = [...detail.phones].filter(Boolean) as string[];
@@ -271,196 +287,251 @@ function DrawerBody({
             )}
           </span>
         </span>
+        {canEdit && !editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            data-testid="drawer-edit"
+            // className="h-9 shrink-0 cursor-pointer rounded-lg border border-rp-border bg-rp-surface2 px-3.5 text-[13px] font-medium text-rp-text hover:bg-rp-box"
+            className="h-9 shrink-0 cursor-pointer rounded-lg border border-rp-primary bg-rp-primary px-3.5 text-[13px] font-semibold text-rp-primary-fg hover:opacity-90"
+          >
+            Edit details
+          </button>
+        )}
         <CloseButton onClose={onClose} />
       </div>
 
-      {/* The shared DetailDrawer now handles the sideways layout. */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto scrollbar-thin">
-        {/* ── stats ────────────────────────────────────────────────────── */}
-        <div className="grid shrink-0 grid-cols-2 gap-px bg-rp-border">
-          <Stat
-            label="Followers"
-            value={compact(detail.followers)}
-            full={detail.followers}
-          />
-          <Stat
-            label="Avg views"
-            value={compact(detail.avg_views)}
-            full={detail.avg_views}
-          />
-          <Stat label="Campaigns with us" value={String(ran.length)} />
-          <Stat label="Times pitched" value={String(detail.pitches.length)} />
+      {editing ? (
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto scrollbar-thin">
+          {/* cc-root brings the edit form's colours; the drawer keeps its own background. */}
+          <div className="cc-root px-4.5 py-4" style={{ background: 'transparent' }}>
+            <CreatorEditForm scored={scoreCreator(detail)} mode="edit" onDone={() => setEditing(false)} />
+          </div>
         </div>
+      ) : (
+        /* The shared DetailDrawer now handles the sideways layout. */
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto scrollbar-thin">
+          {/* ── stats ────────────────────────────────────────────────────── */}
+          <div className="grid shrink-0 grid-cols-2 gap-px bg-rp-border">
+            <Stat
+              label="Followers"
+              value={compact(detail.followers)}
+              full={detail.followers}
+            />
+            <Stat
+              label="Avg views"
+              value={compact(detail.avg_views)}
+              full={detail.avg_views}
+            />
+            <Stat label="Campaigns with us" value={String(ran.length)} />
+            <Stat label="Times pitched" value={String(detail.pitches.length)} />
+          </div>
 
-        {/* ── commercial package ───────────────────────────────────────── */}
-        {packageQuote && (
+
+
+
+                   {/* ── latest cost ──────────────────────────────────────────────── */}
           <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
-            <Eyebrow>Commercial package</Eyebrow>
-            <div className="mb-2.75 flex items-baseline gap-2.5">
-              <span className="shrink-0 text-2xl font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums">
-                ₹{packageQuote.total.toLocaleString("en-IN")}
-              </span>
-              <span
-                title={packageQuote.items
-                  .map((item) => item.label)
-                  .join(" + ")}
-                className="min-w-0 truncate text-[11.5px] text-rp-muted"
-              >
-                package of {packageQuote.items.length}{" "}
-                {packageQuote.items.length === 1
-                  ? "deliverable"
-                  : "deliverables"}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={onToggleDeals}
-              aria-expanded={dealsOpen}
-              className={cn(
-                "flex w-full cursor-pointer items-center gap-2 rounded-[10px] border border-rp-border px-2.75 py-2.25 text-xs font-semibold",
-                dealsOpen ? "text-rp-primary" : "text-rp-text",
-              )}
-            >
-              <ClipboardList className="size-3.75 shrink-0" />
-              <span className="flex-1 text-left">Deliverables</span>
-              <ChevronDown
-                className={cn(
-                  "size-3.5 shrink-0 transition-transform",
-                  dealsOpen && "rotate-180",
-                )}
-                strokeWidth={2.2}
-              />
-            </button>
-
-            {dealsOpen && (
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                {packageQuote.items.map(
-                  ({ key, label, icon: Icon, quantity, cost }) => (
-                    <div
-                      key={key}
-                      className="flex min-w-0 flex-[0_1_calc(50%-4px)] items-center gap-2.5 rounded-sm border border-rp-border bg-rp-surface2 px-3 py-2.75"
+            <Eyebrow>Latest cost</Eyebrow>
+            {detail.latest_cost != null ? (
+              <>
+                <div className="flex items-baseline gap-2.5">
+                  <span
+                    title={costSource || undefined}
+                    className={cn(
+                      "shrink-0 text-2xl font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums",
+                      stale && "text-rp-danger",
+                    )}
+                  >
+                    {formatCurrency(detail.latest_cost)}
+                  </span>
+                  {detail.cpv != null && (
+                    <span
+                      title={`₹${formatNumber(detail.latest_cost)} ÷ ${formatNumber(detail.avg_views)} avg views`}
+                      className="text-[11.5px] text-rp-muted tabular-nums"
                     >
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-sm bg-rp-primary-soft text-rp-primary">
-                        <Icon className="size-3.75" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-2.75 whitespace-nowrap text-rp-muted">
-                          {label}
-                          {quantity > 1 && (
-                            <span className="ml-1 tabular-nums">
-                              ×{quantity}
-                            </span>
-                          )}
-                        </span>
-                        <span className="mt-px block text-sm font-bold tabular-nums">
-                          {cost > 0
-                            ? `₹${cost.toLocaleString("en-IN")}`
-                            : "in package"}
-                        </span>
-                      </span>
-                    </div>
-                  ),
+                      CPV ₹{Number(detail.cpv).toFixed(2)}
+                    </span>
+                  )}
+                </div>
+
+                {costSource && (
+                  <span
+                    className={cn(
+                      "mt-1.5 block text-[11.5px] capitalize",
+                      stale ? "text-rp-danger" : "text-rp-muted",
+                    )}
+                  >
+                    {costSource}
+                  </span>
                 )}
-              </div>
+
+                {coveredText && (
+                  <span className="mt-1 block text-[12px]">
+                    <span className="text-rp-muted">For </span>
+                    {coveredText}
+                  </span>
+                )}
+
+                {deals.length > 0 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={onToggleDeals}
+                      aria-expanded={dealsOpen}
+                      className={cn(
+                        "mt-3 flex w-full cursor-pointer items-center gap-2 rounded-[10px] border border-rp-border px-2.75 py-2.25 text-xs font-semibold",
+                        dealsOpen ? "text-rp-primary" : "text-rp-text",
+                      )}
+                    >
+                      <ClipboardList className="size-3.75 shrink-0" />
+                      <span className="flex-1 text-left">
+                        Deliverables ({deals.length})
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          "size-3.5 shrink-0 transition-transform",
+                          dealsOpen && "rotate-180",
+                        )}
+                        strokeWidth={2.2}
+                      />
+                    </button>
+
+                    {dealsOpen && (
+                      <div className="mt-2.5 flex flex-wrap gap-2">
+                        {deals.map(({ key, label, icon: Icon, quantity, cost }) => (
+                          <div
+                            key={key}
+                            className="flex min-w-0 flex-[0_1_calc(50%-4px)] items-center gap-2.5 rounded-sm border border-rp-border bg-rp-surface2 px-3 py-2.75"
+                          >
+                            <span className="flex size-7 shrink-0 items-center justify-center rounded-sm bg-rp-primary-soft text-rp-primary">
+                              <Icon className="size-3.75" />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-2.75 whitespace-nowrap text-rp-muted">
+                                {label}
+                                {quantity > 1 && (
+                                  <span className="ml-1 tabular-nums">×{quantity}</span>
+                                )}
+                              </span>
+                              <span className="mt-px block text-sm font-bold tabular-nums">
+                                {cost > 0 ? formatCurrency(cost) : "in package"}
+                              </span>
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <span
+                  className={cn(
+                    "mt-2.5 block text-[11px]",
+                    stale ? "text-rp-danger" : "text-rp-muted",
+                  )}
+                >
+                  {stale
+                    ? "This cost is over a year old. Confirm before pitching."
+                    : "Confirm before pitching."}
+                </span>
+              </>
+            ) : (
+              <span className="text-[12.5px] text-rp-muted">
+                No cost on file yet.
+              </span>
+            )}
+          </section>
+          {/* ── profile ──────────────────────────────────────────────────── */}
+      <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
+        <Eyebrow>Profile</Eyebrow>
+        <div className="flex flex-col gap-2.25">
+          <Fact label="Location" value={describePlace(detail.city)} />
+          <Fact
+            label="Categories"
+            value={detail.categories[0] ?? "—"}
+            extra={
+              detail.categories.length > 1
+                ? `+${detail.categories.length - 1}`
+                : ""
+            }
+            extraTitle={`Also: ${detail.categories.slice(1).join(", ")}`}
+          />
+          <Fact
+            label="Languages"
+            value={detail.languages.slice(0, 2).join(", ") || "—"}
+            extra={
+              detail.languages.length > 2
+                ? `+${detail.languages.length - 2}`
+                : ""
+            }
+            extraTitle={`Also: ${detail.languages.slice(2).join(", ")}`}
+          />
+          <Fact label="Gender" value={detail.gender ?? "—"} />
+          <Fact
+            label="Worked with us"
+            value={
+              ran.length
+                ? `Yes — ${ran.length} ${ran.length === 1 ? "campaign" : "campaigns"}`
+                : dropped.length
+                  ? "Proposed but dropped"
+                  : "Not yet"
+            }
+          />
+        </div>
+      </section>
+      {/* ── contact ─────────────────────────────────────────────────── */}
+      {(emails.length > 0 || phones.length > 0) && (
+        <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
+          <Eyebrow>Contact</Eyebrow>
+
+          <div className="flex flex-col gap-2.25">
+            {emails.length > 0 && (
+              <ContactRow
+                label="Email"
+                values={emails}
+                index={contactIndex.email}
+                href={(value) => `mailto:${value}`}
+                actionTitle="Send an email"
+                onCopy={(value) => onCopy(value, "Email copied")}
+                onNext={() => onCycleContact("email", emails.length)}
+              />
             )}
 
-            <span className="mt-2.5 block text-rp-muted text-[11px]">
-              LQP on {formatDate(packageQuote.validFrom)}.
-              <br />
-              Confirm before pitching.
-            </span>
-          </section>
-        )}
-
-        {/* ── profile ──────────────────────────────────────────────────── */}
-        <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
-          <Eyebrow>Profile</Eyebrow>
-          <div className="flex flex-col gap-2.25">
-            <Fact label="Location" value={describePlace(detail.city)} />
-            <Fact
-              label="Categories"
-              value={detail.categories[0] ?? "—"}
-              extra={
-                detail.categories.length > 1
-                  ? `+${detail.categories.length - 1}`
-                  : ""
-              }
-              extraTitle={`Also: ${detail.categories.slice(1).join(", ")}`}
-            />
-            <Fact
-              label="Languages"
-              value={detail.languages.slice(0, 2).join(", ") || "—"}
-              extra={
-                detail.languages.length > 2
-                  ? `+${detail.languages.length - 2}`
-                  : ""
-              }
-              extraTitle={`Also: ${detail.languages.slice(2).join(", ")}`}
-            />
-            <Fact label="Gender" value={detail.gender ?? "—"} />
-            <Fact
-              label="Worked with us"
-              value={
-                ran.length
-                  ? `Yes — ${ran.length} ${ran.length === 1 ? "campaign" : "campaigns"}`
-                  : dropped.length
-                    ? "Proposed but dropped"
-                    : "Not yet"
-              }
-            />
+            {phones.length > 0 && (
+              <ContactRow
+                label="Phone"
+                values={phones}
+                index={contactIndex.phone}
+                href={(value) => `tel:${value.replace(/\s/g, "")}`}
+                actionTitle="Call this number"
+                onCopy={(value) => onCopy(value, "Phone number copied")}
+                onNext={() => onCycleContact("phone", phones.length)}
+              />
+            )}
           </div>
         </section>
-        {/* ── contact ─────────────────────────────────────────────────── */}
-        {(emails.length > 0 || phones.length > 0) && (
-          <section className="shrink-0 border-t border-rp-border px-4.5 py-3.75">
-            <Eyebrow>Contact</Eyebrow>
+      )}
 
-            <div className="flex flex-col gap-2.25">
-              {emails.length > 0 && (
-                <ContactRow
-                  label="Email"
-                  values={emails}
-                  index={contactIndex.email}
-                  href={(value) => `mailto:${value}`}
-                  actionTitle="Send an email"
-                  onCopy={(value) => onCopy(value, "Email copied")}
-                  onNext={() => onCycleContact("email", emails.length)}
-                />
-              )}
+      {/* ── campaigns ──────────────────────────────────────────────── */}
+      <ExpandableSection
+        label="Campaigns"
+        count={detail.campaigns.length}
+        open={activeSection === "campaigns"}
+        onToggle={() => onToggleSection("campaigns")}
+      />
 
-              {phones.length > 0 && (
-                <ContactRow
-                  label="Phone"
-                  values={phones}
-                  index={contactIndex.phone}
-                  href={(value) => `tel:${value.replace(/\s/g, "")}`}
-                  actionTitle="Call this number"
-                  onCopy={(value) => onCopy(value, "Phone number copied")}
-                  onNext={() => onCycleContact("phone", phones.length)}
-                />
-              )}
-            </div>
-          </section>
-        )}
+      {/* ── pitches ────────────────────────────────────────────────── */}
+      <ExpandableSection
+        label="Pitches"
+        count={detail.pitches.length}
+        open={activeSection === "pitches"}
+        onToggle={() => onToggleSection("pitches")}
+      />
 
-        {/* ── campaigns ──────────────────────────────────────────────── */}
-        <ExpandableSection
-          label="Campaigns"
-          count={detail.campaigns.length}
-          open={activeSection === "campaigns"}
-          onToggle={() => onToggleSection("campaigns")}
-        />
-
-        {/* ── pitches ────────────────────────────────────────────────── */}
-        <ExpandableSection
-          label="Pitches"
-          count={detail.pitches.length}
-          open={activeSection === "pitches"}
-          onToggle={() => onToggleSection("pitches")}
-        />
-
-      </div>
+    </div >
+      )
+}
     </>
   );
 }
@@ -469,6 +540,7 @@ function DrawerBody({
 
 // Renders campaign rows without controlling where they appear.
 // We can use this inside the shared DetailDrawer side panel later.
+//campaign section 
 function CreatorCampaignList({
   campaigns,
 }: {
@@ -476,13 +548,12 @@ function CreatorCampaignList({
 }) {
   return (
     <>
-      {campaigns.map((campaign) => (
-        <CampaignRow
-          key={campaign.campaign_id}
-          campaign={campaign}
-        />
+      {campaigns.slice(0, LIST_LIMIT).map((campaign) => (<CampaignRow
+        key={campaign.campaign_id}
+        campaign={campaign}
+      />
       ))}
-
+      <LatestNote shown={LIST_LIMIT} total={campaigns.length} />
       {campaigns.length === 0 && (
         <p className="pt-1.5 pb-0.5 text-xs text-rp-muted">
           We have not hired this creator yet.
@@ -503,33 +574,97 @@ function CreatorPitchList({
       </p>
     );
   }
-
+  // pitches expand section 
   return (
     <>
-      {pitches.map((pitch) => (
+      {pitches.slice(0, LIST_LIMIT).map((pitch) => (
         <Link
           key={pitch.pitch_id}
           to={`/pitches/${pitch.pitch_id}`}
           state={withBackState(window.location).state}
-          className="flex items-center gap-2.75 border-t border-rp-border py-2.25 hover:bg-rp-surface2"
-        >
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[12.5px] font-semibold">
+          className="flex items-center gap-6 border-t border-rp-border py-2.25 hover:bg-rp-surface2">          <span className="min-w-0 flex-1">
+            <span className="line-clamp-2 text-[12.5px] font-semibold">
               {pitch.campaign_name}
             </span>
-            <span className="block truncate text-[11.5px] text-rp-muted">
-              {pitch.brand?.name ?? "No brand linked"} · {pitch.pitch_code}
+            <span className="flex min-w-0 text-[11.5px] text-rp-muted">
+              <span className="truncate">{pitch.brand?.name ?? "No brand linked"}</span>
+              <span className="shrink-0 whitespace-pre"> · {pitch.pitch_code}</span>
             </span>
           </span>
 
-          {pitch.final_cost !== null && (
-            <span className="shrink-0 text-[11.5px] font-semibold tabular-nums">
-              ₹{pitch.final_cost.toLocaleString("en-IN")}
-            </span>
-          )}
+          <CostTag
+            cost={pickCost(pitch.final_cost, "Final cost", pitch.package_cost, "Package cost", "pkg")}
+          />
         </Link>
       ))}
+      <LatestNote shown={LIST_LIMIT} total={pitches.length} />
     </>
+  );
+}
+
+interface CostPick {
+  value: number;
+  /** Full name, shown on hover. */
+  label: string;
+  /** Tiny prefix, only when this is the fallback cost. */
+  short: string | null;
+}
+/** Final cost first. If it is missing, the fallback cost fills in and says so. */
+interface CostPick {
+  value: number;
+  /** Full name, shown on hover. */
+  label: string;
+  /** Tiny prefix, only when this is the fallback cost. */
+  short: string | null;
+}
+
+/** Final cost first. If it is missing, the fallback cost fills in and says so. */
+function pickCost(
+  primary: number | null | undefined,
+  primaryLabel: string,
+  fallback: number | null | undefined,
+  fallbackLabel: string,
+  fallbackShort: string,
+): CostPick | null {
+  if (primary && primary > 0) return { value: primary, label: primaryLabel, short: null };
+  if (fallback && fallback > 0) return { value: fallback, label: fallbackLabel, short: fallbackShort };
+  return null;
+}
+
+function CostTag({ cost }: { cost: CostPick | null }) {
+  if (!cost) {
+    return (
+      <span className="inline-flex min-w-16 shrink-0 justify-end text-[11.5px] text-rp-faint">
+        –
+      </span>
+    );
+  }
+  return (
+    <span
+      aria-label={cost.label}
+      className="group/tip relative inline-flex min-w-16 shrink-0 cursor-help justify-end text-[11.5px] font-semibold tabular-nums"
+    >
+      {cost.short && (
+        <span className="mr-1 text-[10px] font-medium text-rp-muted">{cost.short}</span>
+      )}
+      {formatCurrency(cost.value)}
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute right-0 bottom-full z-50 mb-0.5 border border-rp-muted bg-rp-surface px-2 py-0.5 text-[13px] font-normal whitespace-nowrap text-rp-text opacity-0 group-hover/tip:opacity-100"
+      >
+        {cost.label}
+      </span>
+    </span>
+  );
+}
+
+// showing only latest 
+function LatestNote({ shown, total }: { shown: number; total: number }) {
+  if (total <= shown) return null;
+  return (
+    <p className="pt-2 text=[11px] text-rp-muted">
+      Showing the latest {shown} of {total}.
+    </p>
   );
 }
 
@@ -648,44 +783,30 @@ function ContactRow({
   );
 }
 
-const STATUS_STYLE: Record<CampaignStatus, { label: string; icon: LucideIcon; className: string }> = {
-  wip: { label: 'Running', icon: Clock, className: 'text-rp-primary' },
-  completed: { label: 'Done', icon: Check, className: 'text-rp-success' },
-  'on hold': { label: 'On hold', icon: PauseCircle, className: 'text-rp-warn' },
-  scrapped: { label: 'Dropped', icon: XCircle, className: 'text-rp-danger' },
-};
+// const STATUS_STYLE: Record<CampaignStatus, { label: string; icon: LucideIcon; className: string }> = {
+//   wip: { label: 'Running', icon: Clock, className: 'text-rp-primary' },
+//   completed: { label: 'Done', icon: Check, className: 'text-rp-success' },
+//   'on hold': { label: 'On hold', icon: PauseCircle, className: 'text-rp-warn' },
+//   scrapped: { label: 'Dropped', icon: XCircle, className: 'text-rp-danger' },
+// };
 
 function CampaignRow({ campaign }: { campaign: CreatorCampaignSummary }) {
-  // A creator dropped from a campaign is not the campaign's own status: the
-  // campaign may well have run without them, and saying "Done" would imply they
-  // were part of it.
-  const status = campaign.is_dropped
-    ? { label: 'Dropped from this', icon: CircleDashed, className: 'text-rp-warn' }
-    : (STATUS_STYLE[campaign.status] ?? {
-      label: campaign.status,
-      icon: CircleDashed,
-      className: 'text-rp-muted',
-    });
-  const StatusIcon = status.icon;
-
   const period = `${MONTH_LABELS[campaign.month_name] ?? campaign.month_name} ${campaign.year}`;
   const brand = campaign.brand?.name ?? 'no brand linked';
+  const cost = pickCost(campaign.final_cost, 'Final cost', campaign.initial_cost, 'Initial cost', 'init');
 
   return (
-
     <Link
       to={`/campaigns/${campaign.campaign_id}`}
       state={withBackState(window.location).state}
-      className="flex items-center gap-2.75 border-t border-rp-border py-2.25 hover:bg-rp-surface2"
-    >      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[12.5px] font-semibold">{campaign.campaign_name}</span>
-        <span className="block truncate text-[11.5px] text-rp-muted">
+      className="flex items-center gap-6 border-t border-rp-border py-2.25 hover:bg-rp-surface2">      <span className="min-w-0 flex-1">
+
+        <span className="line-clamp-2 text-[12.5px] font-semibold">{campaign.campaign_name}</span>        <span className="block truncate text-[11.5px] text-rp-muted">
           {brand} · {period}
+          {campaign.is_dropped && ' · Dropped'}
         </span>
       </span>
-      <span title={status.label} aria-label={status.label} className={cn('inline-flex', status.className)}>
-        <StatusIcon className="size-4" />
-      </span>
+      <CostTag cost={cost} />
     </Link>
   );
 }

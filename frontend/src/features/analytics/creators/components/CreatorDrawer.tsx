@@ -5,6 +5,7 @@ import type { ScoredCreator } from '../calculations/score';
 import type { CreatorRow, ScoredKey } from '../types';
 import { fmtN } from '../calculations/format';
 import { CloseIcon } from './Icons';
+import { profileUrlFor } from '@/lib/format';
 import type { EditMode } from '../state';
 import { CreatorEditForm } from './CreatorEditForm';
 
@@ -42,6 +43,7 @@ export function CreatorDrawer({ scored, canEdit, edit, onStartEdit, onEditDone, 
 
   const open = scored !== null;
   const c = scored?.creator;
+  const profileUrl = c ? profileUrlFor(c) : null;
 
   return (
     <>
@@ -52,7 +54,13 @@ export function CreatorDrawer({ scored, canEdit, edit, onStartEdit, onEditDone, 
             <div className="cc-dh">
               <div>
                 <h2>{c.name}</h2>
-                <div className="cc-hd">@{c.username}</div>
+                {profileUrl ? (
+                  <a className="block text-[11.5px] text-rp-muted hover:underline" href={profileUrl} target="_blank" rel="noreferrer noopener" title="Open profile in a new tab" data-testid="drawer-profile">
+                    @{c.username}
+                  </a>
+                ) : (
+                  <div className="cc-hd">@{c.username}</div>
+                )}
               </div>
               <button ref={closeRef} type="button" className="cc-xbtn" aria-label="Close" onClick={onClose}>
                 <CloseIcon />

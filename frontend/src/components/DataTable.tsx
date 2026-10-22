@@ -184,6 +184,8 @@ export function DataTable<Row>({
         className={cn(
           'transition-opacity',
           isFetching && 'opacity-50',
+          isResults && '[&_tr:last-child]:border',
+
         )}
       >
         {rows.map((row) => {
@@ -208,7 +210,8 @@ export function DataTable<Row>({
               className={cn(
                 onRowClick && 'cursor-pointer',
                 isResults &&
-                'border-t border-b-0 border-rp-border',
+                // 'border-t border-b-0 border-rp-border',
+                'border-t border-b-0 border-rp-border last:border-b',
                 isResults &&
                 (isActive
                   ? 'bg-rp-primary-soft shadow-[inset_3px_0_0_var(--rp-primary)] hover:bg-rp-primary-soft'

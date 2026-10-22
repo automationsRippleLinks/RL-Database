@@ -1,17 +1,17 @@
-import { AlertTriangle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { formatDateTime, formatNumber } from '@/lib/format';
+import { StatRow, StatTile } from '@/components/StatTile';
+import { formatDateTime, formatNumber, pluralise } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import type { IngestJob, IngestJobStatus, IngestRowError } from '@/types/api';
+import type { IngestJob, IngestJobStatus } from '@/types/api';
 
 const STATUS_META: Record<
   IngestJobStatus,
-  { label: string; variant: 'success' | 'warning' | 'destructive' | 'primary'; icon: typeof CheckCircle2 }
+  { label: string; variant: 'success' | 'destructive' | 'primary'; icon: typeof CheckCircle2 }
 > = {
   queued: { label: 'Queued', variant: 'primary', icon: Loader2 },
   running: { label: 'Running', variant: 'primary', icon: Loader2 },
   success: { label: 'Success', variant: 'success', icon: CheckCircle2 },
-  partial_success: { label: 'Partial', variant: 'warning', icon: AlertTriangle },
   failed: { label: 'Failed', variant: 'destructive', icon: XCircle },
 };
 
@@ -27,31 +27,53 @@ export function JobStatusBadge({ status }: { status: IngestJobStatus }) {
   );
 }
 
-export function JobResult({ job, title }: { job: IngestJob; title?: string }) {
+/** One plain sentence saying what happened, so nobody has to read the numbers to find out. */
+function headline(job: IngestJob): string {
+  const { received, failed } = job.counts;
+  const rows = (n: number) => `${formatNumber(n)} ${pluralise(n, 'row')}`;
+  if (job.dry_run) {
+    if (job.status === 'success') return `All ${rows(received)} look fine`;
+    return `${rows(failed)} ${failed === 1 ? 'has a mistake' : 'have mistakes'}. Nothing was saved.`;
+  }
+  if (job.status === 'success') return `All ${rows(received)} saved`;
+  return 'Saving failed. Nothing was saved.';
+}
+
+export function JobResult({ job }: { job: IngestJob }) {
   const { counts } = job;
+  const mistakes = job.status === 'failed';
 
   return (
     <div className="space-y-3 rounded-lg border border-border bg-background/40 p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-2">
           <JobStatusBadge status={job.status} />
-          {job.dry_run && <Badge variant="outline">Dry run — nothing written</Badge>}
-          <span className="text-xs text-muted-foreground">{title ?? job.message}</span>
+          {job.dry_run && <Badge variant="outline">Check only</Badge>}
+          <span className="text-sm font-semibold">{headline(job)}</span>
         </div>
-        <span className="font-mono text-[11px] text-muted-foreground">{job.job_id}</span>
+        {job.message && <p className="text-xs text-muted-foreground">{job.message}</p>}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-        <CountTile label="Received" value={counts.received} />
-        <CountTile label={job.dry_run ? 'Would insert' : 'Inserted'} value={counts.inserted} tone="success" />
-        <CountTile label="Updated" value={counts.updated} />
-        <CountTile label="Skipped" value={counts.skipped} tone={counts.skipped ? 'warning' : undefined} />
-        <CountTile label="Failed" value={counts.failed} tone={counts.failed ? 'destructive' : undefined} />
-      </div>
+      <StatRow cols={4}>
+        <StatTile label="Rows in file" value={formatNumber(counts.received)} />
+        {job.dry_run ? (
+          <>
+            <StatTile label="Fine" value={formatNumber(Math.max(counts.received - counts.failed, 0))} />
+            <StatTile label="Mistakes" value={formatNumber(counts.failed)} className={mistakes ? 'border-destructive/50' : undefined} />
+          </>
+        ) : (
+          <>
+            <StatTile label="Added" value={formatNumber(counts.inserted)} />
+            <StatTile label="Updated" value={formatNumber(counts.updated)} />
+            {counts.skipped > 0 && <StatTile label="Skipped" value={formatNumber(counts.skipped)} />}
+          </>
+        )}
+      </StatRow>
 
-      {job.errors.length > 0 && <IssueList job={job} />}
+      {job.errors.length > 0 && <ErrorList job={job} />}
 
       <p className="text-[11px] text-muted-foreground">
+        {job.file_name ? `${job.file_name} · ` : ''}
         Started {formatDateTime(job.started_at)}
         {job.started_by ? ` by ${job.started_by}` : ''}
         {job.finished_at ? ` · finished ${formatDateTime(job.finished_at)}` : ''}
@@ -60,79 +82,33 @@ export function JobResult({ job, title }: { job: IngestJob; title?: string }) {
   );
 }
 
-/**
- * Errors and warnings are not the same thing and must not look the same.
- * Warnings mean the row went in with something coerced; they outnumber real
- * errors on a typical export, and painting them all destructive-red made every
- * successful ingest look like a disaster.
- */
-function IssueList({ job }: { job: IngestJob }) {
-  const isError = (issue: IngestRowError) => (issue.severity ?? 'error') === 'error';
-  const errors = job.errors.filter(isError);
-  const warnings = job.errors.filter((issue) => !isError(issue));
-  const truncated = job.counts.errors_truncated ?? 0;
+/** Every row the backend kept, in file order. A row of 0 means the whole file was refused, not one row. */
+export function ErrorList({ job }: { job: IngestJob }) {
+  const truncated = job.counts.errors_truncated;
 
   return (
     <div className="space-y-1.5">
-      <p className="text-xs font-medium">
-        {errors.length > 0 && (
-          <span className="text-destructive">
-            {formatNumber(errors.length)} {errors.length === 1 ? 'error' : 'errors'}
-          </span>
-        )}
-        {errors.length > 0 && warnings.length > 0 && <span className="text-muted-foreground"> · </span>}
-        {warnings.length > 0 && (
-          <span className="text-[var(--warning)]">
-            {formatNumber(warnings.length)} {warnings.length === 1 ? 'warning' : 'warnings'}
-          </span>
-        )}
+      <p className="text-xs font-medium text-destructive">
+        {formatNumber(job.errors.length)} {pluralise(job.errors.length, 'mistake')} to fix
       </p>
 
-      <ul className="max-h-56 space-y-1 overflow-y-auto rounded-md border border-border p-2 scrollbar-thin">
-        {[...errors, ...warnings].map((issue, index) => (
+      <ul className="max-h-72 space-y-1 overflow-y-auto rounded-md border border-border p-2 scrollbar-thin">
+        {job.errors.map((issue, index) => (
           <li key={index} className="flex gap-2 text-[11px]">
             <span className="shrink-0 font-mono text-muted-foreground">
-              row {issue.row}
-              {issue.field ? `·${issue.field}` : ''}
+              {issue.row === 0 ? 'whole file' : `row ${issue.row}`}
+              {issue.field ? ` · ${issue.field}` : ''}
             </span>
-            <span className={isError(issue) ? 'text-destructive' : 'text-[var(--warning)]'}>
-              {issue.message}
-            </span>
+            <span className="text-destructive">{issue.message}</span>
           </li>
         ))}
       </ul>
 
       {truncated > 0 && (
         <p className="text-[11px] text-muted-foreground">
-          …and {formatNumber(truncated)} more not stored with this job.
+          …and {formatNumber(truncated)} more mistakes that are not shown. Fix these, then check again to see the rest.
         </p>
       )}
-    </div>
-  );
-}
-
-function CountTile({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone?: 'success' | 'warning' | 'destructive';
-}) {
-  return (
-    <div className="rounded-md border border-border px-2 py-1.5">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p
-        className={cn(
-          'text-sm font-semibold tnum',
-          tone === 'success' && 'text-[var(--success)]',
-          tone === 'warning' && 'text-[var(--warning)]',
-          tone === 'destructive' && 'text-destructive',
-        )}
-      >
-        {formatNumber(value)}
-      </p>
     </div>
   );
 }

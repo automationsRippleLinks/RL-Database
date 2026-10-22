@@ -1,15 +1,6 @@
-import { useRef, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  FileJson,
-  Loader2,
-  Upload,
-  UploadCloud,
-  X,
-  XCircle,
-} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle2, FileJson, Loader2, Upload, X, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
@@ -18,186 +9,185 @@ import { ErrorState } from '@/components/states';
 import { ingestApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';
 import { formatNumber, pluralise } from '@/lib/format';
-import { cn } from '@/lib/utils';
 import type { IngestJob, IngestSource, IngestSourceInfo } from '@/types/api';
-import { SOURCE_FIELDS, parseAndValidate, type ValidationReport } from './validate';
+import { FileFormat } from '@/pages/ingest/FileFormat';
 import { JobResult } from './JobResult';
 
-/** Guard against someone dropping a 400MB export and freezing the tab. */
+/** The backend refuses anything larger, so say so before the upload starts. */
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
+
+/** A job still working. The backend runs jobs in the background, so the page asks again until it is done. */
+const isWorking = (job: IngestJob | undefined) => job?.status === 'queued' || job?.status === 'running';
+
+/**
+ * The rows in a file, by the backend's own rule: a list of objects, or { "data": [...] }.
+ * Anything else is left for the backend to explain, so this never blocks a file it would accept.
+ */
+function readRows(text: string): { rows: unknown[] } | { error: string } {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    return { error: `This is not valid JSON: ${(e as Error).message}` };
+  }
+  const rows = Array.isArray(parsed) ? parsed : (parsed as { data?: unknown } | null)?.data;
+  if (!Array.isArray(rows) || rows.length === 0 || !rows.every((r) => r && typeof r === 'object' && !Array.isArray(r))) {
+    return { error: 'This is not a list of rows. Choose a JSON file that holds a list of objects, or { "data": [...] }.' };
+  }
+  return { rows };
+}
 
 export function JsonUploadPanel({ sources }: { sources: IngestSourceInfo[] }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadable = sources.filter((source) => source.upload_supported);
-  const [source, setSource] = useState<IngestSource>(uploadable[0]?.source ?? 'pitch_master');
+  const [source, setSource] = useState<IngestSource>(sources[0]?.source ?? 'creator');
   const [fileName, setFileName] = useState<string | null>(null);
-  const [report, setReport] = useState<ValidationReport | null>(null);
+  const [rows, setRows] = useState<unknown[] | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
+  /** A short line explaining why a finished check disappeared. */
+  const [note, setNote] = useState<string | null>(null);
+  /** The job being watched: first the check, then the save that follows it. */
+  const [jobId, setJobId] = useState<string | null>(null);
 
-  const upload = useMutation({
-    mutationFn: ({ rows, dryRun }: { rows: unknown[]; dryRun: boolean }) =>
-      ingestApi.upload(source, rows, dryRun, fileName ?? 'upload.json'),
-    onSuccess: (job) => {
+  const jobQuery = useQuery({
+    queryKey: queryKeys.ingestJob(jobId ?? ''),
+    queryFn: ({ signal }) => ingestApi.job(jobId as string, { signal }),
+    enabled: jobId !== null,
+    refetchInterval: (query) => (isWorking(query.state.data) ? 1500 : false),
+  });
+  const job = jobQuery.data;
+
+  const refreshAfterWrite = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.ingestSources });
+    void queryClient.invalidateQueries({ queryKey: ['facets'] });
+    void queryClient.invalidateQueries({ queryKey: ['search'] });
+    void queryClient.invalidateQueries({ queryKey: ['analytics'] });
+  };
+
+  // When a job finishes, refresh the runs list; if it saved data, refresh the rest of the app too.
+  const finishedId = job && !isWorking(job) ? job.job_id : null;
+  const savedData = !!job && !job.dry_run && job.status === 'success';
+  useEffect(() => {
+    if (!finishedId) return;
+    void queryClient.invalidateQueries({ queryKey: queryKeys.ingestJobs });
+    if (savedData) refreshAfterWrite();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finishedId]);
+
+  const check = useMutation({
+    mutationFn: () => ingestApi.upload(source, rows as unknown[], true, fileName ?? 'upload.json'),
+    onSuccess: (created) => {
+      setNote(null);
+      setJobId(created.job_id);
       void queryClient.invalidateQueries({ queryKey: queryKeys.ingestJobs });
-      if (!job.dry_run) {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.ingestSources, });
-        void queryClient.invalidateQueries({ queryKey: ['facets'] });
-        void queryClient.invalidateQueries({ queryKey: ['search'] });
-      }
     },
   });
 
-  const reset = () => {
+  const save = useMutation({
+    mutationFn: (checkedJobId: string) => ingestApi.commit(checkedJobId),
+    onSuccess: (created) => {
+      setJobId(created.job_id);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ingestJobs });
+    },
+  });
+
+  /** Back to an empty page: no file, no check. Nothing is ever saved by this. */
+  const reset = (message: string | null = null) => {
     setFileName(null);
-    setReport(null);
+    setRows(null);
     setFileError(null);
-    upload.reset();
+    setJobId(null);
+    setNote(message);
+    check.reset();
+    save.reset();
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleFile = async (file: File) => {
-    setFileError(null);
-    setReport(null);
-    upload.reset();
-
+    const hadCheck = jobId !== null;
+    reset(hadCheck ? 'You chose a different file, so the earlier check no longer counts. Check this one before saving.' : null);
+    setFileName(file.name);
     if (file.size > MAX_FILE_BYTES) {
-      setFileName(file.name);
-      setFileError(
-        `That file is ${(file.size / 1024 / 1024).toFixed(1)} MB. Split it into chunks under 25 MB.`,
-      );
+      setFileError(`That file is ${(file.size / 1024 / 1024).toFixed(1)} MB. Split it into files under 25 MB.`);
       return;
     }
-
-    setFileName(file.name);
-    // Parse and validate in the browser first: a malformed export is caught here
-    // rather than after a round-trip, and the warnings about values the backend
-    // parser would flatten to NA are only visible before it runs.
-    const text = await file.text();
-    setReport(parseAndValidate(source, text));
+    const result = readRows(await file.text());
+    if ('error' in result) setFileError(result.error);
+    else setRows(result.rows);
   };
 
   const onSourceChange = (next: IngestSource) => {
     setSource(next);
-    // Field expectations differ per source, so any existing report is now stale.
-    if (report) reset();
+    // A check belongs to the source it was made for, so a new source throws it away.
+    if (jobId) {
+      setJobId(null);
+      check.reset();
+      save.reset();
+      setNote('You changed what you are uploading, so the earlier check no longer counts. Check the file again.');
+    }
   };
 
-  const fieldSpec = SOURCE_FIELDS[source];
+  const busy = check.isPending || save.isPending || isWorking(job);
+  const checkFinished = !!job && !isWorking(job) && job.dry_run;
+  const canSave = checkFinished && job.status === 'success' && !save.isPending;
+  const checkFailed = checkFinished && job.status === 'failed';
+  const saveFinished = !!job && !isWorking(job) && !job.dry_run;
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle>Upload a JSON export</CardTitle>
+        <CardTitle>Upload a JSON file</CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-3.5">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,14rem)_1fr] sm:items-end">
-          <div className="space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">
-              Source
-            </span>
-            <Select
-              value={source}
-              onChange={(event) =>
-                onSourceChange(event.target.value as IngestSource)
-              }
-              aria-label="Ingest source"
-            >
-              {sources.map((info) => (
-                <option
-                  key={info.source}
-                  value={info.source}
-                  disabled={!info.upload_supported}
-                >
-                  {info.label}
-                  {info.upload_supported ? "" : " — not supported"}
-                </option>
-              ))}
-            </Select>
-          </div>
-
-          {fieldSpec && (
-            <p className="text-[11px] text-muted-foreground">
-              Expecting an array of{" "}
-              <span className="font-medium">
-                {fieldSpec.filter((field) => field.required).length} required
-              </span>{" "}
-              fields per row:{" "}
-              <code className="font-mono">
-                {fieldSpec.map((f) => f.name).join(", ")}
-              </code>
-              . An object with a <code className="font-mono">data</code> array
-              is accepted too.
-            </p>
-          )}
+        <div className="space-y-1.5 sm:max-w-56">
+          <span className="text-xs font-medium text-muted-foreground">What are you uploading?</span>
+          <Select value={source} onChange={(event) => onSourceChange(event.target.value as IngestSource)} aria-label="Ingest source">
+            {sources.map((info) => (
+              <option key={info.source} value={info.source}>
+                {info.label}
+              </option>
+            ))}
+          </Select>
         </div>
 
-        <div
-          onDragOver={(event) => {
-            event.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(event) => {
-            event.preventDefault();
-            setDragging(false);
-            const file = event.dataTransfer.files?.[0];
+        <FileFormat source={source} />
+
+        {/* Only the button opens the file picker. The box around it does nothing when clicked. */}
+        {!fileName && (
+          <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-border px-4 py-8 text-center">
+            <FileJson className="size-7 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">No file chosen yet. Up to 25 MB.</p>
+            <Button size="sm" onClick={() => fileInputRef.current?.click()}>
+              <Upload />
+              Upload JSON file
+            </Button>
+          </div>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
             if (file) void handleFile(file);
           }}
-          className={cn(
-            "flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-colors",
-            dragging ? "border-primary bg-primary/5" : "border-border",
-          )}
-        >
-          <UploadCloud
-            className={cn(
-              "size-6",
-              dragging ? "text-primary" : "text-muted-foreground",
-            )}
-          />
-          <p className="text-xs text-muted-foreground">
-            Drop a <code className="font-mono">.json</code> file here, or
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Choose file
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void handleFile(file);
-            }}
-          />
-        </div>
+        />
 
         {fileName && (
           <div className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
             <span className="flex min-w-0 items-center gap-2 text-xs">
               <FileJson className="size-3.5 shrink-0 text-muted-foreground" />
               <span className="truncate font-mono">{fileName}</span>
-              {report && (
+              {rows && (
                 <Badge variant="outline">
-                  {formatNumber(report.rowCount)}{" "}
-                  {pluralise(report.rowCount, "row")}
+                  {formatNumber(rows.length)} {pluralise(rows.length, 'row')}
                 </Badge>
               )}
             </span>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={reset}
-              aria-label="Remove file"
-            >
+            <Button variant="ghost" size="icon-sm" onClick={() => reset()} disabled={busy} aria-label="Remove file">
               <X />
             </Button>
           </div>
@@ -210,154 +200,70 @@ export function JsonUploadPanel({ sources }: { sources: IngestSourceInfo[] }) {
           </p>
         )}
 
-        {report && <ValidationSummary report={report} />}
+        {note && !jobId && <p className="text-xs text-var(--warning)">{note}</p>}
 
-        {report?.ok && (
+        {rows && !jobId && (
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={upload.isPending}
-              onClick={() => {
-                upload.mutate({ rows: report.rows, dryRun: true });
-              }}
-            >
-              {upload.isPending && upload.variables?.dryRun ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <CheckCircle2 />
-              )}
-              Dry run
+            <Button size="sm" disabled={busy} onClick={() => check.mutate()} data-testid="ingest-check">
+              {check.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
+              Check file
             </Button>
-
-            <Button
-              size="sm"
-              disabled={upload.isPending}
-              onClick={() => {
-                upload.mutate({ rows: report.rows, dryRun: false });
-              }}
-            >
-              {upload.isPending && upload.variables?.dryRun === false ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Upload />
-              )}
-              Ingest {formatNumber(report.rowCount)}{" "}
-              {pluralise(report.rowCount, "row")}
-            </Button>
-
-            <span className="text-[11px] text-muted-foreground">
-              Dry run reports what would change without writing anything.
-            </span>
+            <span className="text-[11px] text-muted-foreground">Checking saves nothing.</span>
           </div>
         )}
 
-        {upload.isError && (
-          <ErrorState error={upload.error} onRetry={() => upload.reset()} />
+        {check.isError && <ErrorState error={check.error} onRetry={() => check.reset()} />}
+
+        {jobQuery.isError && <ErrorState error={jobQuery.error} onRetry={() => void jobQuery.refetch()} />}
+
+        {job && (
+          <div className="space-y-2" data-testid="ingest-result">
+            {isWorking(job) && (
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin" />
+                {job.dry_run ? 'Checking your file…' : 'Saving…'}
+              </p>
+            )}
+            {!isWorking(job) && <JobResult job={job} />}
+          </div>
         )}
-        {upload.isSuccess && upload.data && <UploadOutcome job={upload.data} />}
+
+        {canSave && (
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" disabled={busy} onClick={() => save.mutate(job.job_id)} data-testid="ingest-commit">
+                {save.isPending ? <Loader2 className="animate-spin" /> : <Upload />}
+                Save {formatNumber(job.counts.received)} {pluralise(job.counts.received, 'row')}
+              </Button>
+              <Button size="sm" variant="outline" disabled={busy} onClick={() => reset('Cancelled. Nothing was saved.')}>
+                Cancel
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Save puts all the rows in. Cancel throws this away and nothing is saved.
+            </p>
+          </div>
+        )}
+
+        {checkFailed && (
+          <div className="space-y-1.5">
+            <Button size="sm" onClick={() => reset('Nothing was saved. Fix the rows in your file, then upload it again.')}>
+              Cancel and upload again
+            </Button>
+            <p className="text-[11px] text-muted-foreground">
+              Nothing is saved. Fix these rows in your file, then upload it again.
+            </p>
+          </div>
+        )}
+
+        {saveFinished && (
+          <Button size="sm" variant="outline" onClick={() => reset()}>
+            Upload another file
+          </Button>
+        )}
+
+        {save.isError && <ErrorState error={save.error} onRetry={() => save.reset()} />}
       </CardContent>
     </Card>
-  );
-}
-
-/** A dry run that found rows to insert gets an explicit "now do it" nudge. */
-function UploadOutcome({ job }: { job: IngestJob }) {
-  return (
-    <div className="space-y-2">
-      <JobResult
-        job={job}
-        title={job.dry_run ? 'Dry run complete — nothing was written' : 'Ingest complete'}
-      />
-      {job.dry_run && job.counts.inserted > 0 && (
-        <p className="text-[11px] text-muted-foreground">
-          {formatNumber(job.counts.inserted)} {pluralise(job.counts.inserted, 'row')} would be inserted.
-          Use <span className="font-medium">Ingest</span> above to commit.
-        </p>
-      )}
-    </div>
-  );
-}
-
-function ValidationSummary({ report }: { report: ValidationReport }) {
-  const { errors, warnings, unknownFields, ok, rowCount } = report;
-
-  return (
-    <div className="space-y-2.5 rounded-lg border border-border bg-background/40 p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        {ok ? (
-          <Badge variant="success">
-            <CheckCircle2 className="size-3" />
-            Valid
-          </Badge>
-        ) : (
-          <Badge variant="destructive">
-            <XCircle className="size-3" />
-            {formatNumber(errors.length)} {pluralise(errors.length, 'error')}
-          </Badge>
-        )}
-        {warnings.length > 0 && (
-          <Badge variant="warning">
-            <AlertTriangle className="size-3" />
-            {formatNumber(warnings.length)} {pluralise(warnings.length, 'warning')}
-          </Badge>
-        )}
-        <span className="text-[11px] text-muted-foreground tnum">
-          {formatNumber(rowCount)} {pluralise(rowCount, 'row')} parsed
-        </span>
-      </div>
-
-      {unknownFields.length > 0 && (
-        <p className="text-[11px] text-muted-foreground">
-          Ignored by the backend schema:{' '}
-          <code className="font-mono">{unknownFields.join(', ')}</code>
-        </p>
-      )}
-
-      {errors.length > 0 && <IssueList title="Errors — fix these before uploading" issues={errors} />}
-      {warnings.length > 0 && (
-        <IssueList
-          title="Warnings — these will be stored as NA or skipped"
-          issues={warnings}
-        />
-      )}
-    </div>
-  );
-}
-
-function IssueList({
-  title,
-  issues,
-}: {
-  title: string;
-  issues: ValidationReport['errors'];
-}) {
-  // Long files can produce thousands of issues; showing the first 50 is enough to
-  // fix the pattern, and rendering all of them would stall the page.
-  const shown = issues.slice(0, 50);
-  const hidden = issues.length - shown.length;
-
-  return (
-    <div>
-      <p className="mb-1 text-xs font-medium">{title}</p>
-      <ul className="max-h-56 space-y-1 overflow-y-auto rounded-md border border-border p-2 scrollbar-thin">
-        {shown.map((issue, index) => (
-          <li key={index} className="flex gap-2 text-[11px]">
-            <span className="shrink-0 font-mono text-muted-foreground">
-              {issue.row >= 0 ? `row ${issue.row + 1}` : 'file'}
-              {issue.field ? `·${issue.field}` : ''}
-            </span>
-            <span className={issue.severity === 'error' ? 'text-destructive' : 'text-[var(--warning)]'}>
-              {issue.message}
-            </span>
-          </li>
-        ))}
-      </ul>
-      {hidden > 0 && (
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          …and {formatNumber(hidden)} more.
-        </p>
-      )}
-    </div>
   );
 }

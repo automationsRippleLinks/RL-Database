@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,7 +28,14 @@ interface FilterDropdownProps {
   inline?: boolean;
   icon?: LucideIcon;
   // platformIcons?: boolean;
-  iconButtons?:boolean;
+  iconButtons?: boolean;
+  /** Text on the button when nothing is picked. Filters say "Any"; a form field says "None". */
+  emptyText?: string;
+  /** Shows each pick as a small chip with a cross to remove it, and keeps the closed box blank. Forms use it. */
+  chips?: boolean;
+
+  /** The form shows its own label above the field. */
+  hideLabel?: boolean;
 
 }
 
@@ -56,7 +63,10 @@ export function FilterDropdown({
   allowAny = true,
   inline = false,
   icon: Icon,
-  
+  hideLabel = false,
+  emptyText = 'Any',
+  chips = false,
+
 }: FilterDropdownProps) {
   const [query, setQuery] = useState('');
 
@@ -70,11 +80,13 @@ export function FilterDropdown({
   const directInline = inline && !onToggle;
 
   const summary =
-    selected.length === 0
-      ? 'Any'
-      : selected.length === 1
-        ? (options.find((option) => option.value === selected[0])?.label ?? selected[0])
-        : `${selected.length} selected`;
+    chips
+      ? ''
+      : selected.length === 0
+        ? emptyText
+        : selected.length === 1
+          ? (options.find((option) => option.value === selected[0])?.label ?? selected[0])
+          : `${selected.length} selected`;
 
 
   const toggleValue = (value: string) => {
@@ -118,34 +130,85 @@ export function FilterDropdown({
             </button>
           ) : (
             <>
-              <span className="mb-1 block text-[11px] font-semibold text-rp-muted">
-                {label}
-              </span>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery('');
-                  onToggle?.();
-                }}
-                title={`${label}: ${selected.length ? selected.join(', ') : 'Any'}`} className={cn(
-                  'flex w-full items-center gap-1.75 rounded-[9px] border px-2.5 py-2 text-left text-xs transition-colors',
-                  'bg-rp-surface2 cursor-pointer',
-                  open ? 'border-rp-primary' : 'border-rp-border',
-                  selected.length
-                    ? 'font-semibold text-rp-text'
-                    : 'font-medium text-rp-muted',
-                )}
-              >
-                <span className="min-w-0 flex-1 truncate">{summary}</span>
-
-                <ChevronDown
+              {!hideLabel && (
+                <span className="mb-1 block text-[11px] font-semibold text-rp-muted">
+                  {label}
+                </span>
+              )}
+              {chips && (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setQuery('');
+                    onToggle?.();
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                      event.preventDefault();
+                      setQuery('');
+                      onToggle?.();
+                    }
+                  }}
                   className={cn(
-                    'size-3.5 shrink-0 opacity-75 transition-transform',
-                    open && 'rotate-180',
+                    'flex min-h-9 w-full cursor-pointer items-center gap-1.75 rounded-[9px] border bg-rp-surface2 px-2 py-1.5 text-xs transition-colors',
+                    open ? 'border-rp-primary' : 'border-rp-border',
                   )}
-                />
-              </button>
+                >
+                  <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+                    {selected.map((value) => {
+                      const text = options.find((option) => option.value === value)?.label ?? value;
+                      return (
+                        <span
+                          key={value}
+                          className="inline-flex max-w-full items-center gap-1 rounded-full bg-rp-primary-soft py-0.5 pl-2.5 pr-1 text-[11.5px] font-semibold text-rp-primary"
+                        >
+                          <span className="truncate">{text}</span>
+                          <button
+                            type="button"
+                            aria-label={`Remove ${text}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              toggleValue(value);
+                            }}
+                            className="flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-rp-surface2"
+                          >
+                            <X className="size-3" strokeWidth={2.6} />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <ChevronDown className={cn('size-3.5 shrink-0 opacity-75 transition-transform', open && 'rotate-180')} />
+                </div>
+              )}
+              {!chips && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery('');
+                    onToggle?.();
+                  }}
+                  title={`${label}: ${selected.length ? selected.join(', ') : emptyText}`}
+                  className={cn(
+                    'flex w-full items-center gap-1.75 rounded-[9px] border px-2.5 py-2 text-left text-xs transition-colors',
+                    'bg-rp-surface2 cursor-pointer',
+                    open ? 'border-rp-primary' : 'border-rp-border',
+                    selected.length
+                      ? 'font-semibold text-rp-text'
+                      : 'font-medium text-rp-muted',
+                  )}
+                >
+                  <span className="min-w-0 flex-1 truncate">{summary}</span>
+
+                  <ChevronDown
+                    className={cn(
+                      'size-3.5 shrink-0 opacity-75 transition-transform',
+                      open && 'rotate-180',
+                    )}
+                  />
+                </button>
+              )}
             </>
           )}
         </>

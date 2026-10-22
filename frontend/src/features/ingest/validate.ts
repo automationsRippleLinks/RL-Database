@@ -74,9 +74,9 @@ const PITCH_CREATOR_FIELDS: FieldSpec[] = [
   { name: "name", kind: "string", required: true },
   { name: "profile_link", kind: "any", required: false },
   { name: "followers", kind: "any", required: false },
-  { name: "category", kind: "any", required: false },
+  // { name: "category", kind: "any", required: false },
   { name: "tier", kind: "any", required: false },
-  { name: "language", kind: "any", required: false },
+  // { name: "language", kind: "any", required: false },
   { name: "gender", kind: "string", required: false },
   { name: "avg_views", kind: "any", required: false },
   { name: "city", kind: "any", required: false },
@@ -126,7 +126,7 @@ const CAMPAIGN_CREATOR_FIELDS: FieldSpec[] = [
   { name: 'campaign_code', kind: 'string', required: true },
   { name: 'name', kind: 'any', required: false },
   { name: 'profile_link', kind: 'any', required: true },
-  { name: 'source_file_id', kind: 'any', required: false },
+{ name: 'source_file_id', kind: 'any', required: false },
   { name: 'sheet', kind: 'any', required: false },
   { name: 'sheet_row', kind: 'any', required: false },
   { name: 'followers', kind: 'any', required: false },
@@ -217,6 +217,7 @@ export interface ValidationReport {
   unknownFields: string[];
 }
 
+
 /**
  * `datetime.fromisoformat` in parser.py accepts YYYY-MM-DD and full ISO datetimes
  * but raises on anything else — including the DD/MM/YYYY that spreadsheets love —
@@ -226,6 +227,7 @@ function isIsoDateLike(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}([T ].*)?$/.test(value.trim())) return false;
   return !Number.isNaN(new Date(value.trim()).getTime());
 }
+
 
 /**
  * The backend rejects the WHOLE upload over one malformed address -- a real

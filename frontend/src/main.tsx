@@ -1,10 +1,10 @@
-import { StrictMode } from 'react';
+// import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { CustomProvider } from 'rsuite';
 
-import { initializeObservability} from './lib/observability';
+import { initializeObservability } from './lib/observability';
 import { queryClient } from './lib/query-client';
 import { AuthProvider } from './features/auth/AuthProvider';
 import { AppRoutes } from './router';
@@ -22,21 +22,21 @@ if (!container) throw new Error('Missing #root element');
 initializeObservability();
 
 createRoot(container).render(
-  <StrictMode>
-    {/* Catch React rendering errors and show a reload screen. */}
-    <TelemetryBoundary>
-      <CustomProvider theme="dark">
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
-            {/* Track page changes. This displays nothing. */}
-            <TelemetryRoute />
 
-            <AuthProvider>
-              <AppRoutes />
-            </AuthProvider>
-          </BrowserRouter>
-        </QueryClientProvider>
-      </CustomProvider>
-    </TelemetryBoundary>
-  </StrictMode>,
+
+  <TelemetryBoundary>
+    <CustomProvider theme="dark">
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          {/* Track page changes. This displays nothing. */}
+          <TelemetryRoute />
+
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </CustomProvider>
+  </TelemetryBoundary>,
+
 );

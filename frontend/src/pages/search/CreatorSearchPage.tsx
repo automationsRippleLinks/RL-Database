@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
-import { ArrowUpDown, Check, ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
+import { ArrowUpDown, Check, Download, X } from 'lucide-react';
 import { useCreatorFacets, useCreatorSearch } from '../../features/search/queries';
 import { CREATOR_PAGE_SIZES, CREATOR_SORTS, DEFAULT_CREATOR_SORT, useCreatorRequest } from '../../features/search/request-state';
 import { ErrorState } from '@/components/states';
+import { PageButton } from '@/components/bits';
 import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { downloadCsv, fetchAllSearchRows, toCsv } from '@/lib/csv';
 import { formatNumber } from '@/lib/format';
@@ -299,19 +300,17 @@ export function CreatorSearchPage() {
 
           <div className="flex items-center gap-1.5">
             <PageButton
-              label="Previous page"
+              label="Previous"
               disabled={page <= 1}
               onClick={() => url.setParams({ page: page - 1 }, { replace: false })}
-              icon={<ChevronLeft className="size-3.75" />}
             />
             <span className="text-xs tabular-nums text-rp-muted">
               Page {page} of {pages}
             </span>
             <PageButton
-              label="Next page"
+              label="Next"
               disabled={page >= pages}
               onClick={() => url.setParams({ page: page + 1 }, { replace: false })}
-              icon={<ChevronRight className="size-3.75" />}
             />
           </div>
         </div>
@@ -377,31 +376,6 @@ function SortMenu({
         </div>
       )}
     </div>
-  );
-}
-
-function PageButton({
-  label,
-  disabled,
-  onClick,
-  icon,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      title={label}
-      aria-label={label}
-      className="flex cursor-pointer rounded-lg border border-rp-border bg-rp-surface p-1.5 text-rp-text disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      {icon}
-    </button>
   );
 }
 

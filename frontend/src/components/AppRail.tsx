@@ -9,14 +9,15 @@ import { cn } from '@/lib/utils';
  * every pixel it doesn't take is a column the results table keeps.
  */
 export function AppRail() {
-  const { canIngest } = useAuth();
+  const { canIngest, isAdmin, isSuperAdmin, canEdit } = useAuth();
 
   return (
     <aside className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-rp-border py-2.25">
       <RailLink to="/search" label="Search" icon={<Search className="size-[19px]" />} />
       {/* Hidden unless the backend says this account may ingest. The routes are
           guarded too, and the backend's 403 remains the real gate. */}
-      {canIngest && (
+      {(canIngest || isAdmin || isSuperAdmin || canEdit) && (
+      
         <>
           <RailLink to="/ingest" label="Ingest" icon={<Database className="size-4.75" />} />
           <RailLink to="/taxonomy" label="Tags" icon={<Tags className="size-4.75" />} />

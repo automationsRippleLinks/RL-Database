@@ -63,7 +63,8 @@ const columns: Column<CampaignRow>[] = [
           to={`/brands/${row.brand.id}`}
           state={withBackState(window.location).state}
           onClick={(event) => event.stopPropagation()}
-          className="block truncate font-medium text-rp-primary hover:underline"
+          // className="block truncate font-medium text-rp-primary hover:underline"
+          className="inline truncate font-medium text-rp-primary hover:underline"
         >
           {row.brand.name}
         </Link>

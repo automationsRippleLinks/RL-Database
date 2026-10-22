@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { History } from 'lucide-react';
 import { DataTable, type Column } from '@/components/DataTable';
@@ -7,15 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { ingestApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';
 import { INGEST_SOURCE_LABELS } from '@/lib/enums';
-import { formatDateTime, formatNumber } from '@/lib/format';
+import { formatDateTime, formatNumber, pluralise } from '@/lib/format';
 import type { IngestJob } from '@/types/api';
-import { AppsScriptPanel } from '@/features/ingest/AppsScriptPanel';
-import { JsonUploadPanel } from "@/features/ingest/JsonUploadPanel";
-import { JobStatusBadge } from "@/features/ingest/JobResult";
-import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import { JsonUploadPanel } from '@/features/ingest/JsonUploadPanel';
+import { JobStatusBadge } from '@/features/ingest/JobResult';
+import { RunDrawer } from './RunDrawer';
+import { useDocumentTitle } from '@/lib/useDocumentTitle';
 
 export function IngestPage() {
-  useDocumentTitle("Ingest");
+  useDocumentTitle('Ingest');
 
   const sourcesQuery = useQuery({
     queryKey: queryKeys.ingestSources,
@@ -27,6 +28,10 @@ export function IngestPage() {
     queryFn: ({ signal }) => ingestApi.jobs({ signal }),
   });
 
+  // The run whose details are open. Looked up in the list each time, so it stays current.
+  const [openJobId, setOpenJobId] = useState<string | null>(null);
+  const openJob = jobsQuery.data?.jobs.find((job) => job.job_id === openJobId) ?? null;
+
   if (sourcesQuery.isPending) return <LoadingState label="Loading ingest sources…" />;
   if (sourcesQuery.isError) {
     return <ErrorState error={sourcesQuery.error} onRetry={() => sourcesQuery.refetch()} />;
@@ -37,20 +42,13 @@ export function IngestPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-lg font-semibold">Data ingestion</h1>
+        <h1 className="text-lg font-semibold">Ingest</h1>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Pull the master sheets from Google Apps Script, or upload a JSON export directly. Rows whose
-          business key already exists are skipped rather than updated.
+          Upload a JSON file. Check it first, then save it. A file is saved only when every row is fine.
         </p>
       </div>
 
       <section>
-        <SectionTitle>From Google Apps Script</SectionTitle>
-        <AppsScriptPanel sources={sources} />
-      </section>
-
-      <section>
-        <SectionTitle>From a JSON file</SectionTitle>
         <JsonUploadPanel sources={sources} />
       </section>
 
@@ -61,28 +59,48 @@ export function IngestPage() {
           </span>
           Recent runs
         </SectionTitle>
-        <DataTable
-          columns={jobColumns}
-          rows={jobsQuery.data?.jobs ?? []}
-          rowKey={(job) => job.job_id}
-          isLoading={jobsQuery.isPending}
-          maxHeightClass="max-h-80"
-          emptyState={
-            <p className="px-4 py-8 text-center text-xs text-muted-foreground">
-              No ingest runs recorded yet.
-            </p>
-          }
-        />
+        {jobsQuery.isError ? (
+          <ErrorState error={jobsQuery.error} onRetry={() => jobsQuery.refetch()} />
+        ) : (
+          <div data-rp-pop="results">
+            <DataTable
+              columns={jobColumns}
+              rows={jobsQuery.data?.jobs ?? []}
+              rowKey={(job) => job.job_id}
+              onRowClick={(job) => setOpenJobId(job.job_id)}
+              activeRowKey={openJobId}
+              isLoading={jobsQuery.isPending}
+              maxHeightClass="max-h-80"
+              emptyState={
+                <p className="px-4 py-8 text-center text-xs text-muted-foreground">
+                  No ingest runs recorded yet.
+                </p>
+              }
+            />
+          </div>
+        )}
       </section>
+
+      {openJob && <RunDrawer key={openJob.job_id} job={openJob} onClose={() => setOpenJobId(null)} />}
     </div>
   );
+}
+
+/** One short line per run, so the table can be read without opening anything. */
+function resultText(job: IngestJob): string {
+  const { received, inserted, updated, failed } = job.counts;
+  const rows = (n: number) => `${formatNumber(n)} ${pluralise(n, 'row')}`;
+  if (job.status === 'queued' || job.status === 'running') return 'Working…';
+  if (job.dry_run) return job.status === 'success' ? `All ${rows(received)} fine` : `${rows(failed)} with mistakes`;
+  if (job.status === 'success') return `${formatNumber(inserted)} added, ${formatNumber(updated)} updated`;
+  return 'Nothing saved';
 }
 
 const jobColumns: Column<IngestJob>[] = [
   {
     id: 'job',
     header: 'Job',
-    cell: (job) => <span className="font-mono text-xs">{job.job_id}</span>,
+    cell: (job) => <span className="font-mono text-xs">{job.job_id.slice(0, 8)}</span>,
   },
   {
     id: 'source',
@@ -90,26 +108,17 @@ const jobColumns: Column<IngestJob>[] = [
     cell: (job) => INGEST_SOURCE_LABELS[job.source] ?? job.source,
   },
   {
-    id: 'origin',
-    header: 'Origin',
-    cell: (job) => (
-      <Badge variant="outline">{job.origin === 'apps_script' ? 'Apps Script' : 'Upload'}</Badge>
-    ),
+    id: 'type',
+    header: 'Type',
+    cell: (job) => <Badge variant="outline">{job.dry_run ? 'Check' : 'Save'}</Badge>,
   },
   {
     id: 'status',
     header: 'Status',
-    cell: (job) => (
-      <span className="flex items-center gap-1.5">
-        <JobStatusBadge status={job.status} />
-        {job.dry_run && <Badge variant="outline">dry run</Badge>}
-      </span>
-    ),
+    cell: (job) => <JobStatusBadge status={job.status} />,
   },
-  { id: 'received', header: 'Received', numeric: true, cell: (job) => formatNumber(job.counts.received) },
-  { id: 'inserted', header: 'Inserted', numeric: true, cell: (job) => formatNumber(job.counts.inserted) },
-  { id: 'skipped', header: 'Skipped', numeric: true, cell: (job) => formatNumber(job.counts.skipped) },
-  { id: 'failed', header: 'Failed', numeric: true, cell: (job) => formatNumber(job.counts.failed) },
+  { id: 'result', header: 'Result', cell: (job) => resultText(job) },
+  { id: 'file', header: 'File', cell: (job) => <span className="font-mono text-xs">{job.file_name ?? '—'}</span> },
   { id: 'by', header: 'Started by', cell: (job) => job.started_by ?? '—' },
   { id: 'when', header: 'Started', cell: (job) => formatDateTime(job.started_at) },
 ];

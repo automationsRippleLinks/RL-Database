@@ -14,10 +14,12 @@ function toISO(date: Date): string {
 }
 
 export function DateRangeControl({
+
   label,
   from,
   to,
   onChange,
+
 
 }: {
   label: string;
@@ -49,6 +51,7 @@ export function DateRangeControl({
         size="sm"
         editable={false}
         placement="bottomStart"
+        // placement='autoHorizontal'
         popupClassName="rp-compact-date-range"
 
         container={() => document.body}
