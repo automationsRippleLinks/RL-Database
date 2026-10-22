@@ -249,14 +249,50 @@ def _code_rank(kind: str, code) -> tuple[ColumnElement, ColumnElement, ColumnEle
     return as_int(part["year"]), month, as_int(part["number"])
 
 
+# pitch count column -> how one / several read in the deliverables summary
+_PITCH_DELIVERABLES = (
+    ("reel_count", "Reel", "Reels"),
+    ("reel_story_count", "Reel & story", "Reels & stories"),
+    ("video_story_count", "Video story", "Video stories"),
+    ("static_carousel_count", "Static / carousel", "Statics / carousels"),
+    ("short_form_videos_count", "YT short", "YT shorts"),
+    ("reshare_short_form_videos_count", "Reshared short", "Reshared shorts"),
+    ("dedicated_video_count", "Dedicated video", "Dedicated videos"),
+    ("integrated_video_count", "Integrated video", "Integrated videos"),
+)
+
+
+def _pitch_deliverables() -> ColumnElement:
+    """A pitch quote's deliverables as one line, in SQL: "2 Reels, 1 Reel story".
+
+    Zero counts are left out; NULL when the quote lists none.
+    """
+    parts = [
+        case(
+            (
+                getattr(PitchCreatorLink, count) > 0,
+                func.concat(
+                    getattr(PitchCreatorLink, count),
+                    " ",
+                    case((getattr(PitchCreatorLink, count) == 1, one), else_=many),
+                ),
+            )
+        )
+        for count, one, many in _PITCH_DELIVERABLES
+    ]
+    visit = col(PitchCreatorLink.event_store_visit)
+    parts.append(case((visit, "Event / store visit")))
+    return func.nullif(func.concat_ws(", ", *parts), "")
+
+
 def _cost_candidates(ids: Optional[list[UUID]] = None):
     """Every cost a creator could show as latest, one row per link.
 
-    Columns: creator_id, cost, source, and the rank (year, month, number, tie).
+    Columns: creator_id, cost, source, deliverables, and the rank (year, month, number, tie).
     With `ids` it covers those creators; without, it correlates to the outer Creator.
     """
 
-    def branch(kind, tie, link, fallback_cost, fallback, code):
+    def branch(kind, tie, link, fallback_cost, fallback, code, deliverables):
         final = col(link.final_cost)
         cost = func.coalesce(func.nullif(final, 0), func.nullif(col(fallback_cost), 0))
         label = case((func.coalesce(final, 0) != 0, "final"), else_=fallback)
@@ -272,6 +308,7 @@ def _cost_candidates(ids: Optional[list[UUID]] = None):
             (literal(f"{kind} ", String) + code + " · " + label + " cost").label(
                 "source"
             ),
+            deliverables.label("deliverables"),
             year.label("year"),
             month.label("month"),
             number.label("number"),
@@ -287,6 +324,7 @@ def _cost_candidates(ids: Optional[list[UUID]] = None):
         PitchCreatorLink.package_cost,
         "package",
         col(Pitch.pitch_code),
+        _pitch_deliverables(),
     ).join(Pitch, col(Pitch.id) == col(PitchCreatorLink.pitch_id))
     from_campaigns = (
         branch(
@@ -296,6 +334,7 @@ def _cost_candidates(ids: Optional[list[UUID]] = None):
             CampaignCreatorLink.initial_cost,
             "initial",
             col(Campaign.campaign_code),
+            func.nullif(func.btrim(col(CampaignCreatorLink.deliverables_raw)), ""),
         )
         .join(Campaign, col(Campaign.id) == col(CampaignCreatorLink.campaign_id))
         .where(col(CampaignCreatorLink.is_dropped).is_(False))
@@ -341,13 +380,14 @@ async def latest_costs(
 ) -> dict[UUID, dict[str, Any]]:
     """Creator id -> its latest_st* fields, one query for the whole page.
     Month and year come from the pitch / campaign code; None when it can't be read.
+    Deliverables are what that cost was quoted for (see `_pitch_deliverables`).
     """
     ids = list(creator_ids)
     if not ids:
         return {}
     c = _cost_candidates(ids)
     stmnt = (
-        select(c.c.creator_id, c.c.cost, c.c.source, c.c.month, c.c.year)
+        select(c.c.creator_id, c.c.cost, c.c.source, c.c.deliverables, c.c.month, c.c.year)
         .distinct(c.c.creator_id)  # Postgres DISTINCT ON: first row per creator
         .order_by(c.c.creator_id, *_newest_first(c))
     )
@@ -355,10 +395,11 @@ async def latest_costs(
         cid: {
             "latest_cost": cost,
             "latest_cost_source": src,
+            "latest_cost_deliverables": deliverables,
             "latest_cost_month": month or None,
             "latest_cost_year": year or None,
         }
-        for cid, cost, src, month, year in (await session.exec(stmnt)).all()
+        for cid, cost, src, deliverables, month, year in (await session.exec(stmnt)).all()
     }
 
 
@@ -373,7 +414,8 @@ async def creator_rows(
     return [
         CreatorRow.of(
             c,
-            cats.get(c.id, []), langs.get(c.id, []),
+            cats.get(c.id, []),
+            langs.get(c.id, []),
         ).model_copy(update=costs.get(c.id, {}))
         for c in creators
     ]

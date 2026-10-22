@@ -163,6 +163,7 @@ class CreatorRow(BaseModel):
     latest_cost_source: Optional[str] = None
     latest_cost_month: Optional[int] = None # 1-12
     latest_cost_year: Optional[int] = None
+    latest_cost_deliverables: Optional[str] = None  # what that cost was quoted for
 
     @computed_field
     @property
