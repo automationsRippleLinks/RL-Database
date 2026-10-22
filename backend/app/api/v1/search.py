@@ -10,7 +10,7 @@ from app.api.deps import SessionFactoryDep, SessionDep, CurrentUser, RedisDep
 from app.services import search
 from app.schemas.search import (
     SearchResponse,
-    CreatorRow,
+    CreatorSearchResponse,
     CreatorSearchRequest,
     BrandRow,
     BrandSearchRequest,
@@ -23,7 +23,7 @@ from app.schemas.search import (
 router = APIRouter()
 
 
-@router.post("/creators", response_model=SearchResponse[CreatorRow])
+@router.post("/creators", response_model=CreatorSearchResponse)
 async def search_creators(
     req: CreatorSearchRequest, session: SessionDep, user: CurrentUser
 ):

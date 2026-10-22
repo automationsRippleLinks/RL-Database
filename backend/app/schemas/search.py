@@ -90,13 +90,14 @@ CampaignInvolvement = Literal["worked", "never", "dropped_only"]
 class CreatorSearchRequest(Paging):
     """Filters for the Creators table. A list matches any of its entries.
 
-    `text` can also be a pasted profile link, which matches that exact username.
+    `text` can also be a pasted profile link, which matches that exact username,
+    or a pasted list (any line break): see `services.search.bulk_items`.
     `sort`: relevance, or followers / avg_views / name / package_cost / gaps with
     _asc or _desc; anything else sorts by followers.
     `missing`: a field or "any".
     """
 
-    text: Optional[str] = None
+    text: Optional[str] = Field(default=None, max_length=50_000)
     platforms: list[PlatformChoices] = []
     tiers: list[TierChoices] = []
     genders: list[str] = []
@@ -196,6 +197,25 @@ class CreatorRow(BaseModel):
         }
         data["emails"], data["phones"] = creator.emails or [], creator.phones or []
         return cls(**data, categories=list(categories), languages=list(languages))
+
+MAX_BULK_ITEMS = 500 # must be same of MAX_BULK_ITEMS in frontend's bulk.ts
+NOT_FOUND_LIMIT = 100
+
+class BulkInfo(BaseModel):
+    """How a pasted list went: items after cleaning, and which found nobody."""
+
+    total: int
+    #: items that found at least one creator (items, not creators)
+    matched: int
+    #: as the user typed them, first NOT_FOUND_LIMIT only
+    not_found: list[str]
+    #: more than MAX_BULK_ITEMS were pasted; the rest were dropped
+    truncated: bool = False
+
+class CreatorSearchResponse(SearchResponse[CreatorRow]):
+    """The Creators table page; `bulk` only when `text` was a pasted list."""
+
+    bulk: Optional[BulkInfo] = None
 
 
 # --- Brands ---

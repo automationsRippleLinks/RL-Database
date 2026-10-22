@@ -4,11 +4,13 @@ detail pages reuse them instead of reaching into another route module."""
 from typing import Callable, Optional, Sequence, Iterable, Any
 from datetime import datetime, time as dtime
 import time
+import re
 from uuid import UUID
 from collections import defaultdict
 import asyncio
 
-from sqlalchemy import ColumnElement
+from sqlalchemy import ColumnElement, Text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlmodel import (
     and_,
     or_,
@@ -35,6 +37,10 @@ from app.schemas.search import (
     SearchResponse,
     CreatorRow,
     CreatorSearchRequest,
+    CreatorSearchResponse,
+    BulkInfo,
+    MAX_BULK_ITEMS,
+    NOT_FOUND_LIMIT,
     BrandRow,
     BrandSearchRequest,
     BrandRef,
@@ -62,7 +68,7 @@ from app.models import (
 )
 from app.services import creator_gaps
 from app.models.enums import PlatformChoices
-from app.services.profile_link import parse_profile_link, looks_like_link
+from app.services.profile_link import parse_profile_link, looks_like_link, clean
 
 # === building blocks ===================================================
 
@@ -387,7 +393,9 @@ async def latest_costs(
         return {}
     c = _cost_candidates(ids)
     stmnt = (
-        select(c.c.creator_id, c.c.cost, c.c.source, c.c.deliverables, c.c.month, c.c.year)
+        select(
+            c.c.creator_id, c.c.cost, c.c.source, c.c.deliverables, c.c.month, c.c.year
+        )
         .distinct(c.c.creator_id)  # Postgres DISTINCT ON: first row per creator
         .order_by(c.c.creator_id, *_newest_first(c))
     )
@@ -399,7 +407,9 @@ async def latest_costs(
             "latest_cost_month": month or None,
             "latest_cost_year": year or None,
         }
-        for cid, cost, src, deliverables, month, year in (await session.exec(stmnt)).all()
+        for cid, cost, src, deliverables, month, year in (
+            await session.exec(stmnt)
+        ).all()
     }
 
 
@@ -421,22 +431,160 @@ async def creator_rows(
     ]
 
 
+# === bulk search: a pasted list ===============================================================================
+
+# the list splits on these; the frontend's splitItems uses the same set
+_BULK_SPLIT = re.compile(r"[\r\n,;\t]+")
+
+
+def is_bulk(text: Optional[str]) -> bool:
+    """A line break means a pasted list; the frontend's isBulkText says the same."""
+    return bool(text) and ("\n" in text or "\r" in text)
+
+
+def bulk_items(text: str) -> tuple[list[str], bool]:
+    """(items, truncated) from a pasted list.
+
+    Split on lines(\n), commas(,), semicolons(;), and tabs; invisible characters dropped and
+    spaces collapsed; repeats dropped ignoring case; the first MAX_BULK_ITEMS kept.
+    Same rules as the frontend's splitItems, so both count the same.
+    """
+    items, seen = [], set()
+    for part in _BULK_SPLIT.split(text):
+        item = clean(part)
+        if item and item.lower() not in seen:
+            seen.add(item.lower())
+            items.append(item)
+    return items[:MAX_BULK_ITEMS], len(items) > MAX_BULK_ITEMS
+
+
+def _like_literal(text: str) -> str:
+    """Escape ILIKE's wildcards, so"_" and "%" in pasted text mean themselves."""
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def _read_item(item: str) -> tuple[str, Optional[str], Optional[PlatformChoices]]:
+    """(kind, value, platform) for one pasted item; kind is handle, text or none.
+
+    A profile link: its handle, on that platform. "@handle": that handle on any
+    platform. Anything else, a link to a site we don't know included: text that a
+    name or handle should contain. "none" can't mean anyone ("@", a bare domain).
+    """
+    link = parse_profile_link(item) if looks_like_link(item) else None
+    if link is not None and link.platform is not None:
+        if not link.username:
+            return "none", None, None
+        return "handle", link.username, link.platform
+    if item.startswith("@"):
+        handle = item[1:].strip()
+        return ("handle", handle, None) if handle else ("none", None, None)
+    return "text", item, None
+
+
+def _bulk_matches(items: list[str]):
+    """Subquery: one (i, creator_id) row for each item and each creator it means.
+
+    `i` is the item's place in `items`; an item that means nobody has no rows.
+    Handles: one hash join on lower(username), so case never matters. Text: name or
+    handle contains it, one trigram index lookup per item. Each item is a row of an
+    unnest(), not an OR branch, which keeps 500 items at tens of milliseconds.
+    """
+    hi, handles, platforms, ti, patterns = [], [], [], [], []
+    for i, item in enumerate(items):
+        kind, value, platform = _read_item(item)
+        if kind == "handle":
+            hi.append(i)
+            handles.append(value.lower())
+            platforms.append(platform.name if platform else None)  # stored by name
+        elif kind == "text":
+            ti.append(i)
+            patterns.append(f"%{_like_literal(value)}%")
+
+    h = (
+        func.unnest(
+            literal(hi, ARRAY(Integer)),
+            literal(handles, ARRAY(Text)),
+            literal(platforms, ARRAY(Text)),
+        )
+        .table_valued("i", "handle", "platform")
+        .render_derived(name="h")
+    )
+    by_handle = (
+        select(h.c.i, col(Creator.id).label("creator_id"))
+        .select_from(h)
+        .join(
+            Creator,
+            and_(
+                func.lower(col(Creator.username)) == h.c.handle,
+                or_(
+                    h.c.platform.is_(None),
+                    cast(col(Creator.platform), String) == h.c.platform,
+                ),
+            ),
+        )
+    )
+    t = (
+        func.unnest(literal(ti, ARRAY(Integer)), literal(patterns, ARRAY(Text)))
+        .table_valued("i", "pattern")
+        .render_derived(name="t")
+    )
+    by_text = (
+        select(t.c.i, col(Creator.id).label("creator_id"))
+        .select_from(t)
+        .join(
+            Creator,
+            or_(
+                col(Creator.name).ilike(t.c.pattern, escape="\\"),
+                col(Creator.username).ilike(t.c.pattern, escape="\\"),
+            ),
+        )
+    )
+    return union_all(by_handle, by_text).subquery("bulk")
+
+async def _bulk_info(
+        session: AsyncSession, items: list[str], matches, truncated: bool
+) -> BulkInfo:
+    """How many items matched someone, and which matched nobody.
+    
+    Read straight from the matches, before the sidebar filters: not_found means
+    "not on file", not "hidden by a filter". Inactive creators count as on file.
+    """
+    found = set()
+    if items:
+        found = set((await session.exec(select(matches.c.i).distinct())).all())
+        return BulkInfo(
+            total=len(items),
+            matched=len(found),
+            not_found=[x for i, x in enumerate(items) if i not in found][:NOT_FOUND_LIMIT],
+            truncated=truncated
+        )
+
+
 # === Four search endpoints logic =============================================================================
 
 
 async def creators(
     session: AsyncSession, req: CreatorSearchRequest
-) -> SearchResponse[CreatorRow]:
+) -> CreatorSearchResponse:
     """The Creators table: text search plus filters, sorted and paged.
 
     A pasted profile link with a readable handle becomes an exact username
-    (and platform) match instead of a text search.
+    (and platform) match instead of a text search. A pasted list (any line break)
+    matches any of its items, see `_read_item`, and adds `bulk` to the response.
     """
     t0 = time.perf_counter()
     stmnt = select(Creator)
 
+    bulk = None
     link = parse_profile_link(req.text) if looks_like_link(req.text) else None
-    if link is not None and link.username:
+    if is_bulk(req.text):
+        items, truncated = bulk_items(req.text)
+        matches = _bulk_matches(items)
+        if items:
+            stmnt = stmnt.where(col(Creator.id).in_(select(matches.c.creator_id)))
+
+        bulk = await _bulk_info(session, items, matches, truncated)
+    elif link is not None and link.username:
         stmnt = stmnt.where(col(Creator.username) == link.username)
         if link.platform is not None:
             stmnt = stmnt.where(col(Creator.platform) == link.platform)
@@ -526,8 +674,8 @@ async def creators(
     stmnt = stmnt.where(*[f for f in filters if f is not None])
 
     sort = req.sort
-    # relevance ranks by the typed words; a link or empty text has none to rank by
-    if sort == "relevance" and (link is not None or not tokens(req.text)):
+    # relevance ranks by the typed words; a list, a link or empty text has none
+    if sort == "relevance" and (bulk is not None or link is not None or not tokens(req.text)):
         sort = "followers_desc"
     if sort == "relevance":
         q = " ".join(tokens(req.text))
@@ -555,7 +703,8 @@ async def creators(
 
     # id breaks ties so rows with equal sort keys don't hop between pages
     total, page, pages, rows = await _page(session, stmnt, req, *order, col(Creator.id))
-    return _response(t0, total, page, pages, req, await creator_rows(session, rows))
+    res = _response(t0, total, page, pages, req, await creator_rows(session, rows))
+    return CreatorSearchResponse(**dict(res), bulk=bulk)
 
 
 def _brand_counts():
