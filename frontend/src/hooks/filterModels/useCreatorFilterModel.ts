@@ -37,6 +37,7 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
   const brandIds = url.getList("c_brand");
   const categories = url.getList("category");
   const languages = url.getList("language");
+  const genders = url.getList("gender");
   const tags = url.getList("tag");
   const regions = url.getList("region");
   const states = url.getList("state");
@@ -79,6 +80,11 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
       language: asOptions(
         [...(facets?.languages ?? [])].sort((a, b) => a.localeCompare(b)),
       ),
+      gender: asOptions(
+        [...(facets?.genders ?? [])]
+          .filter((g) => g.trim())
+          .sort((a, b) => a.localeCompare(b)),
+      ),
 
       // Region narrows State, and Region + State narrow City. All three are
       // computed from the city facet — see lib/geo.ts.
@@ -86,7 +92,7 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
         value: region,
         label: `${region} India`,
       })),
-      
+
       state: asOptions(statesIn(facetCities, regions)),
       city: asOptions(citiesIn(facetCities, regions, states)),
     };
@@ -96,7 +102,8 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
   const counts: Record<FilterGroupKey, number> = {
     platform: platforms.length,
     brand: brandIds.length,
-    content: categories.length + languages.length + tags.length,
+    content:
+      categories.length + languages.length + tags.length + genders.length,
     location: regions.length + states.length + cities.length,
     reach: (folMin || folMax ? 1 : 0) + (viewMin || viewMax ? 1 : 0),
     contact: contact ? 1 : 0,
@@ -116,6 +123,7 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
     brandIds,
     categories,
     languages,
+    genders,
     tags,
     regions,
     states,
@@ -142,6 +150,7 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
     setBrands: (next: string[]) => set({ c_brand: next }),
     setCategories: (next: string[]) => set({ category: next }),
     setLanguages: (next: string[]) => set({ language: next }),
+    setGenders: (next: string[]) => set({ gender: next }),
     setTags: (next: string[]) => set({ tag: next }),
     // Changing Region clears State and City; changing State clears City. Keeping
     // a city that the new region doesn't contain would produce a filter pair
@@ -172,6 +181,7 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
         c_brand: null,
         category: null,
         language: null,
+        gender: null,
         tag: null,
         region: null,
         state: null,
@@ -224,6 +234,13 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
         key: `language:${value}`,
         label: `Speaks ${value}`,
         remove: () => set({ language: drop(languages, value) }),
+      });
+    }
+    for (const value of genders) {
+      list.push({
+        key: `gender:${value}`,
+        label: value,
+        remove: () => set({ gender: drop(genders, value) }),
       });
     }
     for (const value of tags) {

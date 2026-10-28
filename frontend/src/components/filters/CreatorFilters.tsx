@@ -170,6 +170,15 @@ export default function CreatorFilters({
                       inline
                       {...menuProps('language')}
                     />
+                    <FilterDropdown
+                      label="Gender"
+                      icon={Users}
+                      options={model.options.gender}
+                      selected={model.values.genders}
+                      onChange={model.actions.setGenders}
+                      inline
+                      {...menuProps('gender')}
+                    />
                     <TagsControl
                       vocabulary={facets?.tags}
                       selected={model.values.tags}
