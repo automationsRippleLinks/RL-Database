@@ -1,5 +1,4 @@
-import { Building2, ChevronDown, Globe, MapPin, Tag, Users, MapIcon, Contact as ContactIcon, Mail, Phone, Package } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Building2, ChevronDown, Globe, MapPin, Tag, Users, MapIcon, Contact as ContactIcon, Mail, Phone, Package, UserCheck, UserX } from 'lucide-react'; import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CreatorFacets } from '@/types/api';
 import { FilterDropdown } from '../FilterDropdown';
@@ -18,13 +17,20 @@ const GROUPS: { key: FilterGroupKey; label: string; icon: LucideIcon }[] = [
   { key: 'reach', label: 'Reach', icon: Users },
   { key: 'contact', label: 'Contact', icon: ContactIcon },
   { key: 'deliverables', label: 'Commercials', icon: Package },
+  { key: 'status', label: 'Status', icon: UserCheck },
 ];
+
 const CONTACT_OPTIONS = [
   { value: 'contact', label: 'Has Contact', icon: ContactIcon },
   { value: 'email', label: 'Has Email', icon: Mail },
   { value: 'phone', label: 'Has Phone', icon: Phone },
 ];
 
+const STATUS_OPTIONS = [
+  { value: 'active', label: 'Active profiles', icon: UserCheck },
+  { value: 'inactive', label: 'Inactive profiles', icon: UserX },
+  { value: 'all', label: 'Active + inactive', icon: Users },
+];
 
 interface CreatorFilterGroupsProps {
   model: FilterModel;
@@ -143,7 +149,7 @@ export default function CreatorFilters({
 
 
                 {key === 'content' && (
-                  <div className="flex flex-col gap-1.8 rounded-[9px] border border-rp-border bg-rp-surface p-0.5">
+                  <div className="flex flex-col gap-1.8 rounded-[9px] border bg-rp-surface p-0.5">
                     <FilterDropdown
                       label="Category"
                       icon={Tag}
@@ -216,6 +222,15 @@ export default function CreatorFilters({
                     // selected={model.values.contact && model.values.contact !== 'none' ? [model.values.contact] : []} onChange={(values) =>
                     selected={model.values.contact ? [model.values.contact] : []} onChange={(values) =>
                       model.actions.setContact(values[values.length - 1] ?? null)
+                    }
+                  />
+                )}
+                {key === 'status' && (
+                  <IconFilter
+                    options={STATUS_OPTIONS}
+                    selected={[model.values.status || 'active']}
+                    onChange={(values) =>
+                      model.actions.setStatus(values[values.length - 1] ?? null)
                     }
                   />
                 )}
@@ -299,6 +314,7 @@ export default function CreatorFilters({
  * Rail labels collapse rather than disappear: opacity and max-width animate to
  * zero in step with the rail's own width transition, so nothing pops.
  */
+
 export function RailLabel({ open, children }: { open: boolean; children: React.ReactNode }) {
   return (
     <span

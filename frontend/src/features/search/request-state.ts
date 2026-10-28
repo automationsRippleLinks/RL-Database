@@ -28,7 +28,7 @@ import type {
   Platform,
 } from "@/types/api";
 // import { Contact } from 'lucide-react';
-import { isBulkToken,loadBulk } from "@/lib/bulk";
+import { isBulkToken, loadBulk } from "@/lib/bulk";
 
 export const DEFAULT_PAGE_SIZE = 50;
 
@@ -127,6 +127,7 @@ export function useCreatorRequest(
 
   // const contact = url.getString('contact') || 'contact';
   const contact = url.getString("contact");
+  const status = url.getString("c_status");
   // Joined so the memo compares by value: the array identity changes on every
   // facets render even when the vocabulary has not.
   const cityVocabulary = facetCities.join("\u0000");
@@ -172,9 +173,12 @@ export function useCreatorRequest(
       sort:
         (url.getString("sort", DEFAULT_CREATOR_SORT) as CreatorSort) ||
         DEFAULT_CREATOR_SORT,
+      // Status filter: no value = active only (the backend default), "inactive", or "all".
+      is_active: status === "inactive" ? false : status === "all" ? null : true,
+
       ...paging,
     }),
-    [url, paging, text, cityVocabulary, contact],
+    [url, paging, text, cityVocabulary, contact, status],
   );
 }
 
@@ -278,6 +282,7 @@ export const SCOPE_FILTER_KEYS: Record<string, string[]> = {
     "has_email",
     "has_phone",
     "no_contact",
+    "c_status",
     "in_campaign",
     "min_followers",
     "max_followers",
@@ -328,7 +333,7 @@ export const SCOPE_FILTER_KEYS: Record<string, string[]> = {
 const FILTER_DEFAULTS: Record<string, Record<string, unknown>> = {
   // creators: { has_contact: false },
   // creators: { has_contact: true },
-  creators: {},
+  creators: { is_active: true },
 };
 
 /** How many filters are active, for the "N active" badge on the filter panel. */

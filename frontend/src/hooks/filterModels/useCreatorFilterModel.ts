@@ -12,6 +12,7 @@ export type FilterGroupKey =
   | "location"
   | "reach"
   | "contact"
+  | "status"
   | "deliverables";
 
 /** One removable pill above the results, and the state it removes. */
@@ -46,6 +47,7 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
   const viewMax = url.getString("max_views");
   // const contact = url.getString("contact") || "contact";
   const contact = url.getString("contact");
+  const status = url.getString("c_status");
   const hasPackage = url.getString("package") === "1";
   const pkgMin = url.getString("min_package");
   const pkgMax = url.getString("max_package");
@@ -77,12 +79,14 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
       language: asOptions(
         [...(facets?.languages ?? [])].sort((a, b) => a.localeCompare(b)),
       ),
+
       // Region narrows State, and Region + State narrow City. All three are
       // computed from the city facet — see lib/geo.ts.
       region: regionsIn(facetCities).map((region) => ({
         value: region,
         label: `${region} India`,
       })),
+      
       state: asOptions(statesIn(facetCities, regions)),
       city: asOptions(citiesIn(facetCities, regions, states)),
     };
@@ -95,9 +99,8 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
     content: categories.length + languages.length + tags.length,
     location: regions.length + states.length + cities.length,
     reach: (folMin || folMax ? 1 : 0) + (viewMin || viewMax ? 1 : 0),
-    // contact: contact ? 1 : 0,
-    // contact: contact !== "contact" && contact !== "none" ? 1 : 0,
     contact: contact ? 1 : 0,
+    status: status ? 1 : 0,
     deliverables:
       (hasPackage ? 1 : 0) +
       (pkgMin || pkgMax ? 1 : 0) +
@@ -122,6 +125,7 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
     viewMin,
     viewMax,
     contact,
+    status,
     hasPackage,
     pkgMax,
     pkgMin,
@@ -132,8 +136,9 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
   const actions = {
     setPlatforms: (next: string[]) => set({ platform: next }),
 
-    // setContact: (next: string | null) => set({ contact: next ?? "none" }),
     setContact: (next: string | null) => set({ contact: next }),
+    setStatus: (next: string | null) =>
+      set({ c_status: next && next !== "active" ? next : null }),
     setBrands: (next: string[]) => set({ c_brand: next }),
     setCategories: (next: string[]) => set({ category: next }),
     setLanguages: (next: string[]) => set({ language: next }),
@@ -157,13 +162,13 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
         max_package: max,
       }),
     // CPV (cost per view) range, decimals like 0.75.
-    setCpv: (min: string, max: string) =>
-      set({ min_cpv: min, max_cpv: max }),
+    setCpv: (min: string, max: string) => set({ min_cpv: min, max_cpv: max }),
 
     clearAll: (clearQuery: boolean = false) =>
       set({
         platform: null,
         contact: null,
+        c_status: null,
         c_brand: null,
         category: null,
         language: null,
@@ -293,6 +298,14 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
         remove: () => set({ contact: null }),
       });
     }
+    if (status) {
+      list.push({
+        key: "status",
+        label:
+          status === "inactive" ? "Inactive profiles" : "Active + inactive",
+        remove: () => set({ c_status: null }),
+      });
+    }
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -316,6 +329,7 @@ export function useCreatorFilterModel(facets: CreatorFacets | undefined) {
     cpvMax,
     url,
     contact,
+    status,
   ]);
 
   return { options, counts, totalApplied, values, actions, pills, contact };

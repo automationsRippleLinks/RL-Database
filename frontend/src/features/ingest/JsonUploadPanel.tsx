@@ -12,6 +12,7 @@ import { formatNumber, pluralise } from '@/lib/format';
 import type { IngestJob, IngestSource, IngestSourceInfo } from '@/types/api';
 import { FileFormat } from '@/pages/ingest/FileFormat';
 import { JobResult } from './JobResult';
+import { cn } from '@/lib/utils';
 
 /** The backend refuses anything larger, so say so before the upload starts. */
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
@@ -49,6 +50,8 @@ export function JsonUploadPanel({ sources }: { sources: IngestSourceInfo[] }) {
   const [note, setNote] = useState<string | null>(null);
   /** The job being watched: first the check, then the save that follows it. */
   const [jobId, setJobId] = useState<string | null>(null);
+  /** True while a file is being dragged over the box. */
+  const [dragging, setDragging] = useState(false);
 
   const jobQuery = useQuery({
     queryKey: queryKeys.ingestJob(jobId ?? ''),
@@ -134,6 +137,22 @@ export function JsonUploadPanel({ sources }: { sources: IngestSourceInfo[] }) {
   const checkFailed = checkFinished && job.status === 'failed';
   const saveFinished = !!job && !isWorking(job) && !job.dry_run;
 
+  const onDrop = (event: import('react').DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragging(false);
+    if (busy) return;
+    const files = Array.from(event.dataTransfer.files);
+    if (files.length === 0) return;
+    if (files.length > 1) {
+      setFileError('Drop one file at a time.');
+      return;
+    }
+    if (!/\.json$/i.test(files[0].name)) {
+      setFileError('Only .json files can be uploaded.');
+      return;
+    }
+    void handleFile(files[0]);
+  };
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -154,11 +173,27 @@ export function JsonUploadPanel({ sources }: { sources: IngestSourceInfo[] }) {
 
         <FileFormat source={source} />
 
-        {/* Only the button opens the file picker. The box around it does nothing when clicked. */}
+        {/* Drop a file here, or use the button. Clicking the box itself does nothing. */}
         {!fileName && (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-border px-4 py-8 text-center">
+          <div
+            onDragEnter={(event) => event.preventDefault()}
+            onDragOver={(event) => {
+              event.preventDefault();
+              if (!busy) setDragging(true);
+            }}
+            onDragLeave={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false);
+            }}
+            onDrop={onDrop}
+            className={cn(
+              'flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed px-4 py-8 text-center transition-colors',
+              dragging ? 'border-primary bg-primary/5' : 'border-border',
+            )}
+          >
             <FileJson className="size-7 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">No file chosen yet. Up to 25 MB.</p>
+            <p className="text-xs text-muted-foreground">
+              {dragging ? 'Drop the file to load it' : 'Drag a JSON file here, or choose one. Up to 25 MB.'}
+            </p>
             <Button size="sm" onClick={() => fileInputRef.current?.click()}>
               <Upload />
               Upload JSON file
@@ -175,7 +210,6 @@ export function JsonUploadPanel({ sources }: { sources: IngestSourceInfo[] }) {
             if (file) void handleFile(file);
           }}
         />
-
         {fileName && (
           <div className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
             <span className="flex min-w-0 items-center gap-2 text-xs">
