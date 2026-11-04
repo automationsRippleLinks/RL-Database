@@ -18,6 +18,8 @@ import { emptyMessage, filterSlug } from '../calculations/summary';
 import { downloadTextFile } from '../utils/download';
 import { tableRequest } from '../data/queries';
 import { TableSearch } from '@/components/TableSearch'
+import { SaveAsListButton } from '@/features/lists/SaveAsListButton';
+
 
 interface Props {
   query: UseQueryResult<SearchResponse<CreatorRow>>;
@@ -100,6 +102,19 @@ export function CreatorTable({ query, state, dispatch }: Props) {
           placeholder="Search creators..."
           label="Search creators by name or handle"
           className="w-70 max-w-full"
+        />
+        <SaveAsListButton
+          count={total}
+          suggestedName={`${state.field ? `Missing ${FIELD_BY_KEY[state.field].label.toLowerCase()}` : 'Missing info'}${state.cat.length ? ` · ${state.cat.join(', ')}` : ''}`}
+          fetchIds={async () => {
+            const ids: string[] = [];
+            for (let p = 1; ; p++) {
+              const res = await searchApi.creators(tableRequest(state, state.q, p, EXPORT_PAGE));
+              ids.push(...res.rows.map((r) => r.id));
+              if (p >= res.pages) break;
+            }
+            return ids;
+          }}
         />
         <button type="button" className="cc-btn cc-btn-primary cc-export" data-testid="download" disabled={!total || exporting} onClick={download}>
           <DownloadIcon />

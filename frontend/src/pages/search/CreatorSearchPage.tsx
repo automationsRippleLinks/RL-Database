@@ -1,5 +1,15 @@
-import { useCallback, useMemo, useState } from 'react';
-import { ArrowUpDown, Check, Download, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRightLeft, ArrowUpDown, Check, ChevronDown, Copy, Download, ListPlus, Trash2, X } from 'lucide-react';
+import { ConfirmDialog, type ConfirmSpec } from '@/components/ConfirmDialog';
+import { BackLink } from '@/components/BackLink';
+import { useToast } from '@/components/Toast';
+import { useDismissable } from '@/hooks/useDismissable';
+import { AddToListMenu } from '@/features/lists/AddToListMenu';
+import { ListHeader, ListStatusTabs } from '@/features/lists/ListHeader';
+import { listColumns, StatusPill } from '@/features/lists/ListColumns';
+import { STATUSES, useList, useListActions } from '@/features/lists/queries';
+import type { ListMember, ListStatus } from '@/types/api';
 import { useCreatorFacets, useCreatorSearch } from '../../features/search/queries';
 import { CREATOR_PAGE_SIZES, CREATOR_SORTS, DEFAULT_CREATOR_SORT, useCreatorRequest } from '../../features/search/request-state';
 import { ErrorState } from '@/components/states';
@@ -40,6 +50,16 @@ export function CreatorSearchPage() {
   const url = useUrlSearchState();
   const shell = useShellState();
 
+  // ── LIST MODE: /search/creators?list=<id> is this same table, scoped to one list ──
+  const listId = url.getString('list') || null;
+  const listQuery = useList(listId);
+  const list = listQuery.data ?? null;
+  const members = useMemo(
+    () => new Map<string, ListMember>((list?.members ?? []).map((m) => [m.creator_id, m])),
+    [list],
+  );
+  const extraColumns = useMemo(() => (list ? listColumns(list.id, members, !list.can_edit) : []), [list, members]);
+
   const facetsQuery = useCreatorFacets();
   const request = useCreatorRequest(facetsQuery.data?.cities);
   const searchQuery = useCreatorSearch(request);
@@ -68,6 +88,15 @@ export function CreatorSearchPage() {
     [picked],
   );
   const pickedCount = Object.keys(picked).length;
+  const pickedIds = Object.keys(picked);
+  // A selection belongs to where it was made: switching into or out of a list starts fresh.
+  const lastScope = useRef(listId);
+  useEffect(() => {
+    if (lastScope.current !== listId) {
+      lastScope.current = listId;
+      setPicked({});
+    }
+  }, [listId, setPicked]);
   // ── EXPORT DIALOG STATE ────────────────────────────────────────
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -155,10 +184,24 @@ export function CreatorSearchPage() {
   const from = total === 0 ? 0 : (page - 1) * request.page_size + 1;
   const to = Math.min(page * request.page_size, total);
 
+  if (listId && listQuery.isError) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
+        <p className="text-[14px] font-bold">This list no longer exists</p>
+        <p className="text-[12.5px] text-rp-muted">Someone may have deleted it, or it is not shared with you.</p>
+        <Link to="/lists" className="mt-2 rounded-lg border border-rp-border px-3 py-1.75 text-[12.5px] font-semibold hover:bg-rp-surface2">Back to Lists</Link>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {list && <ListHeader list={list} />}
+      {listId && !list && <div className="mx-4.5 mt-3 h-36 animate-pulse rounded-xl bg-rp-surface" aria-label="Loading the list" />}
       {/* ── view controls ────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center justify-end gap-1.75 px-4.5 pt-2.25">
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.75 px-4.5 pt-2.25">
+        {!listId && <BackLink className="mr-auto" />}
+        {list && <ListStatusTabs list={list} />}
         <SortMenu
           value={request.sort}
           open={shell.openMenu === 'sort'}
@@ -196,6 +239,7 @@ export function CreatorSearchPage() {
           <h1 className="text-[14.5px] font-bold">
             <span className="tabular-nums">{formatNumber(total)}</span>{' '}
             {total === 1 ? 'creator' : 'creators'}
+            {list && <span className="font-medium text-rp-muted"> in this list</span>}
           </h1>
 
           {model.pills.map((pill) => (
@@ -244,6 +288,18 @@ export function CreatorSearchPage() {
           )}
         </div>
 
+        {pickedCount > 0 && (
+          <SelectionBar
+            count={pickedCount}
+            ids={pickedIds}
+            listId={list?.id ?? null}
+            listName={list?.name ?? null}
+            canEdit={list?.can_edit ?? true}
+            onClear={() => setPicked({})}
+            onExport={() => setExportOpen(true)}
+          />
+        )}
+
         {/* Tagged so the drawer's outside-click listener treats the results as
             part of the same surface: clicking another row swaps the record. */}
         <div
@@ -269,6 +325,7 @@ export function CreatorSearchPage() {
               isLoading={searchQuery.isPending}
               isFetching={searchQuery.isFetching && !searchQuery.isPending}
               onSelectRange={pickRange}
+              extraColumns={extraColumns}
             />
           )}
         </div>
@@ -400,6 +457,114 @@ function EmptyResults({ hasCriteria }: { hasCriteria: boolean }) {
           </>
         )}
       </p>
+    </div>
+  );
+}
+
+
+/**
+ * Appears as soon as anything is ticked. On the Creators page it saves the picks to a
+ * list; inside a list it changes status, moves, copies or removes them.
+ */
+function SelectionBar({
+  count,
+  ids,
+  listId,
+  listName,
+  canEdit,
+  onClear,
+  onExport,
+}: {
+  count: number;
+  ids: string[];
+  listId: string | null;
+  listName: string | null;
+  /** False when you can only view the open list: then only Copy to… and Export are offered. */
+  canEdit: boolean;
+  onClear: () => void;
+  onExport: () => void;
+}) {
+  const act = useListActions();
+  const { flash } = useToast();
+  const [confirm, setConfirm] = useState<ConfirmSpec | null>(null);
+  const [statusOpen, setStatusOpen] = useState(false);
+  useDismissable('bulk-status', statusOpen, () => setStatusOpen(false));
+  const btn = 'inline-flex cursor-pointer items-center gap-1.5 rounded-[9px] border border-rp-border bg-rp-surface px-2.75 py-1.5 text-[12.5px] font-semibold hover:bg-rp-surface2';
+
+  const setStatus = async (status: ListStatus) => {
+    setStatusOpen(false);
+    if (!listId) return;
+    await Promise.all(ids.map((creatorId) => act.updateMember.mutateAsync({ id: listId, creatorId, body: { status } })));
+    flash(`Marked ${ids.length} as ${status}`);
+  };
+
+  return (
+    <div className="mb-2 flex shrink-0 flex-wrap items-center gap-2 rounded-[11px] border border-rp-primary/40 bg-rp-primary-soft px-3 py-1.75">
+      <span className="text-[13px] font-bold tabular-nums">{formatNumber(count)} selected</span>
+      <button type="button" onClick={onClear} className="cursor-pointer rounded-md px-1.5 py-1 text-[12.5px] font-semibold text-rp-primary hover:underline">
+        Clear
+      </button>
+      <div className="ml-auto flex flex-wrap items-center gap-1.75">
+        {listId && !canEdit ? (
+          <>
+            <AddToListMenu creatorIds={ids} mode="copy" fromListId={listId} onDone={onClear} trigger={<button type="button" className={btn}><Copy className="size-3.5" /> Copy to…</button>} />
+            <button type="button" onClick={onExport} className={btn}><Download className="size-3.5" /> Export</button>
+          </>
+        ) : listId ? (
+          <>
+            <div data-rp-pop="bulk-status" className="relative">
+              <button type="button" aria-expanded={statusOpen} onClick={() => setStatusOpen((o) => !o)} className={btn}>
+                Set status <ChevronDown className="size-3.5" />
+              </button>
+              {statusOpen && (
+                <div className="animate-rp-menu absolute top-[calc(100%+4px)] right-0 z-30 w-44 rounded-xl border border-rp-border bg-rp-surface p-1.25 shadow-rp">
+                  {STATUSES.map((st) => (
+                    <button key={st} type="button" onClick={() => void setStatus(st)} className="flex w-full cursor-pointer rounded-lg px-2 py-1.5 hover:bg-rp-surface2">
+                      <StatusPill status={st} className="bg-transparent px-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <AddToListMenu creatorIds={ids} mode="move" fromListId={listId} onDone={onClear} trigger={<button type="button" className={btn}><ArrowRightLeft className="size-3.5" /> Move to…</button>} />
+            <AddToListMenu creatorIds={ids} mode="copy" fromListId={listId} onDone={onClear} trigger={<button type="button" className={btn}><Copy className="size-3.5" /> Copy to…</button>} />
+            <button type="button" onClick={onExport} className={btn}><Download className="size-3.5" /> Export</button>
+            <button
+              type="button"
+              onClick={() =>
+                setConfirm({
+                  title: `Remove ${count} ${count === 1 ? 'creator' : 'creators'} from ${listName}?`,
+                  body: 'They stay in the database and in any other list. Their status and note in this list are lost.',
+                  confirmLabel: 'Remove',
+                  danger: true,
+                  onConfirm: async () => {
+                    const res = await act.removeCreators.mutateAsync({ id: listId, creatorIds: ids });
+                    flash(`Removed ${res.removed} from ${listName}`);
+                    onClear();
+                  },
+                })
+              }
+              className={cn(btn, 'text-rp-danger')}
+            >
+              <Trash2 className="size-3.5" /> Remove
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" onClick={onExport} className={btn}><Download className="size-3.5" /> Export</button>
+            <AddToListMenu
+              creatorIds={ids}
+              onDone={onClear}
+              trigger={
+                <button type="button" className="inline-flex cursor-pointer items-center gap-1.5 rounded-[9px] bg-rp-primary px-3 py-1.5 text-[12.5px] font-bold text-rp-primary-fg">
+                  <ListPlus className="size-3.75" /> Add to list <ChevronDown className="size-3.5" />
+                </button>
+              }
+            />
+          </>
+        )}
+      </div>
+      <ConfirmDialog spec={confirm} onClose={() => setConfirm(null)} />
     </div>
   );
 }

@@ -15,3 +15,24 @@
 export function withBackState(location: { pathname: string; search: string }) {
   return { state: { from: `${location.pathname}${location.search}` } };
 }
+
+/**
+ * Like withBackState, plus a name for where you came from, so the page you land on
+ * can offer "← Back to <label>" (see components/BackLink.tsx). Use it on every link
+ * that jumps between areas: a list to its Missing info, Missing info back to the list…
+ */
+export function backState(location: { pathname: string; search: string }, label: string) {
+  return { from: `${location.pathname}${location.search}`, fromLabel: label };
+}
+
+/** A short name for the page you are on, for "Back to …" when a link has no better one. */
+export function pageLabel(location: { pathname: string; search: string }): string {
+  const p = location.pathname.replace(/\/+$/, '');
+  const inList = new URLSearchParams(location.search).has('list');
+  if (p === '/search/creators') return inList ? 'the list' : 'Creators';
+  if (p.startsWith('/search/')) return p.slice(8).replace(/^\w/, (c) => c.toUpperCase());
+  if (p === '/analytics/creators') return 'Missing info';
+  if (p === '/analytics') return 'Analytics';
+  if (p === '/lists') return 'Lists';
+  return 'the previous page';
+}

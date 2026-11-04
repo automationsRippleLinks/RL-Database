@@ -26,6 +26,7 @@ import type {
   PitchSearchRequest,
   PitchSort,
   Platform,
+  ListStatus,
 } from "@/types/api";
 // import { Contact } from 'lucide-react';
 import { isBulkToken, loadBulk } from "@/lib/bulk";
@@ -128,6 +129,8 @@ export function useCreatorRequest(
   // const contact = url.getString('contact') || 'contact';
   const contact = url.getString("contact");
   const status = url.getString("c_status");
+  // Lists: /search/creators?list=<id> is the same table, scoped to one list.
+  const listId = url.getString("list") || null;
   // Joined so the memo compares by value: the array identity changes on every
   // facets render even when the vocabulary has not.
   const cityVocabulary = facetCities.join("\u0000");
@@ -174,11 +177,15 @@ export function useCreatorRequest(
         (url.getString("sort", DEFAULT_CREATOR_SORT) as CreatorSort) ||
         DEFAULT_CREATOR_SORT,
       // Status filter: no value = active only (the backend default), "inactive", or "all".
-      is_active: status === "inactive" ? false : status === "all" ? null : true,
+      // Inside a list every member shows (active or not) unless a status was picked.
+      is_active:
+        status === "inactive" ? false : status === "all" || (listId && !status) ? null : true,
+      list_id: listId,
+      list_statuses: url.getList("lstatus") as ListStatus[],
 
       ...paging,
     }),
-    [url, paging, text, cityVocabulary, contact, status],
+    [url, paging, text, cityVocabulary, contact, status, listId],
   );
 }
 

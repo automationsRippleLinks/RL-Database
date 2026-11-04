@@ -70,7 +70,7 @@ function readCsrfToken(): string | null {
 }
 
 interface RequestOptions {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   signal?: AbortSignal;
   formData?: FormData;
@@ -315,6 +315,13 @@ export const api = {
     body?: unknown,
     opts?: Omit<RequestOptions, "method" | "body">,
   ) => apiRequest<T>(path, { ...opts, method: "PATCH", body }),
+
+  /** NEW: whole-object replace (used by PUT /lists/{id}/sharing). */
+  put: <T>(
+    path: string,
+    body?: unknown,
+    opts?: Omit<RequestOptions, "method" | "body">,
+  ) => apiRequest<T>(path, { ...opts, method: "PUT", body }),
 
   del: <T = void>(
     path: string,

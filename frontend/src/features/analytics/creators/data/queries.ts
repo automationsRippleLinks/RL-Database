@@ -15,34 +15,26 @@ import type {
   Platform,
   TaxonomyKind,
 } from "@/types/api";
+
+
 import type { ScopeState } from "../calculations/filters";
 import { apiSort } from "../calculations/sort";
 import { PAGE_SIZE } from "../rules/config";
 import type { State } from "../state";
-
-// export function summaryRequest(scope: ScopeState): CreatorSummaryRequest {
-//   return {
-//     platforms: scope.plat as Platform[],
-//     categories: scope.cat,
-//     languages: scope.lang,
-//     is_active: true,
-//   };
-// }
-
 export function summaryRequest(
-  scope : ScopeState,
-  isActive : boolean | null = true,
-
+  scope: ScopeState & { list?: string | null },
+  isActive: boolean | null = true,
 ): CreatorSummaryRequest {
   return {
-    platforms : scope.plat as Platform[],
-    categories : scope.cat,
-    languages : scope.lang,
+    platforms: scope.plat as Platform[],
+    categories: scope.cat,
+    languages: scope.lang,
     is_active: isActive,
+    list_id: scope.list ?? null,
   };
-};
+}
 
-export function useCreatorSummary(scope: ScopeState) {
+export function useCreatorSummary(scope: ScopeState & { list?: string | null }) {
   const request = summaryRequest(scope);
   return useQuery({
     queryKey: queryKeys.creatorSummary(request),
@@ -51,9 +43,8 @@ export function useCreatorSummary(scope: ScopeState) {
   });
 }
 
-
 /** Same filters, but counting EVERY creator (active and inactive). Only its totals.total is used. */
-export function useCreatorTotal(scope: ScopeState) {
+export function useCreatorTotal(scope: ScopeState & { list?: string | null }) {
   const request = summaryRequest(scope, null);
   return useQuery({
     queryKey: queryKeys.creatorSummary(request),
@@ -64,7 +55,7 @@ export function useCreatorTotal(scope: ScopeState) {
 
 /** A complete creator-search request: every unused filter is switched off. */
 export function tableRequest(
-  state: Pick<State, "plat" | "cat" | "lang" | "field" | "sort">,
+  state: Pick<State, "plat" | "cat" | "lang" | "field" | "sort"> & { list?: string | null },
   text: string,
   page: number,
   pageSize = PAGE_SIZE,
@@ -93,6 +84,7 @@ export function tableRequest(
     // With no field picked, the table is every creator missing at least one detail.
     missing: state.field ?? "any",
     is_active: true,
+    list_id: state.list ?? null,
     sort: apiSort(state.sort),
     page,
     page_size: pageSize,

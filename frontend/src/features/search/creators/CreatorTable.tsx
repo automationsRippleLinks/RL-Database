@@ -1,4 +1,4 @@
-import { /* ListChecks, */ Mail, Mars, Phone, Transgender, Users, Venus, type LucideIcon } from 'lucide-react';
+import { /* ListChecks, */ Mail, Phone, Transgender, Users, type LucideIcon } from 'lucide-react';
 import { DataTable, type Column } from '@/components/DataTable';
 import { useToast } from '@/components/Toast';
 import {
@@ -47,7 +47,10 @@ interface CreatorTableProps {
   onOpen: (row: CreatorRow) => void;
   isLoading: boolean;
   isFetching: boolean;
+
   onSelectRange: (range: CreatorRow[], shouldSelect: boolean) => void;
+  /** Extra columns appended on the right (a list adds Status and Note). */
+  extraColumns?: Column<CreatorRow>[];
 }
 
 // ── CREATOR TABLE COMPONENT ────────────────────────────────────
@@ -62,6 +65,7 @@ export function CreatorTable({
   onOpen,
   isLoading,
   isFetching,
+  extraColumns = [],
 }: CreatorTableProps) {
   const { copy } = useToast();
 
@@ -69,7 +73,7 @@ export function CreatorTable({
     <DataTable
       appearance="results"
       rows={rows}
-      columns={creatorColumns((value) => copy(value, 'Copied!'))}
+      columns={[...creatorColumns((value) => copy(value, 'Copied!')), ...extraColumns]}
       rowKey={(row) => row.id}
       onRowClick={onOpen}
       activeRowKey={activeId}
@@ -514,22 +518,22 @@ const GENDER_GLYPH: {
   icon: ComponentType<GlyphProps>;
   color: string;
 }[] = [
-  {
-    test: /^\s*(f|female|woman|women)\s*$/i,
-    icon: WomanFigure,
-    color: 'text-pink-300',
-  },
-  {
-    test: /^\s*(m|male|man|men)\s*$/i,
-    icon: ManFigure,
-    color: 'text-sky-300',
-  },
-  {
-    test: /^\s*(nb|non[-\s]?binary|other|transgender|trans)\s*$/i,
-    icon: Transgender,
-    color: 'text-violet-300',
-  },
-];
+    {
+      test: /^\s*(f|female|woman|women)\s*$/i,
+      icon: WomanFigure,
+      color: 'text-pink-300',
+    },
+    {
+      test: /^\s*(m|male|man|men)\s*$/i,
+      icon: ManFigure,
+      color: 'text-sky-300',
+    },
+    {
+      test: /^\s*(nb|non[-\s]?binary|other|transgender|trans)\s*$/i,
+      icon: Transgender,
+      color: 'text-violet-300',
+    },
+  ];
 
 function GenderGlyph({ gender }: { gender: string | null }) {
   if (!gender?.trim()) {
@@ -548,7 +552,7 @@ function GenderGlyph({ gender }: { gender: string | null }) {
       <Icon className="size-6" />
     </span>
   );
-} 
+}
 
 
 

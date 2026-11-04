@@ -15,6 +15,8 @@ export interface State extends FilterState {
   drawer: string | null;
   /** Drawer edit form: fill the empty fields, or edit every field. null = just viewing. */
   edit: EditMode | null;
+  /** Only creators in this list (from ?list=<id>), or everyone when null. */
+  list: string | null;
 }
 
 export const initialState: State = {
@@ -29,6 +31,7 @@ export const initialState: State = {
   open: null,
   drawer: null,
   edit: null,
+  list: null,
 };
 
 export type Action =
@@ -46,7 +49,8 @@ export type Action =
   | { type: "togglePlatform"; plat: string }
   | { type: "pickCell"; field: ScoredKey; plat: string }
   | { type: "startEdit"; mode: EditMode }
-  | { type: "stopEdit" };
+  | { type: "stopEdit" }
+  | { type: "setList"; list: string | null };
 
 function toggled(list: string[], value: string): string[] {
   return list.includes(value)
@@ -102,5 +106,8 @@ export function reducer(s: State, a: Action): State {
       return { ...s, edit: a.mode };
     case "stopEdit":
       return { ...s, edit: null };
+    case "setList":
+      // A different set of creators: the old drill-down and page no longer mean anything.
+      return s.list === a.list ? s : { ...s, list: a.list, field: null, page: 1, drawer: null, edit: null };
   }
 }

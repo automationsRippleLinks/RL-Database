@@ -210,3 +210,34 @@ export function initials(name: string): string {
     .join('')
     .toUpperCase();
 }
+
+/** "just now", "5 min ago", "3 h ago", "yesterday", "12 days ago", then a date. */
+export function timeAgo(value: string | null | undefined): string {
+  if (!value) return '—';
+  const ms = Date.now() - new Date(value).getTime();
+  if (!Number.isFinite(ms)) return '—';
+  const min = Math.round(ms / 60_000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `${h} h ago`;
+  const d = Math.round(h / 24);
+  if (d === 1) return 'yesterday';
+  if (d < 30) return `${d} days ago`;
+  return formatDate(value);
+}
+
+/** ₹ with Indian grouping and no decimals, or an em dash. */
+export function rupees(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return '—';
+  return `₹${Math.round(value).toLocaleString('en-IN')}`;
+}
+
+/** ₹ compact: ₹4.2L, ₹1.3Cr, ₹85K. */
+export function rupeesCompact(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return '—';
+  if (value >= 1e7) return `₹${(value / 1e7).toFixed(value >= 1e8 ? 0 : 1)}Cr`;
+  if (value >= 1e5) return `₹${(value / 1e5).toFixed(value >= 1e6 ? 0 : 1)}L`;
+  if (value >= 1e3) return `₹${Math.round(value / 1e3)}K`;
+  return `₹${Math.round(value)}`;
+}
