@@ -46,8 +46,8 @@ from app.schemas.auth import (
     EMailRequest,
     ResetPasswordRequest,
 )
-from app.models import User
-
+from app.models import User, Team
+from app.schemas.lists import TeamRef
 log = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -139,11 +139,17 @@ def _error_redirect(code: str) -> RedirectResponse:
     )
 
 
-@router.get("/me", response_model=SessionUser)
-async def me(user: CurrentUser) -> SessionUser:
-    """The signed-in user and their permissions."""
+async def _team_of(session: SessionDep, user: User) -> TeamRef | None:
+    """The user's team as the frontend shows it, or None when they have none."""
+    team = await session.get(Team, user.team_id) if user.team_id is not None else None
+    return TeamRef.model_validate(team) if team else None
 
-    return SessionUser.from_user(user)
+
+@router.get("/me", response_model=SessionUser)
+async def me(user: CurrentUser, session: SessionDep) -> SessionUser:
+    """The signed-in user, their permissions and their team."""
+
+    return SessionUser.from_user(user, await _team_of(session, user))
 
 
 @router.post(
@@ -198,7 +204,7 @@ async def login(
 
     _ensure_switched_on(user)
     await _start_session(response, redis, user.id)
-    return SessionUser.from_user(user)
+    return SessionUser.from_user(user, await _team_of(session, user))
 
 
 @router.get("/google/login")

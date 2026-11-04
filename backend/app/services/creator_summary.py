@@ -10,10 +10,11 @@ Each dropdown's counts ignore that dropdown's own filter (otherwise ticking
 platform filter, so the heatmap always shows every platform.
 """
 
-from sqlmodel import col, func, select
+from sqlmodel import col, exists, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Creator
+from app.models import Creator, ListCreator, User
+from app.services.list_access import get_list
 
 from app.schemas.analytics import (
     CreatorSummary,
@@ -41,13 +42,25 @@ def _scope(
         ),
         gaps.term_filter("categories", req.categories) if categories else None,
         gaps.term_filter("languages", req.languages) if languages else None,
+        (
+            exists(
+                select(ListCreator.creator_id)
+                .where(
+                    col(ListCreator.creator_id) == Creator.id,
+                    col(ListCreator.list_id) == req.list_id,
+                )
+                .correlate(Creator)
+            )
+            if req.list_id is not None
+            else None
+        ),
     ]
     return [c for c in conds if c is not None]
 
 
 async def _by_term(session: AsyncSession, req, kind: str) -> list[SummaryOption]:
     """Creators per category (or language), most first, for that dropdown.
-    
+
     Ends with a '__none__' option counting creators with none linked, if any.
     """
     link, term, fk = gaps._TERMS[kind]
@@ -84,13 +97,18 @@ async def _by_term(session: AsyncSession, req, kind: str) -> list[SummaryOption]
 
 
 async def creator_summary(
-    session: AsyncSession, req: CreatorSummaryRequest
+    session: AsyncSession, req: CreatorSummaryRequest, user: User
 ) -> CreatorSummary:
     """Everything the Creators data dashboard shows, for the given filters.
-    
+
+    With `list_id`, only that list's creators are counted (404 if `user` can't see it).
+
     `platforms` lists every platform; `totals` and `fields` cover only the
     platforms ticked in the filter (all of them when none are ticked).
     """
+    if req.list_id is not None:
+        await get_list(session, user, req.list_id, need="view")  # 404 if unseen
+
     columns = [
         col(Creator.platform),
         func.count().label("total"),

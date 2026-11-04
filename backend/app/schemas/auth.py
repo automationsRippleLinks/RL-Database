@@ -1,12 +1,13 @@
 """Sign-in, sign-up and session shapes. Work emails only, except where noted."""
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 from pydantic import EmailStr, AfterValidator, BaseModel, Field
 from fastapi import HTTPException, status
 
 from app.core.config import settings
 from app.models import User
+from app.schemas.lists import TeamRef
 
 
 def is_domain_email(email: EmailStr) -> str:
@@ -64,10 +65,15 @@ class SessionUser(BaseModel):
     is_verified: bool
     auth_provider: str
     permissions: Permissions
+    #: the person's team, or null when they have none yet
+    team: Optional[TeamRef] = None
 
     @classmethod
-    def from_user(cls, user: User) -> "SessionUser":
-        """Build from a User; a super admin gets every permission flag set."""
+    def from_user(cls, user: User, team: Optional[TeamRef] = None) -> "SessionUser":
+        """Build from a User; a super admin gets every permission flag set.
+
+        `team` is passed in because the User row only holds the team's id.
+        """
         return cls(
             id=user.id,
             name=user.name,
@@ -80,6 +86,7 @@ class SessionUser(BaseModel):
                 is_admin=user.is_admin or user.is_superadmin,
                 is_superadmin=user.is_superadmin,
             ),
+            team=team,
         )
 
 

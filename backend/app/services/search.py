@@ -65,10 +65,14 @@ from app.models import (
     Pitch,
     PitchCreatorLink,
     Company,
+    User,
+    SavedList,
+    ListCreator,
 )
 from app.services import creator_gaps
 from app.models.enums import PlatformChoices
 from app.services.profile_link import parse_profile_link, looks_like_link, clean
+from app.services.list_access import get_list, visible_clause
 
 # === building blocks ===================================================
 
@@ -413,20 +417,44 @@ async def latest_costs(
     }
 
 
+async def list_counts(
+    session: AsyncSession, viewer: User, creator_ids: Iterable[UUID]
+) -> dict[UUID, int]:
+    """Creator id -> how many lists this creator is on that `viewer` can see."""
+    ids = list(creator_ids)
+    if not ids:
+        return {}
+    stmnt = (
+        select(ListCreator.creator_id, func.count())
+        .join(SavedList, col(SavedList.id) == col(ListCreator.list_id))
+        .where(col(ListCreator.creator_id).in_(ids), visible_clause(viewer))
+        .group_by(ListCreator.creator_id)
+    )
+    return {cid: n for cid, n in (await session.exec(stmnt)).all()}
+
+
 async def creator_rows(
-    session: AsyncSession, creators: Sequence[Creator]
+    session: AsyncSession,
+    creators: Sequence[Creator],
+    viewer: Optional[User] = None,
 ) -> list[CreatorRow]:
-    """Creators as table rows, with categories, languages and latest costs."""
+    """Creators as table rows, with categories, languages and latest costs.
+
+    With `viewer`, each row also says how many lists (they can see) it is on.
+    """
     cats = await terms_for(session, (c.id for c in creators), "category")
     langs = await terms_for(session, (c.id for c in creators), "language")
     costs = await latest_costs(session, (c.id for c in creators))
+    in_lists = (
+        await list_counts(session, viewer, (c.id for c in creators)) if viewer else {}
+    )
 
     return [
         CreatorRow.of(
             c,
             cats.get(c.id, []),
             langs.get(c.id, []),
-        ).model_copy(update=costs.get(c.id, {}))
+        ).model_copy(update={**costs.get(c.id, {}), "list_count": in_lists.get(c.id, 0)})
         for c in creators
     ]
 
@@ -564,9 +592,10 @@ async def _bulk_info(
 
 
 async def creators(
-    session: AsyncSession, req: CreatorSearchRequest
+    session: AsyncSession, req: CreatorSearchRequest, user: Optional[User] = None
 ) -> CreatorSearchResponse:
     """The Creators table: text search plus filters, sorted and paged.
+    
 
     A pasted profile link with a readable handle becomes an exact username
     (and platform) match instead of a text search. A pasted list (any line break)
@@ -574,6 +603,11 @@ async def creators(
     """
     t0 = time.perf_counter()
     stmnt = select(Creator)
+
+    if req.list_id is not None:
+        if user is None:
+            raise ValueError("a list search needs the logged-in user")
+        await get_list(session, user, req.list_id, need="view")  # 404 if unseen # 404 if unseen
 
     bulk = None
     link = parse_profile_link(req.text) if looks_like_link(req.text) else None
@@ -663,16 +697,30 @@ async def creators(
             if req.min_commercial_cost is not None
             else None
         ),
-        (
+         (
             _latest_cost() <= req.max_commercial_cost
             if req.max_commercial_cost is not None
             else None
         ),
-        _cpv() >= req.min_cpv if req.min_cpv is not None else None,
-        _cpv() <= req.max_cpv if req.max_cpv is not None else None,
+        (
+            exists(
+                select(ListCreator.creator_id)
+                .where(
+                    col(ListCreator.creator_id) == Creator.id,
+                    col(ListCreator.list_id) == req.list_id,
+                    *(
+                        [col(ListCreator.status).in_(req.list_statuses)]
+                        if req.list_statuses
+                        else []
+                    ),
+                )
+                .correlate(Creator)
+            )
+            if req.list_id is not None
+            else None
+        ),
     ]
     stmnt = stmnt.where(*[f for f in filters if f is not None])
-
     sort = req.sort
     # relevance ranks by the typed words; a list, a link or empty text has none
     if sort == "relevance" and (bulk is not None or link is not None or not tokens(req.text)):
@@ -703,7 +751,9 @@ async def creators(
 
     # id breaks ties so rows with equal sort keys don't hop between pages
     total, page, pages, rows = await _page(session, stmnt, req, *order, col(Creator.id))
-    res = _response(t0, total, page, pages, req, await creator_rows(session, rows))
+    res = _response(
+        t0, total, page, pages, req, await creator_rows(session, rows, user)
+    )
     return CreatorSearchResponse(**dict(res), bulk=bulk)
 
 

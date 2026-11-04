@@ -21,6 +21,7 @@ from app.models.enums import (
 )
 from app.core.config import settings
 from app.schemas.analytics import MissingField
+from app.schemas.lists import ListStatus
 
 RowT = TypeVar("RowT")
 
@@ -131,6 +132,11 @@ class CreatorSearchRequest(Paging):
     is_active: Optional[bool] = True
     sort: str = "relevance"
     missing: Optional[Union[MissingField, Literal["any"]]] = None
+    
+    #: only creators on this list (404 if you can't see it); with `list_statuses`,
+    #: only those that stand at one of these statuses on it
+    list_id: Optional[UUID] = None
+    list_statuses: list[ListStatus] = []
 
 
 _PROFILE_URL = {
@@ -166,6 +172,10 @@ class CreatorRow(BaseModel):
     latest_cost_year: Optional[int] = None
     latest_cost_deliverables: Optional[str] = None  # what that cost was quoted for
 
+    #: how many lists (that the person asking can see) this creator is on
+    list_count: int = 0
+    
+
     @computed_field
     @property
     def cpv(self) -> Optional[Decimal]:
@@ -193,7 +203,7 @@ class CreatorRow(BaseModel):
         data = {
             f: getattr(creator, f)
             for f in cls.model_fields
-            if f not in ("categories", "languages") and not f.startswith("latest_cost")
+            if f not in ("categories", "languages","list_count") and not f.startswith("latest_cost")
         }
         data["emails"], data["phones"] = creator.emails or [], creator.phones or []
         return cls(**data, categories=list(categories), languages=list(languages))

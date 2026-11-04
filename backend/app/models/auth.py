@@ -60,6 +60,11 @@ class User(SQLModel, table=True):
     can_edit: bool = Field(
         default=False, nullable=False, sa_column_kwargs={"server_default": "false"}
     )
+    
+      # the team this person is in (see models/team.py); null = no team yet
+    team_id: Optional[int] = Field(
+        default=None, foreign_key="team.id", nullable=True, index=True, ondelete="SET NULL"
+    )
 
     @field_validator("email", mode="after")
     @classmethod
