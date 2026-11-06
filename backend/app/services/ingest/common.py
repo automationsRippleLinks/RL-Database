@@ -142,7 +142,7 @@ async def bulk_insert(
     if not rows:
         return 0
     # postgres allows at most 32767 bind parameters per statement
-    chunk = max(1, settings.PG_MAX_PARAMS // len(rows[0]))
+    chunk = max(1, settings.PG_MAX_PARAMS // len(model.__table__.columns))
     written = 0
     for i in range(0, len(rows), chunk):
         stmnt = pg_insert(model).values(rows[i : i + chunk])
@@ -208,6 +208,19 @@ async def creator_ids(
                 found[(platform, username)] = cid
     return found, created
 
+async def existing_creator_keys(
+    session: AsyncSession, keys: set[tuple]
+) -> set[tuple]:
+    """Which (platform, username) keys already have a creator in the database."""
+
+    usernames = sorted({u for _, u in keys})
+    found: set[tuple] = set()
+    for i in range(0, len(usernames), 1000):
+        stmnt = select(Creator.platform, Creator.username).where(
+            col(Creator.username).in_(usernames[i : i + 1000])
+        )
+        found |= {(p, u) for p, u in (await session.exec(stmnt)).all() if (p, u) in keys}
+    return found
 
 async def link_taxonomy(
     session: AsyncSession, link_model, fk: str, pairs: Iterable[tuple[UUID, int]]

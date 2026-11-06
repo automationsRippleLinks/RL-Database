@@ -69,7 +69,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     title=f"Ripple Pulse {settings.ENVIRONMENT}",
-    version=settings.API_VERSION,
+    version="0.2.0",
     root_path=settings.API_ROOT_PATH,
 )
 
@@ -77,7 +77,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PATCH", "OPTIONS", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"],
     allow_headers=["Content-Type", "Accept", "X-CSRF-Token", "tracestate", "traceparent"],
     expose_headers=["X-Error-Code", "Retry-After"],
 )

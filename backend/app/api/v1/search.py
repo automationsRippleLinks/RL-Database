@@ -29,7 +29,7 @@ async def search_creators(
 ):
     """One page of the Creators table for the text, filters and sort. Not cached."""
 
-    return await search.creators(session, req)
+    return await search.creators(session, req, user)
 
 
 @router.post("/brands", response_model=SearchResponse[BrandRow])

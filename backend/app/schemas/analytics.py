@@ -5,6 +5,7 @@ defined in services/creator_gaps.py.
 """
 
 from typing import Literal, Optional
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -24,16 +25,12 @@ MissingField = Literal[
 
 
 class CreatorSummaryRequest(BaseModel):
-    """The dashboard's filters.
-
-    Categories and languages are names; "__none__" picks creators with none.
-    `is_active`: true = active only (default), false = inactive only, null = both.
-    """
-
     platforms: list[PlatformChoices] = []
     categories: list[str] = []
     languages: list[str] = []
     is_active: Optional[bool] = True
+    list_id: Optional[UUID] = None
+    
 
 
 class MissingCell(BaseModel):

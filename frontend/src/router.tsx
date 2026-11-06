@@ -19,7 +19,7 @@ import { HomeScreen } from "./features/pulse/HomeScreen";
 import { GlobalSearchPage } from "./pages/search/GlobalSearchPage";
 import { CreatorSearchPage } from "./pages/search/CreatorSearchPage";
 import { BrandSearchPage } from "./pages/search/BrandSearchPage";
-import {CampaignSearchPage} from "./pages/search/CampaignSearchPage";
+import { CampaignSearchPage } from "./pages/search/CampaignSearchPage";
 import { PitchSearchPage } from "./pages/search/PitchSearchPage";
 
 // lazy load detail pages
@@ -47,6 +47,9 @@ const CreatorAnalyticsPage = lazy(() =>
   import("./pages/analytics/CreatorAnalyticsPage").then((m) => ({
     default: m.CreatorAnalyticsPage,
   })),
+);
+const ListsPage = lazy(() =>
+  import("./pages/lists/ListsPage").then((m) => ({ default: m.ListsPage })),
 );
 const IngestPage = lazy(() =>
   import("./pages/ingest/IngestPage").then((m) => ({ default: m.IngestPage })),
@@ -145,6 +148,12 @@ export function AppRoutes() {
             <Route path=":section" element={<AnalyticsSectionPage />} />
           </Route>
 
+          {/* Lists: the index. One list opens as /search/creators?list=<id>, the same
+              table with the same filters, scoped to that list. /lists/:id is a
+              shareable alias for it. */}
+          <Route path="lists" element={<ListsPage />} />
+          <Route path="lists/:listId" element={<ListRedirect />} />
+
           {/* Editing the taxonomy decides which uploads are accepted at all, so
               it sits behind the same permission as ingest itself. */}
           <Route element={<RequireIngestPermission />}>
@@ -214,4 +223,9 @@ function BrandRedirect() {
       replace
     />
   );
+}
+
+function ListRedirect() {
+  const { listId } = useParams<{ listId: string }>();
+  return <Navigate to={`/search/creators?list=${encodeURIComponent(listId ?? "")}`} replace />;
 }

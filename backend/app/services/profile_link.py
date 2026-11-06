@@ -28,6 +28,14 @@ _HANDLE_RE = re.compile(
     re.I,
 )
 
+#: First path segments that are a post, page or app screen, not an account.
+_NOT_A_HANDLE = {
+    # instagram
+    "p", "reel", "reels", "tv", "stories", "explore", "invites", "accounts", "direct", "share",
+    # youtube
+    "watch", "shorts", "results", "playlist", "embed", "live", "feed", "hashtag",
+}
+
 #: Enough to say "the user meant a URL, not a search term".
 _LINK_HINT_RE = re.compile(
     r"^(?:https?://|www\.)|\.(?:com|net|org|be|in|co)(?:/|$)", re.I
@@ -67,13 +75,16 @@ def platform_of(link: Any, sheet_fallback: str = "") -> Optional[PlatformChoices
 
 
 def handle_of(link: Any) -> Optional[str]:
-    """Lowercased fist path segment after the domain, without leading "@".
+    """Lowercased first path segment after the domain, without leading "@".
 
-    Skips one `in/`, `@`, `channel/`, `c/` or `user/` prefix. Short domains
-    (youtu.be, fb.com) are not matched, so they give None.
+    Skips one `in/`, `@`, `channel/`, `c/` or `user/` prefix. None for short
+    domains (youtu.be, fb.com) and for post/page links like /reel/... or /watch.
     """
     m = _HANDLE_RE.search(clean(link))
-    return m.group(1).lstrip("@").rstrip("\\").lower() if m else None
+    if not m:
+        return None
+    handle = m.group(1).lstrip("@").rstrip("\\").lower()
+    return None if handle in _NOT_A_HANDLE else handle
 
 
 class ProfileLink(NamedTuple):

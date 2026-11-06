@@ -2,10 +2,12 @@
 export const MAX_BULK_ITEMS = 500;
 /** True when the text has more than one line, which means it is a pasted list. */
 export const isBulkText = (text: string): boolean => /[\r\n]/.test(text);
+
 /**
  * Turns pasted text into a clean list: split on new lines, commas, semicolons
  * and tabs, drop invisible characters and extra spaces, remove repeats
  **/
+
 export function splitItems(text: string): string[] {
   const seen = new Set<string>();
   const items: string[] = [];
@@ -52,3 +54,4 @@ export function loadBulk(token: string): string {
     return "";
   }
 }
+

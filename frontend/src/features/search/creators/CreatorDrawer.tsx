@@ -23,6 +23,7 @@ import { Link } from 'react-router-dom';
 import { withBackState } from '@/lib/navigation';
 import { ExpandableSection } from '@/components/ExpandableSection';
 import { DetailDrawer } from '@/components/DetailDrawer';
+import { CreatorListsSection } from '@/features/lists/CreatorListsSection';
 import { useAuth } from '@/features/auth/useAuth';
 import { scoreCreator } from '@/features/analytics/creators/calculations/score';
 import { CreatorEditForm } from '@/features/analytics/creators/components/CreatorEditForm';
@@ -326,6 +327,9 @@ function DrawerBody({
             <Stat label="Campaigns with us" value={String(ran.length)} />
             <Stat label="Times pitched" value={String(detail.pitches.length)} />
           </div>
+
+          {/* ── lists ─────────────────────────────────────────────────────── */}
+          <CreatorListsSection creatorId={detail.id} />
 
 
 

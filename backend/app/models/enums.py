@@ -7,6 +7,7 @@ the API speaks the value ('mid-tier'), so renaming a member needs a migration.
 
 from enum import Enum
 
+GENDERS = ("Male", "Female", "Couple", "Community", "Other")
 
 class MonthChoices(str, Enum):
     """The month a campaign is filed under (with its year)."""

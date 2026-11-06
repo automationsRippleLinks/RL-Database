@@ -13,7 +13,7 @@ from .admin import router as admin_router
 from .users import router as users_router
 from .edits import router as edits_router
 from .analytics import router as analytics_router
-
+from .lists import router as lists_router, people_router, creator_lists_router
 router = APIRouter()
 
 router.include_router(health_router, prefix="/health", tags=["Health"])
@@ -27,3 +27,6 @@ router.include_router(admin_router, prefix="/admin", tags=["Admin"])
 router.include_router(users_router, prefix="/admin/users", tags=["Users"])
 router.include_router(edits_router, tags=["Editing"])
 router.include_router(analytics_router, prefix="/analytics", tags=["Analytics"])
+router.include_router(lists_router, prefix="/lists", tags=["Lists"])
+router.include_router(people_router, prefix="/people", tags=["Lists"])
+router.include_router(creator_lists_router, prefix="/creators", tags=["Lists"])

@@ -23,11 +23,25 @@ const CREATOR_FIELDS = {
   phone: '9876543210',
   gender: 'Female',
   city: 'Bengaluru',
-  state: 'Karnataka',
   categories: 'Beauty & Makeup',
   languages: 'Hindi, English',
 };
-const CREATOR_OPTIONAL = ['followers', 'avg_views', 'email', 'phone', 'gender', 'city', 'state', 'categories', 'languages'];
+const CREATOR_OPTIONAL = ['followers', 'avg_views', 'tier','email', 'phone', 'gender', 'city', 'sheet', 'category', 'language'];
+
+/** Every quote column the backend reads for pitch_creator; a missing one is stored as 0. */
+const PITCH_QUOTE_FIELDS = {
+  reel_count: 1, reel_story_count: 0, video_story_count: 0, static_carousel_count: 0,
+  event_store_visit: 'No',
+  short_form_videos_count: 0, reshare_short_form_videos_count: 0,
+  dedicated_video_count: 0, integrated_video_count: 0,
+  usage_rights: '30 days', ad_promo_rights: '', boosting: '',
+  payment_terms: 'Under 45 days.',
+  reel_cost: 50000, reel_story_cost: 0, video_story_cost: 0, static_carousel_cost: 0,
+  short_form_videos_cost: 0, reshare_short_form_videos_cost: 0,
+  dedicated_video_cost: 0, integrated_video_cost: 0,
+  rights_cost: 10000, boosting_cost: 0, package_cost: 0,
+  final_cost: 60000, brand_cost: 75000,
+};
 
 /**
  * One example row per source. The field names are the ones the backend reads
@@ -76,12 +90,11 @@ const EXAMPLES: Record<IngestSource, Example> = {
   
   pitch_creator: {
     required: ['source_file_id', 'profile_link', 'name'],
-    optional: [...CREATOR_OPTIONAL, 'package_cost', 'final_cost'],
+    optional: [...CREATOR_OPTIONAL, ...Object.keys(PITCH_QUOTE_FIELDS)],
     row: {
       source_file_id: 'EXAMPLE_SPREADSHEET_ID',
       ...CREATOR_FIELDS,
-      package_cost: 50000,
-      final_cost: 60000,
+      ...PITCH_QUOTE_FIELDS,
     },
   },
   campaign_creator: {

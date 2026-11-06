@@ -1,5 +1,5 @@
-import { NavLink } from 'react-router-dom';
-import { BarChart3, Database, Search, Tags } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { BarChart3, Database, ListChecks, Search, Tags } from 'lucide-react';
 import { useAuth } from '@/features/auth/useAuth';
 import { cn } from '@/lib/utils';
 
@@ -10,10 +10,14 @@ import { cn } from '@/lib/utils';
  */
 export function AppRail() {
   const { canIngest, isAdmin, isSuperAdmin, canEdit } = useAuth();
+  const location = useLocation();
+  // A list opens as /search/creators?list=<id>, so the Lists button stays lit there instead of Search.
+  const inList = location.pathname.startsWith('/search') && new URLSearchParams(location.search).has('list');
 
   return (
     <aside className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-rp-border py-2.25">
-      <RailLink to="/search" label="Search" icon={<Search className="size-[19px]" />} />
+      <RailLink to="/search" label="Search" icon={<Search className="size-[19px]" />} active={location.pathname.startsWith('/search') && !inList} />
+      <RailLink to="/lists" label="Lists" icon={<ListChecks className="size-4.75" />} active={location.pathname.startsWith('/lists') || inList} />
       {/* Hidden unless the backend says this account may ingest. The routes are
           guarded too, and the backend's 403 remains the real gate. */}
       {(canIngest || isAdmin || isSuperAdmin || canEdit) && (
@@ -28,7 +32,7 @@ export function AppRail() {
   );
 }
 
-function RailLink({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
+function RailLink({ to, label, icon, active }: { to: string; label: string; icon: React.ReactNode; active?: boolean }) {
   return (
     <NavLink
       to={to}
@@ -37,7 +41,7 @@ function RailLink({ to, label, icon }: { to: string; label: string; icon: React.
       className={({ isActive }) =>
         cn(
           'flex size-10 items-center justify-center rounded-[11px] transition-colors',
-          isActive
+          (active ?? isActive)
             ? 'bg-rp-primary-soft text-rp-primary'
             : 'text-rp-muted hover:bg-rp-surface2 hover:text-rp-text',
         )

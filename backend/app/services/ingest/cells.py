@@ -26,7 +26,7 @@ _DATE_FORMATS = ("%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d", "%d.%m.%Y")
 _EMAIL_IN_TEXT = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _EMAIL = TypeAdapter(EmailStr)
 _TWO_DP = Decimal("0.01")
-_FILE_ID = re.compile(r"/d/([A-Za-z0-9_-]+)")
+_FILE_ID = re.compile(r"/d/([A-Za-z0-9_-]+)|[?&]id=([A-Za-z0-9_-]{20,})")
 _BARE_ID = re.compile(r"^[A-Za-z0-9_-]{20,}$")  # a Drive file id pasted without the URL
 
 def is_blank(value: Any) -> bool:
@@ -196,12 +196,12 @@ def phones(value: Any, strict: bool = True) -> list[str]:
     return found
 
 def drive_id(value: Any) -> str:
-    """File id from a Sheets/Docs link or a bare id; a blank cell is an error."""
+    """File id from a Sheets/Docs link (/d/<id> or ?id=<id>) or a bare id; a blank cell is an error."""
 
     raw = text(value)
     m = _FILE_ID.search(raw)
     if m:
-        return m.group(1)
+        return m.group(1) or m.group(2) # whichever style matches
     if _BARE_ID.match(raw):
         return raw
     raise ValueError(f"{raw!r} is not a Google Sheets/Docs link" if raw else "missing")

@@ -97,7 +97,7 @@ def chat_model() -> ChatAnthropic:
     return ChatAnthropic(
         model=settings.AI_MODEL,
         api_key=settings.AI_API_KEY,
-        temperature=0,
+        # temperature=0,
         max_tokens=8192,
         timeout=settings.AI_TIMEOUT,
         max_retries=3,

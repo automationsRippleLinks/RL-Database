@@ -16,7 +16,9 @@ from app import observability
 from app.observability.metrics import init_worker_metrics
 
 broker = RedisStreamBroker(
-    url=str(settings.REDIS_URL), queue_name=settings.WORKER_QUEUE_NAME
+    url=str(settings.REDIS_URL),
+    queue_name=settings.WORKER_QUEUE_NAME,
+    socket_timeout=30,
 )
 broker.add_middlewares(OpenTelemetryMiddleware())
 scheduler = TaskiqScheduler(broker, sources=[LabelScheduleSource(broker)])
@@ -42,6 +44,7 @@ async def _shutdown(state: TaskiqState) -> None:
     await state.engine.dispose()
     observability.shutdown()
 
+
 from app.models import IngestSource
 from app.services import apify, ingest
 from app.services.jobs import sweep
@@ -57,8 +60,8 @@ async def run_ingest_job(job_id: str, ctx: Context = TaskiqDepends()) -> None:
 @broker.task
 async def process_apify_run(run_id: str, ctx: Context = TaskiqDepends()) -> None:
     """Fetch an ended Apify run's results and hand them to the actor's handler.
-    
-        A run Apify still reports as running is released and left for `reconcile`.
+
+    A run Apify still reports as running is released and left for `reconcile`.
     """
 
     await apify.process_run(ctx.state.session_factory, ctx.state.redis, run_id)
@@ -67,20 +70,20 @@ async def process_apify_run(run_id: str, ctx: Context = TaskiqDepends()) -> None
 @broker.task(schedule=[{"cron": "0 3 * * *", "cron_offset": "Asia/Kolkata"}])
 async def refresh_instagram_stats(ctx: Context = TaskiqDepends()) -> None:
     """Daily at 03:00 IST: start an Apify run for the stalest Instagram creators.
-    
-        Only creators not refreshed for APIFY_REFRESH_AFTER_DAYS, one batch per day.
-        Skipped while the previous scheduled run is still going.
+
+    Only creators not refreshed for APIFY_REFRESH_AFTER_DAYS, one batch per day.
+    Skipped while the previous scheduled run is still going.
     """
 
     await apify.start_scheduled_refresh(ctx.state.session_factory)
 
 
-@broker.task(schedule=[{"cron": "*/10 * * * *"}]) # 10 minutes
+@broker.task(schedule=[{"cron": "*/10 * * * *"}])  # 10 minutes
 async def reconcile(ctx: Context = TaskiqDepends()) -> None:
     """Safety net for lost tasks: re-queue stuck ingest jobs and overdue Apify runs.
-    
-        `sweep` also marks jobs whose worker died mid-run as failed. An Apify run whose
-        webhook never arrived gets processed here instead.
+
+    `sweep` also marks jobs whose worker died mid-run as failed. An Apify run whose
+    webhook never arrived gets processed here instead.
     """
 
     sf = ctx.state.session_factory

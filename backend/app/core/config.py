@@ -19,7 +19,6 @@ class Settings(BaseSettings):
 
     # === FastApi settings ==================================================================================================================
     ENVIRONMENT: Literal["DEV", "PROD"] = "DEV"
-    API_VERSION: str = "0.1.0"
     API_ROOT_PATH: str = "/api/v1"
     BACKEND_CORS_ORIGINS: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
     ALLOWED_DOMAINS: Annotated[list[str], NoDecode] = ["ripplelinks.com"]

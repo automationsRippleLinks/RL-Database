@@ -5,6 +5,16 @@
 import { api } from "./api-client";
 import type {
   BrandDetail,
+  CreatorListRef,
+  ListAddResult,
+  ListCreateRequest,
+  ListDetail,
+  ListMember,
+  ListMemberUpdate,
+  ListSharingUpdate,
+  ListSummary,
+  ListUpdateRequest,
+  PersonRef,
   BrandFacets,
   BrandRow,
   BrandSearchRequest,
@@ -323,4 +333,53 @@ export const creatorEditApi = {
   /** 409 = someone changed it since you opened it, 423 = someone else holds the lock. */
   save: (id: string, body: CreatorUpdate): Promise<EditRecord> =>
     api.patch<EditRecord>(`/creators/${id}`, body),
+};
+
+// ─── lists (NEW) ─────────────────────────────────────────────────────────────
+//
+// Saved groups of creators. Everyone signed in sees every list and can add or
+// remove creators; only the owner or an admin can delete a list. The backend owns
+// those rules: the UI only greys out what would fail.
+
+export const listsApi = {
+  all: ({ signal }: Ctx = {}): Promise<{ lists: ListSummary[] }> =>
+    api.get<{ lists: ListSummary[] }>("/lists", { signal }),
+
+  get: (id: string, { signal }: Ctx = {}): Promise<ListDetail> =>
+    api.get<ListDetail>(`/lists/${id}`, { signal }),
+
+  create: (body: ListCreateRequest): Promise<ListDetail> =>
+    api.post<ListDetail>("/lists", body),
+
+  update: (id: string, body: ListUpdateRequest): Promise<ListDetail> =>
+    api.patch<ListDetail>(`/lists/${id}`, body),
+
+  /** 403 unless you own the list or are an admin. */
+  remove: (id: string): Promise<void> => api.del(`/lists/${id}`),
+
+  /** Creators already in the list are skipped, and counted as such. */
+  addCreators: (id: string, creatorIds: string[]): Promise<ListAddResult> =>
+    api.post<ListAddResult>(`/lists/${id}/creators`, { creator_ids: creatorIds }),
+
+  removeCreators: (id: string, creatorIds: string[]): Promise<{ removed: number }> =>
+    api.post<{ removed: number }>(`/lists/${id}/creators/remove`, { creator_ids: creatorIds }),
+
+  updateMember: (id: string, creatorId: string, body: ListMemberUpdate): Promise<ListMember> =>
+    api.patch<ListMember>(`/lists/${id}/creators/${creatorId}`, body),
+
+  /** NEW: owner or admin. Replaces who can open the list and at what level. */
+  share: (id: string, body: ListSharingUpdate): Promise<ListDetail> =>
+    api.put<ListDetail>(`/lists/${id}/sharing`, body),
+
+  /** NEW: a private copy for you, with the same creators, statuses, notes and tags. */
+  duplicate: (id: string): Promise<ListDetail> =>
+    api.post<ListDetail>(`/lists/${id}/duplicate`, {}),
+
+  /** NEW: colleagues you can share with. */
+  people: ({ signal }: Ctx = {}): Promise<{ people: PersonRef[] }> =>
+    api.get<{ people: PersonRef[] }>("/people", { signal }),
+
+  /** The lists one creator is saved in, for the drawer. */
+  forCreator: (creatorId: string, { signal }: Ctx = {}): Promise<{ lists: CreatorListRef[] }> =>
+    api.get<{ lists: CreatorListRef[] }>(`/creators/${creatorId}/lists`, { signal }),
 };

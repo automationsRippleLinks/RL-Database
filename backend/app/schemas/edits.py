@@ -21,6 +21,7 @@ from pydantic import (
 
 from app.services.ingest.creators import REGIONS
 from app.models import Creator, Brand, Company, Pitch, Campaign
+from app.models.enums import GENDERS
 from app.models.link_models import PitchCreatorLinkBase, CampaignCreatorLinkBase
 from app.services.locks import LockHolder
 
@@ -54,7 +55,7 @@ CreatorUpdate = update_model(
     "CreatorUpdate",
     Creator,
     fixed={"stats_refreshed_at"},  # only an Apify refresh sets this
-    gender=(Optional[Literal["Female", "Male", "Couple", "Community"]], None),
+    gender=(Optional[Literal[GENDERS]], None),
     region=(Optional[Literal[REGIONS]], None),
     emails=(list[Email], None),
     phones=(list[Phone], None),

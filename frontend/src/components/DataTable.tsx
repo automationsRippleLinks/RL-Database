@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { TickBox } from './TickBox';
 import { cn } from '@/lib/utils';
 import {
@@ -47,12 +47,48 @@ interface DataTableProps<Row> {
   appearance?: 'default' | 'results';
   selection?: RowSelection<Row>;
   activeRowKey?: string | null;
+
+  // Give a table a name to let people drag the header borders to resize columns.
+  // The widths are remembered in this browser under that name.
+  resizeKey?: string;
 }
 
 const RESULTS_HEAD =
   'sticky top-0 z-[3] h-auto bg-rp-head px-[13px] py-2.5 text-[12px] font-bold tracking-[0.05em] whitespace-nowrap text-rp-muted uppercase shadow-[inset_0_-1px_0_var(--rp-border)]';
 
 const RESULTS_CELL = 'px-[13px] py-2.5';
+
+// ── COLUMN RESIZING ────────────────────────────────────────────
+// Widths are pixels by column id; '__select' is the checkbox column.
+
+const MIN_COLUMN_WIDTH = 56;
+const SELECT_ID = '__select';
+type Widths = Record<string, number>;
+
+const widthsStorageKey = (key: string) => `rp-colw-${key}`;
+
+function loadWidths(key?: string): Widths {
+  if (!key) return {};
+  try {
+    const raw = localStorage.getItem(widthsStorageKey(key));
+    return raw ? (JSON.parse(raw) as Widths) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveWidths(key: string | undefined, widths: Widths) {
+  if (!key) return;
+  try {
+    if (Object.keys(widths).length) {
+      localStorage.setItem(widthsStorageKey(key), JSON.stringify(widths));
+    } else {
+      localStorage.removeItem(widthsStorageKey(key));
+    }
+  } catch {
+    /* storage blocked: widths last until the page is reloaded */
+  }
+}
 
 export function DataTable<Row>({
   columns,
@@ -66,11 +102,78 @@ export function DataTable<Row>({
   appearance = 'default',
   selection,
   activeRowKey,
+  resizeKey,
 }: DataTableProps<Row>) {
   const isResults = appearance === 'results';
   // ── SHIFT-CLICK RANGE SELECTION ────────────────────────────────
   // Remember the last row clicked without Shift.
   const selectionAnchor = useRef<string | null>(null);
+
+  // ── COLUMN RESIZING ──────────────────────────────────────────
+  const [widths, setWidths] = useState<Widths>(() => loadWidths(resizeKey));
+  const headRefs = useRef<Record<string, HTMLTableCellElement | null>>({});
+  const resizable = isResults && !!resizeKey;
+
+  // Saved widths are used only while they cover every current column.
+  const customWidths =
+    resizable && columns.every((column) => widths[column.id] > 0);
+  const widthOf = (id: string) => (customWidths ? widths[id] : undefined);
+  const tableWidth = customWidths
+    ? columns.reduce((sum, column) => sum + widths[column.id], widths[SELECT_ID] ?? 0)
+    : undefined;
+
+  const startResize = (event: ReactPointerEvent, id: string) => {
+    event.preventDefault();
+    event.stopPropagation(); // do not trigger sorting or row clicks
+
+    // First drag: freeze every column at its current on-screen width.
+    let base = widths;
+    if (!customWidths) {
+      base = {};
+      for (const column of columns) {
+        const el = headRefs.current[column.id];
+        if (el) base[column.id] = Math.round(el.getBoundingClientRect().width);
+      }
+      const selectEl = headRefs.current[SELECT_ID];
+      if (selectEl) base[SELECT_ID] = Math.round(selectEl.getBoundingClientRect().width);
+    }
+
+    const startX = event.clientX;
+    const startWidth = base[id] ?? MIN_COLUMN_WIDTH;
+    let latest = base;
+
+    const onMove = (e: PointerEvent) => {
+      latest = { ...base, [id]: Math.max(MIN_COLUMN_WIDTH, Math.round(startWidth + e.clientX - startX)) };
+      setWidths(latest);
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      saveWidths(resizeKey, latest);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  // Double-click a border to go back to the default widths.
+  const resetWidths = () => {
+    setWidths({});
+    saveWidths(resizeKey, {});
+  };
+
+  const resizeHandle = (id: string) =>
+    resizable ? (
+      <span
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Drag to resize column. Double-click to reset all widths."
+        title="Drag to resize. Double-click to reset."
+        onPointerDown={(event) => startResize(event, id)}
+        onClick={(event) => event.stopPropagation()}
+        onDoubleClick={resetWidths}
+        className="absolute top-0 right-0 z-[4] h-full w-2 translate-x-1/2 cursor-col-resize touch-none select-none after:absolute after:top-1/4 after:left-1/2 after:h-1/2 after:w-px after:bg-rp-border hover:after:bg-rp-primary"
+      />
+    ) : null;
 
   const pickRow = (row: Row, shiftKey: boolean) => {
     if (!selection) return;
@@ -138,7 +241,10 @@ export function DataTable<Row>({
     rows.every((row) => !!selection.picked[rowKey(row)]);
 
   const table = (
-    <Table className={cn(isResults && 'table-fixed text-[12px]')}>
+    <Table
+      className={cn(isResults && 'table-fixed text-[12px]')}
+      style={tableWidth ? { width: tableWidth } : undefined}
+    >
       <TableHeader
         className={cn(
           isResults &&
@@ -148,6 +254,10 @@ export function DataTable<Row>({
         <TableRow className="hover:bg-transparent">
           {selection && (
             <TableHead
+              ref={(el) => {
+                headRefs.current[SELECT_ID] = el;
+              }}
+              style={widthOf(SELECT_ID) ? { width: widthOf(SELECT_ID) } : undefined}
               className={cn(
                 isResults && RESULTS_HEAD,
                 'text-left',
@@ -168,13 +278,19 @@ export function DataTable<Row>({
           {columns.map((column) => (
             <TableHead
               key={column.id}
+              ref={(el) => {
+                headRefs.current[column.id] = el;
+              }}
+              style={widthOf(column.id) ? { width: widthOf(column.id) } : undefined}
               className={cn(
                 isResults && RESULTS_HEAD,
+                resizable && 'overflow-hidden text-ellipsis',
                 column.numeric && 'text-right',
                 column.headerClassName,
               )}
             >
               {column.header}
+              {resizeHandle(column.id)}
             </TableHead>
           ))}
         </TableRow>

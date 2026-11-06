@@ -72,6 +72,8 @@ export interface SessionUser {
   email: string;
   is_verified: boolean;
   auth_provider: "password" | "google";
+  /** NEW (teams): the person's team, or null when they have none yet. */
+  team?: TeamRef | null;
   /**
    * Backend-owned. The UI only follows these to show or hide buttons; the
    * backend's 403 is authoritative.
@@ -247,6 +249,10 @@ export interface CreatorFilters {
   is_active?: boolean | null;
   username?: string;
   profile_link?: string;
+  /** NEW (Lists): only creators saved in this list. Backend: one EXISTS clause on list_creator. null/absent = every creator. */
+  list_id?: string | null;
+  /** NEW (Lists): with list_id, only creators at these statuses in that list. */
+  list_statuses?: ListStatus[];
 }
 
 export interface CreatorSearchRequest extends CreatorFilters, Paging {
@@ -307,6 +313,8 @@ export interface CreatorRow {
    * the column works even if the backend omits it.
    */
   profile_url?: string | null;
+  /** NEW (Lists): how many lists this creator is saved in (only lists the viewer can see). Optional so old rows still render. */
+  list_count?: number;
 }
 
 export interface CreatorPitchSummary {
@@ -864,6 +872,8 @@ export interface CreatorSummaryRequest {
   categories: string[];
   languages: string[];
   is_active?: boolean | null;
+  /** NEW (Lists): count only the creators in this list. */
+  list_id?: string | null;
 }
 
 export interface MissingCell {
@@ -951,4 +961,142 @@ export interface CreatorUpdate {
   categories?: number[];
   languages?: number[];
   is_active?: boolean;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NEW: Lists (saved groups of creators). Backend contract in docs/BACKEND_CONTRACT.md
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Where a creator stands inside one list. A label only; it never changes the creator. */
+export type ListStatus = "shortlisted" | "contacted" | "confirmed" | "rejected";
+
+export interface UserRef {
+  id: number;
+  name: string;
+}
+
+export interface ListStats {
+  creator_count: number;
+  /** Sum of followers (missing followers count as 0 and are reported in `missing_followers`). */
+  total_followers: number;
+  missing_followers: number;
+  /** Median of avg views over creators that have them. */
+  median_views: number | null;
+  /** Sum of each creator's latest cost, and how many creators have no cost on file. */
+  est_cost: number;
+  missing_cost: number;
+  /** Median cost per view over creators that have both a cost and views. */
+  median_cpv: number | null;
+  /** Creators missing at least one of the nine checked details. */
+  with_gaps: number;
+  status_counts: Record<ListStatus, number>;
+  platforms: { platform: Platform; count: number }[];
+}
+
+export interface ListSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  owner: UserRef;
+  created_at: string;
+  updated_at: string;
+  creator_count: number;
+  /** A few creators for the card's avatar stack. */
+  preview: { id: string; name: string; platform: Platform }[];
+  /** Who can open it: just the owner, picked people, the owner's team, or everyone. */
+  visibility: ListVisibility;
+  /** For "team" and "everyone": whether that audience may edit or only view. */
+  audience_level: ListAccessLevel;
+  /** People picked one by one, each with their own level. Ignored while private. */
+  shares: ListShare[];
+  /** Free labels such as "glow-brief", stored without the #. */
+  tags: string[];
+  /** What the person asking may do: view, edit (creators, statuses, notes, name) or manage (also share and delete). */
+  access: "view" | "edit" | "manage";
+  /** 0–100: how complete the creators' details are (the nine missing-info checks). Null for an empty list. */
+  health: number | null;
+  /** The team a "team" list belongs to (the owner's team when it was made). */
+  team: TeamRef | null;
+  /** Worked out by the backend for the person asking: owner or admin. */
+  can_delete: boolean;
+  /** May change who can see it: owner or admin. */
+  can_manage: boolean;
+  /** May add or remove creators, change statuses and notes, rename. */
+  can_edit: boolean;
+}
+
+export type ListVisibility = "private" | "people" | "team" | "everyone";
+export type ListAccessLevel = "view" | "edit";
+
+export interface ListShare {
+  user: UserRef;
+  level: ListAccessLevel;
+}
+
+/** PUT /lists/{id}/sharing — owner or admin. Replaces the whole sharing setup at once. */
+export interface ListSharingUpdate {
+  visibility: ListVisibility;
+  audience_level: ListAccessLevel;
+  shares: { user_id: number; level: ListAccessLevel }[];
+}
+
+/** GET /people — signed-in colleagues you can share with. */
+export interface PersonRef extends UserRef {
+  email: string;
+  team: TeamRef | null;
+}
+
+export interface TeamRef {
+  id: number;
+  name: string;
+}
+
+export interface Team extends TeamRef {
+  member_count: number;
+}
+
+export interface ListMember {
+  creator_id: string;
+  status: ListStatus;
+  note: string | null;
+  added_at: string;
+  added_by: UserRef;
+}
+
+export interface ListDetail extends ListSummary {
+  stats: ListStats;
+  members: ListMember[];
+}
+
+export interface ListCreateRequest {
+  name: string;
+  description?: string | null;
+  creator_ids?: string[];
+  tags?: string[];
+  /** Default "team" (or "everyone" for someone with no team). "people" needs a later PUT /sharing. */
+  visibility?: ListVisibility;
+}
+
+export interface ListUpdateRequest {
+  name?: string;
+  description?: string | null;
+  tags?: string[];
+}
+
+export interface ListAddResult {
+  added: number;
+  /** Already in the list, so left as they were. */
+  skipped: number;
+}
+
+export interface ListMemberUpdate {
+  status?: ListStatus;
+  note?: string | null;
+}
+
+/** GET /creators/{id}/lists: the lists a creator is saved in (the drawer's "In lists"). */
+export interface CreatorListRef {
+  id: string;
+  name: string;
+  status: ListStatus;
 }

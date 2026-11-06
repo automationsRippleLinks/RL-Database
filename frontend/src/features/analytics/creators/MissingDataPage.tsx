@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { useAuth } from '@/features/auth/useAuth';
 import { useCreatorDetail } from '@/features/search/queries';
@@ -18,7 +17,7 @@ import '../tokens.css';
 import './styles.css';
 import '../analytics.css';
 import { SummaryTiles } from '@/components/SummaryTiles';
-
+import { CreatorAnalyticsNav,useAnalyticsListId } from '../CreatorAnalyticsNav';
 const byName = (a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label);
 
 /** The dropdowns' options and counts come from the summary, so they always agree with the numbers. */
@@ -49,7 +48,10 @@ export function MissingDataPage() {
   // const { user } = useAuth();
   const { canEdit } = useAuth();
 
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [listId] = useAnalyticsListId();
+  const [state, dispatch] = useReducer(reducer, { ...initialState, list: listId });
+  // The "Showing" picker writes the URL; the page follows it.
+  useEffect(() => dispatch({ type: 'setList', list: listId }), [listId]);
   const [toast, setToast] = useState<string | null>(null);
 
   const summary = useCreatorSummary(state);
@@ -95,26 +97,19 @@ export function MissingDataPage() {
   return (
     <div className="cc-root">
       <div className="cc-app">
-        <header className="cc-top">
-          <div>
-            <nav className="cc-crumbs" aria-label="Breadcrumb">
-              <Link to="/analytics" data-testid="back">Analytics</Link>
-              <span aria-hidden="true">/</span>
-              <b>Creators</b>
-            </nav>
-            <div className="cc-titlerow">
-              <h1 className="cc-title">Creator data</h1>
-              <span className="cc-pill cc-pill-live" data-testid="live-pill">
-                <i aria-hidden="true" />
-                Live data
-              </span>
-              <span className="cc-pill" data-testid="access-pill">
-                {canEdit ? <PencilIcon /> : <LockIcon />}
-                {canEdit ? 'Can edit' : 'Read only'}
-              </span>
-            </div>
+        <div className="cc-ac-nav">
+          <CreatorAnalyticsNav title="Creator data" subtitle="Which details are missing, for whom. Click a bar or a cell to list those creators, then fill the gaps from the drawer." />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignSelf: 'flex-start', marginBottom: 12 }}>
+            <span className="cc-pill cc-pill-live" data-testid="live-pill">
+              <i aria-hidden="true" />
+              Live data
+            </span>
+            <span className="cc-pill" data-testid="access-pill">
+              {canEdit ? <PencilIcon /> : <LockIcon />}
+              {canEdit ? 'Can edit' : 'Read only'}
+            </span>
           </div>
-        </header>
+        </div>
 
         <FilterBar options={options} state={state} dispatch={dispatch} />
 

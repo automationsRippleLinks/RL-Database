@@ -27,13 +27,14 @@ from app.models import (
     Campaign,
     CampaignCreatorLink,
 )
-from app.models.enums import TierChoices
+from app.models.enums import TierChoices, GENDERS
 from app.schemas.ingest import RowError
 from app.services.ingest.common import RowReader, Record
 from app.services.profile_link import handle_of, platform_of
 from app.services.ai import AISpec
 from . import cells
 from .common import (
+    existing_creator_keys,
     read_columns,
     duplicates,
     Taxonomy,
@@ -76,10 +77,12 @@ CREATOR_AI = AISpec(
     name="creator",
     instructions="""Each row describes one social media creator.
 - gender: from the gender cell only. Couple = two people; Community = a page \
-run by a group or brand.
+run by a group or brand. Fix obvious typos ("Femaile" -> Female).
 - city: the Indian city, spelled the standard way ("Bengaluru" for Bangalore / \
-Blr, "Mumbai" for Bombay, "Gurugram" for Gurgaon). If the cell names only a \
-state or region, leave city empty.
+Blr, "Mumbai" for Bombay or "Mumabi", "Gurugram" for Gurgaon). Fix misspellings. \
+If the cell names only a state or region, leave city empty. A city outside \
+India, several cities, or text that isn't a place ("ask location", "awaiting") \
+goes in "unmatched".
 - state: the Indian state or union territory the city is in, or that the cell \
 names.
 - region: the part of India that state is in: North, South, East, West, Central \
@@ -87,7 +90,7 @@ or North-East. Empty when there is no state.
 - categories: every allowed category the category cell mentions. Several are \
 separated by commas, "&", "/" or "+" -- but some allowed names contain "&" \
 themselves ("Beauty & Makeup"), so match whole allowed names first. Map a \
-variant to an allowed name only when it means the same thing.
+variant or misspelling to an allowed name only when it means the same thing.
 - languages: the same, for the language cell.""",
     covers={
         "gender": ("gender",),
@@ -96,7 +99,7 @@ variant to an allowed name only when it means the same thing.
         "language": ("languages",),
     },
     fields=lambda tax: {
-        "gender": (Optional[Literal["Female", "Male", "Couple", "Community"]], ...),
+        "gender": (Optional[Literal[GENDERS]], ...),
         "city": (Optional[str], ...),
         "state": (Optional[str], ...),
         "region": (Optional[Literal[REGIONS]], ...),
@@ -147,6 +150,15 @@ class _CreatorSource:
     parent_fk: str
     key_field: str
     ai = CREATOR_AI
+    #: sheet cells this source doesn't trust; they reach the AI as empty
+    ignored_cells: tuple[str, ...] = ()
+
+    @staticmethod
+    def _creator_key(rec: Record) -> tuple:
+        """(platform, username) of the row's creator."""
+
+        c = rec.data["creator"]
+        return (c["platform"], c["username"])
 
     def parse(self, rows: list[dict]) -> tuple[list[Record], list[RowError]]:
         """Read each row into the parent's key, the creator, and their creator row."""
@@ -165,7 +177,10 @@ class _CreatorSource:
                         "creator": creator,
                         "link": link,
                     },
-                    ai_input={k: cells.text(raw.get(k)) for k in self.ai.covers},
+                    ai_input={
+                        k: "" if k in self.ignored_cells else cells.text(raw.get(k))
+                        for k in self.ai.covers
+                    },
                 )
             )
         return records, errors + self._file_checks(rows)
@@ -224,6 +239,14 @@ class _CreatorSource:
                     message=self._orphan_message(key, len(rows)),
                 )
             )
+        # existing creators keep their own categories/languages: the AI isn't asked
+        # about them, so a wrong sheet value can't fail the upload either
+        existing = await existing_creator_keys(
+            session, {self._creator_key(r) for r in records}
+        )
+        for r in records:
+            if self._creator_key(r) in existing:
+                r.ai_input = {k: "" for k in r.ai_input}
         return errors
 
     def _orphan_message(self, key: str, n: int) -> str:
@@ -242,14 +265,18 @@ class _CreatorSource:
             c = r.data["creator"]
             # a creator on several pitches/campaigns: the first row's details are used
             creators.setdefault((c["platform"], c["username"]), c)
+        existing = await existing_creator_keys(
+            session, {self._creator_key(r) for r in records}
+        )
         ids, created = await creator_ids(session, creators)
 
         cats, langs, links = set(), set(), []
         for r in records:
-            c = r.data["creator"]
-            cid = ids[(c["platform"], c["username"])]
-            cats |= {(cid, tax.categories[n]) for n in r.data["categories"]}
-            langs |= {(cid, tax.languages[n]) for n in r.data["languages"]}
+            key = self._creator_key(r)
+            cid = ids[key]
+            if key not in existing:  # existing creators keep their categories/languages
+                cats |= {(cid, tax.categories[n]) for n in r.data["categories"]}
+                langs |= {(cid, tax.languages[n]) for n in r.data["languages"]}
             links.append(
                 {
                     "creator_id": cid,
@@ -279,6 +306,7 @@ class PitchCreator(_CreatorSource):
     table = link_model = PitchCreatorLink
     parent_fk = "pitch_id"
     key_field = "source_file_id"
+    ignored_cells = ("category", "language")
 
     _SPLIT_COSTS = (
         "reel_cost",
@@ -340,6 +368,7 @@ class CampaignCreator(_CreatorSource):
     table = link_model = CampaignCreatorLink
     parent_fk = "campaign_id"
     key_field = "campaign_code"
+    ignored_cells = ("category", "language")
 
     def _normalize_key(self, key):
         """Campaign codes are stored upper-case (see CampaignMaster.parse)."""
@@ -381,7 +410,7 @@ class CampaignCreator(_CreatorSource):
             else []
         )
         # bind parameters per row: the mutable columns plus the two keys
-        chunk = max(1, settings.PG_MAX_PARAMS // max(1, len(mutable) + 2))
+        chunk = max(1, settings.PG_MAX_PARAMS // len(CampaignCreatorLink.__table__.columns))
         for i in range(0, len(links), chunk):
             stmnt = pg_insert(CampaignCreatorLink).values(links[i : i + chunk])
             await session.exec(

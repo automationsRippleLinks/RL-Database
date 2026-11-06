@@ -16,6 +16,7 @@ its AI answers, so the commit writes exactly what the preview showed.
 from typing import Optional, Any
 from uuid import UUID
 import logging
+import asyncio
 
 from sqlmodel import select
 from redis.asyncio import Redis
@@ -155,7 +156,7 @@ async def _run(
         )
 
     with stage("parse") as span:
-        records, errors = source.parse(rows)
+        records, errors = await asyncio.to_thread(source.parse, rows)
         span.set_attribute("ingest.errors", len(errors))
 
     if errors:
@@ -173,7 +174,7 @@ async def _run(
     ai_stage = "running the AI step" if job.use_ai else "matching cells as typed"
     with stage("ai") as span:
         if saved_ai is None and not job.use_ai:
-            result = ai.match_exactly(
+            result = await asyncio.to_thread(ai.match_exactly,
                 source.ai, {r.row: r.ai_input for r in records}, taxonomy
             )
             outputs, errors = result.outputs, result.errors
