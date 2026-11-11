@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, FileJson, Loader2, Upload, X, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { ingestApi } from '@/lib/endpoints';
 import { queryKeys } from '@/lib/query-client';
 import { formatNumber, pluralise } from '@/lib/format';
 import type { IngestJob, IngestSource, IngestSourceInfo } from '@/types/api';
-import { FileFormat } from '@/pages/ingest/FileFormat';
+import { FileFormat } from '@/features/ingest/FileFormat';
 import { JobResult } from './JobResult';
 import { cn } from '@/lib/utils';
 
@@ -137,7 +137,7 @@ export function JsonUploadPanel({ sources }: { sources: IngestSourceInfo[] }) {
   const checkFailed = checkFinished && job.status === 'failed';
   const saveFinished = !!job && !isWorking(job) && !job.dry_run;
 
-  const onDrop = (event: import('react').DragEvent<HTMLDivElement>) => {
+  const onDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setDragging(false);
     if (busy) return;
@@ -234,7 +234,7 @@ export function JsonUploadPanel({ sources }: { sources: IngestSourceInfo[] }) {
           </p>
         )}
 
-        {note && !jobId && <p className="text-xs text-var(--warning)">{note}</p>}
+        {note && !jobId && <p className="text-xs text-warning">{note}</p>}
 
         {rows && !jobId && (
           <div className="flex flex-wrap items-center gap-2">

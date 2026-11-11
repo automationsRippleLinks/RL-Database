@@ -197,7 +197,7 @@ export function DataTable<Row>({
         // Checked end row: deselect the range.
         selection.onSelectRange(
           rows.slice(from, to + 1),
-          !Boolean(selection.picked[clickedKey]),
+          !selection.picked[clickedKey],
         ); return;
       }
     }

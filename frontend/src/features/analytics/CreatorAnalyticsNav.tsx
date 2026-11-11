@@ -5,7 +5,7 @@ import { backState } from '@/lib/navigation';
 import { Check, ChevronDown, ChevronRight, ListChecks, Search, Users, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLists } from '@/features/lists/queries';
-import { listPath } from '@/pages/lists/ListsPage';
+import { listPath } from '@/features/lists/pages/ListsPage';
 import { formatNumber } from '@/lib/format';
 import { cn } from '@/lib/utils';
 

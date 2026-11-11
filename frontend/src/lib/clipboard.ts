@@ -21,7 +21,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     textarea.style.opacity = '0';
     textarea.style.left = '-9999px';
     document.body.appendChild(textarea);
-    textarea.focus();``
+    textarea.focus();
     textarea.select();
     const ok = document.execCommand('copy');
     document.body.removeChild(textarea);

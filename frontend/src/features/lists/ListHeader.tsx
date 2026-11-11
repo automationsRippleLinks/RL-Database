@@ -13,7 +13,7 @@ import { useUrlSearchState } from '@/hooks/useUrlSearchState';
 import { compact, formatNumber, rupeesCompact, timeAgo } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { ListDetail, ListStatus } from '@/types/api';
-import { listMissingPath } from '@/pages/lists/ListsPage';
+import { listMissingPath } from '@/features/lists/pages/ListsPage';
 import { AddCreatorsDialog } from './AddCreatorsDialog';
 import { ListFormDialog } from './ListFormDialog';
 import { ShareDialog } from './ShareDialog';

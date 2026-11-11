@@ -13,7 +13,6 @@
   "dependencies": {
     "@grafana/faro-react": "^2.12.1",
     "@grafana/faro-web-tracing": "^2.12.1",
-    "@radix-ui/react-checkbox": "^1.1.4",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-popover": "^1.1.6",

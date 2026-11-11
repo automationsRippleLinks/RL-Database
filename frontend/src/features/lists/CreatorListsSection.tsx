@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { backState, pageLabel } from '@/lib/navigation';
 import { ChevronRight, ListPlus } from 'lucide-react';
-import { listPath } from '@/pages/lists/ListsPage';
+import { listPath } from '@/features/lists/pages/ListsPage';
 import { cn } from '@/lib/utils';
 import { AddToListMenu } from './AddToListMenu';
 import { STATUS_META, useCreatorLists } from './queries';

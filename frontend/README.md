@@ -60,24 +60,35 @@ hostnames, the backend needs `SameSite=None; Secure` plus CORS `allow_credential
 explicit origin list.
 
 ## Layout
+Feature-first: everything one area of the app needs lives in that area's folder.
+Code moves up to `components/`, `hooks/` or `lib/` only once two or more features use it.
 
 ```
 src/
-├── types/api.ts          # the whole API contract — the source of truth for both sides
-├── lib/
-│   ├── api-client.ts     # fetch wrapper: credentials, CSRF header, abort, ApiError, 401 hook
-│   ├── endpoints.ts      # one function per endpoint; routes to real API or mocks
-│   ├── enums.ts          # mirror of backend/app/models/enums.py + parser.py raw vocabularies
-│   ├── format.ts         # number/date/duration formatting, profile_url derivation
-│   ├── query-client.ts   # TanStack defaults + query keys
-│   └── mocks/            # fixture data and an in-memory implementation of the contract
-├── hooks/                # useDebouncedValue, useUrlSearchState, useTheme
+├── main.tsx              # entry point (index.html loads it)
+├── app/
+│   ├── App.tsx           # header + app rail + data rail + content
+│   ├── router.tsx        # every route, lazy loads the heavier pages
+│   ├── shell-state.tsx   # rail open/closed, open filter group, open menu
+│   ├── HomeScreen.tsx    # /search landing screen
+│   └── layout/           # AppRail, DataRail, PulseHeader, PulseSearch, AccountMenu, dialogs
 ├── features/
-│   ├── auth/             # provider, login, Google redirect, guards,
-│   │                     # signup / verify-email / forgot- + reset-password
-│   ├── search/           # omnibox, scope tabs, global view, and one folder per entity
-│   └── ingest/           # Apps Script trigger, JSON upload + validator, job history
-└── components/           # DataTable, Pagination, facet controls, states, ui/ primitives
+│   ├── auth/             # provider, guards, useAuth; pages/ = login, signup, verify, reset...
+│   ├── search/           
+│   │   ├── pages/        # global search, the four scoped searches, campaign + pitch detail
+│   │   ├── filters/      # FilterSection shell + the controls only search filters use
+│   │   ├── creators/     # columns, table, drawer, filters, filter model
+│   │   ├── brands/       #   same shape for each entity
+│   │   ├── campaigns/
+│   │   └── pitches/
+│   ├── analytics/        # dashboard home, creators missing-data page; pages/ = routes
+│   ├── lists/            # saved creator lists; pages/ListsPage
+│   ├── ingest/           # JSON upload, run history; pages/IngestPage
+│   └── taxonomy/         # pages/TaxonomyPage
+├── components/           # shared UI: DataTable, DetailDrawer, states, Toast, ui/ primitives
+├── hooks/                # shared hooks: useUrlSearchState, useDebouncedValue, useTheme...
+├── lib/                  # api-client, endpoints, enums, format, query-client, observability
+└── types/api.ts          # the whole API contract — the source of truth for both sides
 ```
 
 Each of the four scoped searches is the same pattern: a filter panel, a column config, and a

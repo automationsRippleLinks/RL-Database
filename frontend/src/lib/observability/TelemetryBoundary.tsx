@@ -1,5 +1,5 @@
 import { Component, type ReactNode } from 'react';
-import { reportReactError } from '../../lib/observability';
+import { reportReactError } from '.';
 
 type Props = {
   children: ReactNode;

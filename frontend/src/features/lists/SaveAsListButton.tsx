@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { backState, pageLabel } from '@/lib/navigation';
 import { ListPlus } from 'lucide-react';
 import { useToast } from '@/components/Toast';
-import { listPath } from '@/pages/lists/ListsPage';
+import { listPath } from '@/features/lists/pages/ListsPage';
 import { cn } from '@/lib/utils';
 import { ListFormDialog } from './ListFormDialog';
 import { useListActions } from './queries';

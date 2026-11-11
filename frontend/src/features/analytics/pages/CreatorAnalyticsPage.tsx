@@ -1,0 +1,7 @@
+import { MissingDataPage } from "@/features/analytics/creators/MissingDataPage";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
+export function CreatorAnalyticsPage() {
+  useDocumentTitle("Creator analytics");
+  return <MissingDataPage />;
+}
